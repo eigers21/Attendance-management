@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・確認 (Ver 9.4 Revert UI)</title>
+    <title>2026年 参加登録・確認 (Ver 9.5 Finished)</title>
     <style>
         /* Base Reset (Standard Ver 9.2 Style) */
         :root {
@@ -115,6 +115,20 @@
             color: #fff;
             border-color: var(--primary);
             transform: scale(1.05);
+        }
+
+        /* FINISHED / EXPIRED DATE STYLE */
+        .date-finished {
+            background: #eee;
+            color: #aaa;
+            border-color: #ddd;
+            cursor: not-allowed;
+            pointer-events: none;
+            /* Disable click */
+        }
+
+        .date-finished:hover {
+            background: #eee;
         }
 
         /* FORM STYLE */
@@ -331,7 +345,7 @@
             background-color: #357abd;
         }
 
-        /* COLLAPSIBLE DEBUG CONSOLE (Styled for Standard UI) */
+        /* COLLAPSIBLE DEBUG CONSOLE (Standard) */
         details.debug-box {
             margin-top: 50px;
             background: #222;
@@ -340,7 +354,6 @@
             font-size: 12px;
             border-radius: 5px;
             white-space: pre-wrap;
-            /* box-shadow: var(--shadow); */
         }
 
         summary {
@@ -374,7 +387,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・確認 (Ver 9.4 Revert UI)</h1>
+            <h1>2026年 参加登録・確認 (Ver 9.5 Finished)</h1>
 
             <!-- Warning Message -->
             <div class="warning-box">
@@ -511,7 +524,11 @@
             ];
             // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-            log("Generating calendar...");
+            // Get Current Day (00:00:00) for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            log("Generating calendar with Past Date Lock...");
             for (let m = 3; m <= 12; m++) {
                 const group = document.createElement('div');
                 group.className = 'month-group';
@@ -520,7 +537,7 @@
                 const title = document.createElement('div');
                 title.className = 'month-title';
 
-                // 12月 Title Update (Keep this feature)
+                // 12月 Title Update
                 if (m === 12) {
                     title.textContent = `12月 (納会予定)`;
                 } else {
@@ -551,7 +568,7 @@
                         shouldAdd = true;
                     }
 
-                    // Final Rule: Filter by Exclusion List
+                    // Rule 3: Filter by Exclusion List
                     if (shouldAdd && exclusionDates.includes(ymd)) {
                         shouldAdd = false;
                     }
@@ -559,8 +576,18 @@
                     if (shouldAdd) {
                         const btn = document.createElement('div');
                         btn.className = 'date-btn';
-                        btn.textContent = `${date.getDate()}日`;
-                        btn.onclick = function () { selectDate(ymd, this); };
+
+                        // Logic: Check if date is in the PAST (strictly before today)
+                        // If you want "today" to be locked too, change to <=. Usually today is open.
+                        if (date < today) {
+                            btn.className += ' date-finished';
+                            btn.textContent = `${date.getDate()}日 (終了)`;
+                            // No logic attached (click disabled via css pointer-events, but safe to not add handler)
+                        } else {
+                            btn.textContent = `${date.getDate()}日`;
+                            btn.onclick = function () { selectDate(ymd, this); };
+                        }
+
                         grid.appendChild(btn);
                     }
 
