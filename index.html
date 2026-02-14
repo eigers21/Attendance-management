@@ -163,7 +163,7 @@
             padding: 20px;
             margin-top: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border: 2px solid #ccc;
             /* Frame added */
         }
@@ -182,13 +182,14 @@
             padding: 12px;
             border: 1px solid #ddd;
             /* Grid borders */
-            text-align: left;
-            vertical-align: top;
+            text-align: center;
+            vertical-align: middle;
         }
 
         th {
             background: #f8f9fa;
             color: #555;
+            font-weight: bold;
         }
 
         /* Column Width Definitions */
@@ -235,7 +236,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 (Ver 8.1 UI)</h1>
+            <h1>日曜出欠確認 (Ver 8.2 Stats)</h1>
             <p>日付を選択してください</p>
         </header>
 
@@ -270,6 +271,14 @@
         <!-- TABLE AREA -->
         <div id="resultSection" class="result-section">
             <h3>出席状況</h3>
+
+            <!-- Stats Display -->
+            <div class="stats-box">
+                <div class="stat-item stat-attend">出席: <span id="countAttend">0</span>名</div>
+                <div class="stat-item stat-absent">欠席: <span id="countAbsent">0</span>名</div>
+                <div class="stat-item stat-none">未回答: <span id="countNone">0</span>名</div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -377,12 +386,21 @@
                 // Render Table (with colors & fixes)
                 const tbody = document.getElementById('resultBody');
                 tbody.innerHTML = '';
+
+                let countAttend = 0;
+                let countAbsent = 0;
+
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
 
                     let statusHtml = row.status;
-                    if (row.status === '出席') statusHtml = `<span class="status-attend">出席</span>`;
-                    if (row.status === '欠席') statusHtml = `<span class="status-absent">欠席</span>`;
+                    if (row.status === '出席') {
+                        statusHtml = `<span class="status-attend">出席</span>`;
+                        countAttend++;
+                    } else if (row.status === '欠席') {
+                        statusHtml = `<span class="status-absent">欠席</span>`;
+                        countAbsent++;
+                    }
 
                     tr.innerHTML = `
                     <td class="col-name">${row.name}</td>
@@ -391,6 +409,12 @@
                 `;
                     tbody.appendChild(tr);
                 });
+
+                // Update Stats
+                const countNone = data.members.length - data.attendance.length;
+                document.getElementById('countAttend').innerText = countAttend;
+                document.getElementById('countAbsent').innerText = countAbsent;
+                document.getElementById('countNone').innerText = Math.max(0, countNone); // Prevent negative
 
                 // Show Sections
                 document.getElementById('formSection').style.display = 'block';
