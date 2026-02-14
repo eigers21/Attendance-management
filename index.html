@@ -4,19 +4,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 (Ver 7.0 Persistence Fix)</title>
+    <title>日曜出欠確認 (Ver 8.0 Complete Reset)</title>
     <style>
+        /* Base Reset */
+        :root {
+            --primary: #4a90e2;
+            --bg: #f8f9fa;
+            --text: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: transparent;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* CALENDAR STYLE */
+        .month-group {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .month-title {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+
+        .date-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .date-btn {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            min-width: 60px;
+            transition: all 0.2s;
+        }
+
+        .date-btn:hover {
+            background: #eef;
+        }
+
+        .date-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* FORM STYLE */
+        .form-section {
+            display: none;
+            /* JS toggles this */
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            margin-top: 20px;
+            border: 2px solid var(--primary);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            margin-top: 15px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .radio-group label {
+            margin: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+        }
+
+        .radio-group input {
+            margin-right: 5px;
+            transform: scale(1.2);
+        }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .btn-submit:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        /* RESULT TABLE STYLE */
+        .result-section {
+            display: none;
+            /* JS toggles this */
+            background: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            /* FIXED WIDTHS */
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #555;
+        }
+
+        /* Column Width Definitions */
+        .col-name {
+            width: 30%;
+        }
+
+        .col-status {
+            width: 20%;
+            text-align: center;
+        }
+
+        .col-comment {
+            width: 50%;
+            word-break: break-all;
+        }
+
+        /* Status Badges */
+        .status-attend {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-absent {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* DEBUG CONSOLE */
         .debug-box {
-            margin-top: 40px;
+            margin-top: 50px;
             padding: 15px;
             background: #222;
             color: #0f0;
-            font-family: monospace;
+            font-family: Consolas, monospace;
+            font-size: 12px;
             border-radius: 5px;
-            font-size: 11px;
-            line-height: 1.4;
             white-space: pre-wrap;
-            word-break: break-all;
         }
     </style>
 </head>
@@ -24,171 +229,172 @@
 <body>
 
     <div class="container">
-        <header style="text-align: center; margin-bottom: 20px;">
-            <h1>日曜出欠確認 (Ver 7.5 Fixed)</h1>
-            <p>日付をクリックして入力してください</p>
+        <header>
+            <h1>日曜出欠確認 (Ver 8.0)</h1>
+            <p>日付を選択してください</p>
         </header>
 
+        <!-- CALENDAR AREA -->
         <div id="calendar"></div>
 
+        <!-- FORM AREA -->
         <div id="formSection" class="form-section">
-            <h2 id="selectedDateTitle" style="margin-bottom: 15px;"></h2>
+            <h2 id="selectedDateTitle" style="margin-bottom: 10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+            </h2>
             <form id="attendanceForm">
                 <input type="hidden" id="inputDate" name="date">
 
                 <label>名前</label>
                 <select id="inputName" name="name" required>
-                    <option value="">読込中...</option>
+                    <option value="">(読込中...)</option>
                 </select>
 
                 <label>出欠</label>
-                <div class="radio-container">
-                    <label class="radio-label"><input type="radio" name="status" value="出席" checked> 出席</label>
-                    <label class="radio-label"><input type="radio" name="status" value="欠席"> 欠席</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="status" value="出席" checked> 出席</label>
+                    <label><input type="radio" name="status" value="欠席"> 欠席</label>
                 </div>
 
                 <label>備考</label>
-                <input type="text" name="comment" placeholder="ひとことメモ">
+                <input type="text" name="comment" placeholder="ひとこと">
 
                 <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
             </form>
         </div>
 
+        <!-- TABLE AREA -->
         <div id="resultSection" class="result-section">
-            <h3>出席状況一覧</h3>
-            <table id="resultTable">
+            <h3>出席状況</h3>
+            <table>
                 <thead>
                     <tr>
-                        <th>名前</th>
-                        <th>出欠</th>
-                        <th>備考</th>
+                        <th class="col-name">名前</th>
+                        <th class="col-status">出欠</th>
+                        <th class="col-comment">備考</th>
                     </tr>
                 </thead>
                 <tbody id="resultBody"></tbody>
             </table>
         </div>
 
-        <div class="debug-box" id="debugBox">
-            <h3>▼ デバッグ・エラーログ</h3>
-            <div id="debugLog">Ver 7.0 Ready...</div>
+        <!-- DEBUG AREA -->
+        <div class="debug-box">
+            <h4>DEBUG LOG</h4>
+            <div id="debugLog">System Ready.</div>
         </div>
     </div>
 
     <div id="loading"
-        style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);display:none;justify-content:center;align-items:center;font-weight:bold;color:var(--primary);">
-        読み込み中...
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999; justify-content:center; align-items:center; color:#4a90e2; font-weight:bold; font-size:1.2rem;">
+        通信中...
     </div>
 
     <script>
-        window.onerror = function (msg, url, line, col, error) {
-            const box = document.getElementById('debugLog');
-            const errText = `[CRITICAL ERROR]\n${msg}\nLine: ${line}, Col: ${col}`;
-            box.innerHTML = `<div style="color:red; font-weight:bold;">${errText}</div>` + box.innerHTML;
-            alert("エラーが発生しました。ログを確認してください。");
-            return false;
-        };
-
-        // ▼▼▼ ここを新しいURLに書き換えてください ▼▼▼
+        // ▼ GAS URL ▼
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0GQm2DwuhqTcb1xotVWoe_xYx3QgauTDVXjHxHDWhsAYlAeDjPCoYYY2MM2uLx3YVfA/exec";
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+        // ▲▲▲▲▲▲▲
 
         function log(msg) {
             const d = new Date();
-            const t = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0') + ":" + String(d.getSeconds()).padStart(2, '0');
-            const box = document.getElementById('debugLog');
-            box.innerHTML = `<div><span style="color:#888">[${t}]</span> ${msg}</div>` + box.innerHTML;
+            const t = d.toTimeString().split(' ')[0];
+            document.getElementById('debugLog').innerHTML = `[${t}] ${msg}\n` + document.getElementById('debugLog').innerHTML;
         }
 
+        // Initialize Calendar
         function init() {
-            try {
-                const cal = document.getElementById('calendar');
-                for (let m = 3; m <= 12; m++) {
-                    const grp = document.createElement('div');
-                    grp.className = 'month-group';
+            const cal = document.getElementById('calendar');
+            if (!cal) return alert("Error: Calendar div missing");
 
-                    const title = document.createElement('div');
-                    title.className = 'month-title';
-                    title.innerText = m + "月";
-                    grp.appendChild(title);
+            log("Generating calendar...");
+            for (let m = 3; m <= 12; m++) {
+                const group = document.createElement('div');
+                group.className = 'month-group';
 
-                    const div = document.createElement('div');
-                    let date = new Date(2026, m - 1, 1, 12, 0, 0);
+                const title = document.createElement('div');
+                title.className = 'month-title';
+                title.textContent = `${m}月`;
+                group.appendChild(title);
 
-                    while (date.getMonth() === m - 1) {
-                        if (date.getDay() === 0) { // Sunday
-                            const btn = document.createElement('div');
-                            btn.className = 'date-btn';
-                            const ymd = date.getFullYear() + '-' +
-                                String(date.getMonth() + 1).padStart(2, '0') + '-' +
-                                String(date.getDate()).padStart(2, '0');
-                            btn.innerText = date.getDate() + '日';
-                            btn.onclick = () => selectDate(ymd, btn);
-                            div.appendChild(btn);
-                        }
-                        date.setDate(date.getDate() + 1);
+                const grid = document.createElement('div');
+                grid.className = 'date-grid'; // Use Flex container
+
+                let date = new Date(2026, m - 1, 1, 12, 0, 0);
+                while (date.getMonth() === m - 1) {
+                    if (date.getDay() === 0) { // Sunday
+                        const btn = document.createElement('div');
+                        const ymd = date.getFullYear() + '-' +
+                            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(date.getDate()).padStart(2, '0');
+
+                        btn.className = 'date-btn';
+                        btn.textContent = `${date.getDate()}日`;
+                        btn.onclick = function () { selectDate(ymd, this); }; // Explicit handler
+                        grid.appendChild(btn);
                     }
-                    grp.appendChild(div);
-                    cal.appendChild(grp);
+                    date.setDate(date.getDate() + 1);
                 }
-            } catch (e) { log(`INIT: ${e.message}`); }
+                group.appendChild(grid);
+                cal.appendChild(group);
+            }
+            log("Calendar generated.");
         }
 
         async function selectDate(dateStr, btn) {
+            // UI Highlight
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('inputDate').value = dateStr;
-            document.getElementById('selectedDateTitle').innerText = dateStr;
 
-            log(`日付選択: ${dateStr}`);
+            // Setup Form
+            document.getElementById('inputDate').value = dateStr;
+            document.getElementById('selectedDateTitle').textContent = `${dateStr} の入力`;
+
+            // Fetch Data
+            log(`Fetching: ${dateStr}`);
             document.getElementById('loading').style.display = 'flex';
 
             try {
                 const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
 
-                // --- DEBUG DISPLAY ---
-                if (data.debug_log_count) log(`Logシート行数: ${data.debug_log_count}`);
-                if (data.debug_raw_log_bottom) {
-                    log(`[Logシート下位5行] ${JSON.stringify(data.debug_raw_log_bottom)}`);
-                }
-                log(`取得結果: メンバー${data.members.length}件, データ${data.attendance.length}件`);
-                // ---------------------
+                log(`Success: Members=${data.members.length}, Data=${data.attendance.length}`);
 
+                // Render Dropdown
                 const sel = document.getElementById('inputName');
                 sel.innerHTML = '<option value="">選択してください</option>';
                 data.members.forEach(m => {
                     const opt = document.createElement('option');
                     opt.value = m;
-                    opt.innerText = m;
+                    opt.textContent = m;
                     sel.appendChild(opt);
                 });
 
+                // Render Table (with colors & fixes)
                 const tbody = document.getElementById('resultBody');
                 tbody.innerHTML = '';
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
 
-                    // Color coding
                     let statusHtml = row.status;
-                    if (row.status === '出席') {
-                        statusHtml = `<span style="color:#28a745; font-weight:bold;">${row.status}</span>`;
-                    } else if (row.status === '欠席') {
-                        statusHtml = `<span style="color:#dc3545; font-weight:bold;">${row.status}</span>`;
-                    }
+                    if (row.status === '出席') statusHtml = `<span class="status-attend">出席</span>`;
+                    if (row.status === '欠席') statusHtml = `<span class="status-absent">欠席</span>`;
 
-                    tr.innerHTML = `<td>${row.name}</td><td style="text-align:center;">${statusHtml}</td><td>${row.comment}</td>`;
+                    tr.innerHTML = `
+                    <td class="col-name">${row.name}</td>
+                    <td class="col-status">${statusHtml}</td>
+                    <td class="col-comment">${row.comment}</td>
+                `;
                     tbody.appendChild(tr);
                 });
 
+                // Show Sections
                 document.getElementById('formSection').style.display = 'block';
                 document.getElementById('resultSection').style.display = 'block';
                 document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
 
             } catch (e) {
-                log(`Error: ${e.message}`);
-                alert("データ取得失敗\nログを確認してください");
+                log(`ERROR: ${e.message}`);
+                alert(`エラー: ${e.message}`);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -196,10 +402,11 @@
 
         document.getElementById('attendanceForm').onsubmit = async (e) => {
             e.preventDefault();
+            document.getElementById('submitBtn').disabled = true;
+            log("Submitting...");
+
             const fd = new FormData(e.target);
             const json = Object.fromEntries(fd.entries());
-            document.getElementById('submitBtn').disabled = true;
-            log('送信中...');
 
             try {
                 await fetch(GAS_API_URL, {
@@ -209,17 +416,25 @@
                     body: JSON.stringify(json)
                 });
                 setTimeout(() => {
-                    alert("送信しました");
+                    alert("送信完了しました");
                     document.getElementById('submitBtn').disabled = false;
-                    selectDate(json.date, document.querySelector('.date-btn.active'));
+                    // Refresh
+                    const activeBtn = document.querySelector('.date-btn.active');
+                    if (activeBtn) selectDate(json.date, activeBtn);
                 }, 1000);
-            } catch (err) {
-                log(`Error: ${err.message}`);
+            } catch (e) {
+                log(`SUBMIT ERROR: ${e.message}`);
                 document.getElementById('submitBtn').disabled = false;
             }
         };
 
+        // Start
         init();
+
+        // Global Error Trap
+        window.onerror = function (msg, url, line) {
+            log(`CRITICAL: ${msg} @ Line ${line}`);
+        };
     </script>
 </body>
 
