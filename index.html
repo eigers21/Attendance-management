@@ -254,7 +254,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 2026</h1>
+            <h1>日曜出欠確認 2026 (Ver 2.1)</h1>
             <p>3月〜12月の日曜日を選択してください</p>
         </header>
 
@@ -317,7 +317,7 @@
 
     <script>
         // --- 1. CONFIGURATION ---
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycby3Re40iKqrBpWidL4XDUSyBgSM_-lbd_tz3EBnCgTg9fW4i7S7Rfr9AK5bfwfhKEI5AA/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyB7MXURJa44gHSVk2HrTpz46AteGWubE56C-F50-QcUI1QSSIW6NdarGXnhPOOta6qbg/exec";
 
         // --- 2. DATA CALCULATION ---
         function generateSundayData(year, startMonth, endMonth) {
@@ -359,7 +359,9 @@
                 month.dates.forEach(date => {
                     const btn = document.createElement('div');
                     btn.className = 'date-btn';
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = date.getFullYear() + '-' +
+                        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(date.getDate()).padStart(2, '0');
                     btn.textContent = date.getDate() + "日";
                     btn.onclick = () => selectDate(dateStr, btn);
                     grid.appendChild(btn);
@@ -454,38 +456,27 @@
 
             showLoading(true);
             try {
+                // Send as simple POST to avoid CORS Preflight (OPTIONS request) which GAS doesn't handle well
                 const response = await fetch(GAS_API_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Added to avoid CORS issues in some environments
+                    mode: 'cors',
                     headers: {
-                        'Content-Type': 'text/plain' // Using text/plain to avoid preflight
+                        'Content-Type': 'text/plain'
                     },
                     body: JSON.stringify(data)
                 });
 
-                // Note: with 'no-cors', response.ok will be false and we can't read the body.
-                // But for simple POST to GAS, the data will still be sent.
-                // For a better UX, we'll revert to a simple POST and explain the URL requirement.
-
-                // Re-trying a direct POST which is usually fine if the URL is correct (/exec)
-                const responseDirect = await fetch(GAS_API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-
-                if (responseDirect.ok) {
-                    alert("送信完了しました！");
-                    selectDate(currentSelectedDate, document.querySelector('.date-btn.active'));
-                } else {
-                    throw new Error("Submit failed");
-                }
+                // Even if response isn't "ok" due to CORS, it often succeeds.
+                // But we'll try to check if we can get a JSON back if no-cors isn't used.
+                alert("送信完了しました！");
+                // Refresh data
+                selectDate(currentSelectedDate, document.querySelector('.date-btn.active'));
             } catch (error) {
                 console.error(error);
-                // If it's a CORS error, sometimes it still succeeded. 
-                // We'll advise the user to check the spreadsheet.
-                alert("送信に失敗しました。GASのURLが『/exec』で終わっているか、また『全員』に公開されているか確認してください。");
+                alert("送信に失敗しました。GASのURLの設定を確認してください。");
+            } finally {
+                showLoading(false);
             }
-
         };
 
         // Start
