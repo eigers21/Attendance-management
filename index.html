@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・確認 (Ver 9.1 Terminology)</title>
+    <title>2026年 参加登録・確認 (Ver 9.2)</title>
     <style>
         /* Base Reset */
         :root {
@@ -11,32 +12,38 @@
             --bg: #f8f9fa;
             --text: #333;
         }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
         body {
             font-family: "Helvetica Neue", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
             padding: 20px;
         }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
             background: transparent;
             padding-bottom: 50px;
         }
+
         /* HEADER */
         header {
             text-align: center;
             margin-bottom: 20px;
         }
+
         header h1 {
             font-size: 1.5rem;
             margin-bottom: 5px;
         }
+
         /* WARNING BOX */
         .warning-box {
             border: 2px solid #dc3545;
@@ -48,17 +55,20 @@
             border-radius: 5px;
             text-align: center;
         }
+
         /* MONTH NAV */
         .month-nav {
             margin-top: 15px;
             text-align: center;
         }
+
         .month-nav select {
             width: auto;
             margin-left: 10px;
             padding: 5px;
             font-size: 1rem;
         }
+
         /* CALENDAR STYLE */
         .month-group {
             margin-bottom: 20px;
@@ -68,6 +78,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             scroll-margin-top: 20px;
         }
+
         .month-title {
             font-weight: bold;
             font-size: 1.2em;
@@ -76,11 +87,13 @@
             margin-bottom: 10px;
             padding-bottom: 5px;
         }
+
         .date-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         .date-btn {
             background: #fff;
             border: 1px solid #ccc;
@@ -92,15 +105,18 @@
             min-width: 60px;
             transition: all 0.2s;
         }
+
         .date-btn:hover {
             background: #eef;
         }
+
         .date-btn.active {
             background: var(--primary);
             color: #fff;
             border-color: var(--primary);
             transform: scale(1.05);
         }
+
         /* FORM STYLE */
         .form-section {
             display: none;
@@ -112,12 +128,14 @@
             margin-top: 20px;
             border: 2px solid var(--primary);
         }
+
         label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
             margin-top: 15px;
         }
+
         input[type="text"],
         select {
             width: 100%;
@@ -126,12 +144,14 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         .radio-group {
             display: flex;
             gap: 20px;
             align-items: center;
             padding: 5px 0;
         }
+
         .radio-group label {
             margin: 0;
             cursor: pointer;
@@ -139,10 +159,12 @@
             align-items: center;
             font-weight: normal;
         }
+
         .radio-group input {
             margin-right: 5px;
             transform: scale(1.2);
         }
+
         .btn-submit {
             width: 100%;
             margin-top: 20px;
@@ -154,10 +176,12 @@
             font-size: 1.2rem;
             cursor: pointer;
         }
+
         .btn-submit:disabled {
             background: #999;
             cursor: not-allowed;
         }
+
         /* RESULT SECTION STYLE */
         .result-section {
             display: none;
@@ -170,6 +194,7 @@
             border: 2px solid #ccc;
             /* Outer Frame */
         }
+
         /* Stats Box */
         .stats-box {
             background: #f1f8ff;
@@ -183,19 +208,24 @@
             font-weight: bold;
             font-size: 1.1rem;
         }
+
         .stat-item span {
             font-size: 1.3rem;
             margin-left: 5px;
         }
+
         .stat-attend {
             color: #28a745;
         }
+
         .stat-absent {
             color: #dc3545;
         }
+
         .stat-none {
             color: #666;
         }
+
         /* RESULT TABLE STYLE */
         table {
             width: 100%;
@@ -204,6 +234,7 @@
             /* FIXED WIDTHS */
             border: 1px solid #ccc;
         }
+
         th,
         td {
             border: 1px solid #ddd;
@@ -214,36 +245,42 @@
             /* Prevent overflow */
             padding: 8px;
         }
+
         th {
             background: #f8f9fa;
             color: #555;
             font-weight: bold;
         }
-        /* Specific Column Widths (Updated 20/20/60) */
+
+        /* Specific Column Widths (20/20/60) */
         .col-name {
             width: 20%;
             padding: 8px;
         }
+
         .col-status {
             width: 20%;
             padding: 0;
-            /* Remove padding for full fill */
             height: 1px;
         }
+
         .col-comment {
             width: 60%;
             text-align: left;
             padding-left: 10px;
         }
+
         /* Sparkle Animation */
         @keyframes sparkle {
             0% {
                 background-position: 0% 50%;
             }
+
             100% {
                 background-position: 200% 50%;
             }
         }
+
         /* Status Full Fill Styles */
         .status-cell-fill {
             display: flex;
@@ -259,12 +296,15 @@
             animation: sparkle 3s linear infinite;
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
         }
+
         .status-attend {
             background-image: linear-gradient(to right, #28a745 0%, #85e09b 50%, #28a745 100%);
         }
+
         .status-absent {
             background-image: linear-gradient(to right, #dc3545 0%, #ff858d 50%, #dc3545 100%);
         }
+
         /* SCROLL TO TOP BTN */
         #scrollTopBtn {
             display: none;
@@ -287,9 +327,11 @@
             line-height: 20px;
             /* Center '▲' */
         }
+
         #scrollTopBtn:hover {
             background-color: #357abd;
         }
+
         /* DEBUG CONSOLE */
         .debug-box {
             margin-top: 50px;
@@ -303,16 +345,21 @@
         }
     </style>
 </head>
+
 <body>
+
     <!-- Scroll to Top Button -->
     <button id="scrollTopBtn" title="トップへ戻る">▲</button>
+
     <div class="container">
         <header>
-            <h1>2026年 参加登録・確認 (Ver 9.1)</h1>
+            <h1>2026年 参加登録・確認 (Ver 9.2)</h1>
+
             <!-- Warning Message -->
             <div class="warning-box">
-                同じ名前で登録すると上書きされるので、<br>確認後に登録してください！
+                同じ名前で登録すると上書きされます！
             </div>
+
             <!-- Month Navigation -->
             <div class="month-nav">
                 <label>月を選択: </label>
@@ -331,66 +378,80 @@
                 </select>
             </div>
         </header>
+
         <!-- CALENDAR AREA -->
         <div id="calendar"></div>
+
         <!-- FORM AREA -->
         <div id="formSection" class="form-section">
             <h2 id="selectedDateTitle" style="margin-bottom: 10px; border-bottom:1px solid #eee; padding-bottom:5px;">
             </h2>
             <form id="attendanceForm">
                 <input type="hidden" id="inputDate" name="date">
+
                 <label>名前</label>
                 <select id="inputName" name="name" required>
                     <option value="">(読込中...)</option>
                 </select>
-                <label>参加できますか？</label> <!-- Terminology Change -->
+
+                <label>参加できますか？</label>
                 <div class="radio-group">
                     <label><input type="radio" name="status" value="参加" checked> 参加</label>
                     <label><input type="radio" name="status" value="不参加"> 不参加</label>
                 </div>
+
                 <label>備考</label>
                 <input type="text" name="comment" placeholder="ひとこと">
+
                 <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
             </form>
         </div>
+
         <!-- TABLE AREA -->
         <div id="resultSection" class="result-section">
-            <h3>参加状況一覧</h3> <!-- Terminology Change -->
+            <h3>参加状況一覧</h3>
+
             <!-- Stats Display -->
             <div class="stats-box">
                 <div class="stat-item stat-attend">参加: <span id="countAttend">0</span>名</div>
                 <div class="stat-item stat-absent">不参加: <span id="countAbsent">0</span>名</div>
                 <div class="stat-item stat-none">未回答: <span id="countNone">0</span>名</div>
             </div>
+
             <table>
                 <thead>
                     <tr>
                         <th class="col-name">名前</th>
-                        <th class="col-status">参加・不参加</th>
+                        <th class="col-status">状況</th> <!-- Header Change -->
                         <th class="col-comment">備考</th>
                     </tr>
                 </thead>
                 <tbody id="resultBody"></tbody>
             </table>
         </div>
+
         <!-- DEBUG AREA -->
         <div class="debug-box">
             <h4>DEBUG LOG</h4>
             <div id="debugLog">System Ready.</div>
         </div>
     </div>
+
     <div id="loading"
         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999; justify-content:center; align-items:center; color:#4a90e2; font-weight:bold; font-size:1.2rem;">
         通信中...
     </div>
+
     <script>
         // Found URL from history
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0GQm2DwuhqTcb1xotVWoe_xYx3QgauTDVXjHxHDWhsAYlAeDjPCoYYY2MM2uLx3YVfA/exec";
+
         function log(msg) {
             const d = new Date();
             const t = d.toTimeString().split(' ')[0];
             document.getElementById('debugLog').innerHTML = `[${t}] ${msg}\n` + document.getElementById('debugLog').innerHTML;
         }
+
         // Initialize
         function init() {
             // 1. Scroll to Top logic
@@ -405,9 +466,11 @@
             scrollBtn.onclick = function () {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
+
             // 2. Calendar Gen
             const cal = document.getElementById('calendar');
             if (!cal) return alert("Error: Calendar div missing");
+
             // ▼▼▼ 除外する日付のリスト (YYYY-MM-DD形式) ▼▼▼
             const exclusionDates = [
                 "2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22",
@@ -419,40 +482,67 @@
                 "2026-09-13",
                 "2026-10-11",
                 "2026-11-08",
+
+                // Exclude 12/6 (Sun) as requested
+                "2026-12-06",
+
                 "2026-12-13", "2026-12-20", "2026-12-27"
             ];
             // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
             log("Generating calendar...");
             for (let m = 3; m <= 12; m++) {
                 const group = document.createElement('div');
                 group.className = 'month-group';
                 group.id = `m${m}`; // Scroll Anchor
+
                 const title = document.createElement('div');
                 title.className = 'month-title';
                 title.textContent = `${m}月`;
                 group.appendChild(title);
+
                 const grid = document.createElement('div');
                 grid.className = 'date-grid';
+
                 let date = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (date.getMonth() === m - 1) {
-                    if (date.getDay() === 0) { // Sunday
-                        const ymd = date.getFullYear() + '-' +
-                            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-                            String(date.getDate()).padStart(2, '0');
-                        // Check exclusion list
-                        if (!exclusionDates.includes(ymd)) {
-                            const btn = document.createElement('div');
-                            btn.className = 'date-btn';
-                            btn.textContent = `${date.getDate()}日`;
-                            btn.onclick = function () { selectDate(ymd, this); };
-                            grid.appendChild(btn);
-                        }
+                    const day = date.getDate();
+                    const ymd = date.getFullYear() + '-' +
+                        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(day).padStart(2, '0');
+
+                    let shouldAdd = false;
+
+                    // Rule 1: Add Sundays
+                    if (date.getDay() === 0) {
+                        shouldAdd = true;
                     }
+
+                    // Rule 2: Exception for Dec 5th (Sat)
+                    if (m === 12 && day === 5) {
+                        shouldAdd = true;
+                    }
+
+                    // Final Rule: Filter by Exclusion List
+                    if (shouldAdd && exclusionDates.includes(ymd)) {
+                        shouldAdd = false;
+                    }
+
+                    if (shouldAdd) {
+                        const btn = document.createElement('div');
+                        btn.className = 'date-btn';
+                        btn.textContent = `${date.getDate()}日` + (m === 12 && day === 5 ? "(土)" : ""); // Optional: Add (Sat) label? Just number is fine.
+                        btn.textContent = `${date.getDate()}日`;
+                        btn.onclick = function () { selectDate(ymd, this); };
+                        grid.appendChild(btn);
+                    }
+
                     date.setDate(date.getDate() + 1);
                 }
                 group.appendChild(grid);
                 cal.appendChild(group);
             }
+
             // Add Month Navigation Listener
             document.getElementById('monthNav').addEventListener('change', function () {
                 const targetId = this.value;
@@ -463,25 +553,32 @@
                     }
                 }
             });
+
             log("Calendar generated.");
         }
+
         async function selectDate(dateStr, btn) {
             // UI Highlight
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
             // Setup Form
             const parts = dateStr.split('-');
             const formattedTitle = `${parseInt(parts[1])}月${parseInt(parts[2])}日`;
             document.getElementById('inputDate').value = dateStr;
             document.getElementById('selectedDateTitle').textContent = formattedTitle;
+
             // Fetch Data
             log(`Fetching: ${dateStr}`);
             document.getElementById('loading').style.display = 'flex';
+
             try {
                 const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
+
                 log(`Success: Members=${data.members.length}, Data=${data.attendance.length}`);
+
                 // Render Dropdown
                 const sel = document.getElementById('inputName');
                 sel.innerHTML = '<option value="">選択してください</option>';
@@ -491,19 +588,24 @@
                     opt.textContent = m;
                     sel.appendChild(opt);
                 });
+
                 // Render Table (with colors & fixes)
                 const tbody = document.getElementById('resultBody');
                 tbody.innerHTML = '';
+
                 let countAttend = 0;
                 let countAbsent = 0;
+
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
-                    // MAPPING OLD DATA for Display
+
+                    // MAPPING
                     let displayStatus = row.status;
                     if (displayStatus === '出席') displayStatus = '参加';
                     if (displayStatus === '欠席') displayStatus = '不参加';
+
                     let statusHtml = displayStatus;
-                    // Determine style based on mapped status
+
                     if (displayStatus === '参加') {
                         statusHtml = `<div class="status-cell-fill status-attend">参加</div>`;
                         countAttend++;
@@ -511,6 +613,7 @@
                         statusHtml = `<div class="status-cell-fill status-absent">不参加</div>`;
                         countAbsent++;
                     }
+
                     tr.innerHTML = `
                     <td class="col-name">${row.name}</td>
                     <td class="col-status">${statusHtml}</td>
@@ -518,17 +621,20 @@
                 `;
                     tbody.appendChild(tr);
                 });
+
                 // Update Stats
-                // Use same unique count logic
                 const uniqueAttended = new Set(data.attendance.map(r => r.name)).size;
                 const realNoResponse = Math.max(0, data.members.length - uniqueAttended);
+
                 document.getElementById('countAttend').textContent = countAttend;
                 document.getElementById('countAbsent').textContent = countAbsent;
                 document.getElementById('countNone').textContent = realNoResponse;
+
                 // Show Sections
                 document.getElementById('formSection').style.display = 'block';
                 document.getElementById('resultSection').style.display = 'block';
                 document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+
             } catch (e) {
                 log(`ERROR: ${e.message}`);
                 alert(`エラー: ${e.message}`);
@@ -536,12 +642,15 @@
                 document.getElementById('loading').style.display = 'none';
             }
         }
+
         document.getElementById('attendanceForm').onsubmit = async (e) => {
             e.preventDefault();
             document.getElementById('submitBtn').disabled = true;
             log("Submitting...");
+
             const fd = new FormData(e.target);
             const json = Object.fromEntries(fd.entries());
+
             try {
                 await fetch(GAS_API_URL, {
                     method: 'POST',
@@ -561,12 +670,15 @@
                 document.getElementById('submitBtn').disabled = false;
             }
         };
+
         // Start
         init();
+
         // Global Error Trap
         window.onerror = function (msg, url, line) {
             log(`CRITICAL: ${msg} @ Line ${line}`);
         };
     </script>
 </body>
+
 </html>
