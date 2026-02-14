@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 (Ver 8.5 Mobile Fix)</title>
+    <title>日曜出欠確認 (Ver 8.6 Sparkle)</title>
     <style>
         /* Base Reset */
         :root {
@@ -225,34 +225,59 @@
             font-weight: bold;
         }
 
-        /* Specific Column Widths */
+        /* Column Widths (Mobile Optimized) */
         .col-name {
             width: 15%;
         }
 
-        /* 15% for Mobile (prev 10%) */
+        /* 15% */
         .col-status {
             width: 15%;
         }
 
-        /* 15% for Mobile (prev 10%) */
+        /* 15% */
         .col-comment {
             width: 70%;
+            text-align: left;
+            /* Left Align Requested */
+            padding-left: 10px;
+            /* Padding for readability */
         }
 
-        /* 70% Remaining */
+        /* Sparkle Animation */
+        @keyframes sparkle {
+            0% {
+                background-position: 0% 50%;
+            }
 
-        /* Status colors */
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Status Badge Styles */
         .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: white;
             font-weight: bold;
+            font-size: 0.9rem;
+            background-size: 200% auto;
+            animation: sparkle 3s linear infinite;
+            /* Animation */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            min-width: 60px;
+            text-align: center;
         }
 
         .status-attend {
-            color: #28a745;
+            background-image: linear-gradient(to right, #28a745 0%, #85e09b 50%, #28a745 100%);
         }
 
         .status-absent {
-            color: #dc3545;
+            background-image: linear-gradient(to right, #dc3545 0%, #ff858d 50%, #dc3545 100%);
         }
 
         /* DEBUG CONSOLE */
@@ -273,7 +298,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 (Ver 8.5 Mobile Fix)</h1>
+            <h1>日曜出欠確認 (Ver 8.6 Sparkle)</h1>
             <p>日付を選択してください</p>
         </header>
 
@@ -447,15 +472,9 @@
                 });
 
                 // Update Stats
-                // Note: Simplistic count based on rows returned vs member list length
-                // If duplicate submissions exist, this logic might be slightly off but acceptable for simple use
+                const countNone = data.members.length - data.attendance.length; // Approximate logic
 
-                // Wait, if 3 attended and 1 absent, total 4 submitted. 
-                // If member list has 8, then 4 have not submitted (or duplicate submissions exist).
-                // For now, simple diff is okay.
-                const submittedCount = data.attendance.length; // This counts rows.
-
-                // Better logic: unique names in attendance vs total members
+                // Consider unique attended users
                 const uniqueAttended = new Set(data.attendance.map(r => r.name)).size;
                 const realNoResponse = Math.max(0, data.members.length - uniqueAttended);
 
