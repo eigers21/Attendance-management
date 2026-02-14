@@ -254,7 +254,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 2026 (Ver 2.1)</h1>
+            <h1>日曜出欠確認 2026 (Ver 3.0)</h1>
             <p>3月〜12月の日曜日を選択してください</p>
         </header>
 
@@ -317,14 +317,15 @@
 
     <script>
         // --- 1. CONFIGURATION ---
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyB7MXURJa44gHSVk2HrTpz46AteGWubE56C-F50-QcUI1QSSIW6NdarGXnhPOOta6qbg/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwlEgEDYn_Cres_t_B36-ALufN5iG99uZtOcEox45Lvv2sR5VwB074ylFCDX2EI-ncR0w/exec";
 
         // --- 2. DATA CALCULATION ---
         function generateSundayData(year, startMonth, endMonth) {
             const months = [];
             for (let m = startMonth - 1; m < endMonth; m++) {
                 const sundays = [];
-                const date = new Date(year, m, 1);
+                // Set to noon (12:00) to avoid timezone shifts at 00:00
+                const date = new Date(year, m, 1, 12, 0, 0);
                 while (date.getMonth() === m) {
                     if (date.getDay() === 0) {
                         sundays.push(new Date(date));
