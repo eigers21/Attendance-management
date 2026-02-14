@@ -4,15 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・確認 (Ver 9.2)</title>
+    <title>2026年 参加登録・確認 (Ver 9.3 Cool UI)</title>
+
+    <!-- Google Fonts for "Cool" Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Base Reset */
+        /* COOL THEME VARIABLES */
         :root {
-            --primary: #4a90e2;
-            --bg: #f8f9fa;
-            --text: #333;
+            --primary: #2c3e50;
+            /* Deep Navy */
+            --accent: #3498db;
+            /* Bright Blue */
+            --bg: #ecf0f1;
+            /* Cool Grey/White */
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.15);
         }
 
+        /* Base Reset */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,94 +35,132 @@
         }
 
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Noto Sans JP', sans-serif;
             background: var(--bg);
             color: var(--text);
             padding: 20px;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: transparent;
-            padding-bottom: 50px;
+            padding-bottom: 80px;
         }
 
         /* HEADER */
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary);
         }
 
         header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            letter-spacing: 0.05em;
         }
 
         /* WARNING BOX */
         .warning-box {
-            border: 2px solid #dc3545;
-            color: #dc3545;
-            padding: 10px;
-            margin: 10px 0;
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+            padding: 15px;
+            margin: 15px 0;
             font-weight: bold;
-            background: #fff5f5;
-            border-radius: 5px;
-            text-align: center;
+            background: #fadbd8;
+            border-radius: 4px;
+            text-align: left;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
         }
 
         /* MONTH NAV */
         .month-nav {
-            margin-top: 15px;
+            margin-top: 20px;
             text-align: center;
+        }
+
+        .month-nav label {
+            display: inline-block;
+            margin: 0;
+            margin-right: 10px;
+            color: var(--primary);
         }
 
         .month-nav select {
             width: auto;
-            margin-left: 10px;
-            padding: 5px;
+            padding: 8px 15px;
             font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 30px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .month-nav select:focus {
+            border-color: var(--accent);
+            outline: none;
         }
 
         /* CALENDAR STYLE */
         .month-group {
-            margin-bottom: 20px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             scroll-margin-top: 20px;
+            transition: transform 0.2s;
         }
 
+        /* .month-group:hover { transform: translateY(-2px); } */
+
         .month-title {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: var(--primary);
-            border-bottom: 2px solid #eee;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
+            font-weight: 700;
+            font-size: 1.3em;
+            color: var(--card-bg);
+            background: var(--primary);
+            /* Cool Header Background */
+            border-radius: 6px;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .date-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
         }
 
         .date-btn {
             background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             padding: 10px 15px;
             font-size: 1rem;
             cursor: pointer;
             text-align: center;
-            min-width: 60px;
+            min-width: 65px;
             transition: all 0.2s;
+            color: var(--primary);
+            font-weight: bold;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .date-btn:hover {
-            background: #eef;
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 5px rgba(52, 152, 219, 0.3);
         }
 
         .date-btn.active {
@@ -115,41 +168,61 @@
             color: #fff;
             border-color: var(--primary);
             transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(44, 62, 80, 0.4);
         }
 
         /* FORM STYLE */
         .form-section {
             display: none;
-            /* JS toggles this */
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            margin-top: 20px;
-            border: 2px solid var(--primary);
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-hover);
+            margin-top: 30px;
+            border-top: 5px solid var(--accent);
+        }
+
+        .form-section h2 {
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--primary);
         }
 
         label {
             display: block;
             font-weight: bold;
-            margin-bottom: 5px;
-            margin-top: 15px;
+            margin-bottom: 8px;
+            margin-top: 20px;
+            color: var(--primary);
         }
 
         input[type="text"],
         select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            transition: border-color 0.3s;
+            background: #fdfdfd;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            outline: none;
+            background: #fff;
         }
 
         .radio-group {
             display: flex;
             gap: 20px;
             align-items: center;
-            padding: 5px 0;
+            padding: 10px 0;
+            background: var(--bg);
+            border-radius: 8px;
+            padding-left: 15px;
         }
 
         .radio-group label {
@@ -158,72 +231,97 @@
             display: flex;
             align-items: center;
             font-weight: normal;
+            color: var(--text);
         }
 
         .radio-group input {
-            margin-right: 5px;
-            transform: scale(1.2);
+            margin-right: 8px;
+            transform: scale(1.3);
+            accent-color: var(--primary);
         }
 
         .btn-submit {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 30px;
             padding: 15px;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #34495e);
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
+            /* Pill shape */
             font-size: 1.2rem;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
         }
 
         .btn-submit:disabled {
-            background: #999;
+            background: #95a5a6;
             cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
 
         /* RESULT SECTION STYLE */
         .result-section {
             display: none;
-            /* JS toggles this */
-            background: #fff;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border: 2px solid #ccc;
-            /* Outer Frame */
+            background: var(--card-bg);
+            padding: 30px;
+            margin-top: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-hover);
+            border-top: 5px solid #27ae60;
+            /* Green accent for results */
+        }
+
+        .result-section h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            border-left: 5px solid #27ae60;
+            padding-left: 10px;
         }
 
         /* Stats Box */
         .stats-box {
-            background: #f1f8ff;
-            border: 1px solid #cce5ff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            background: #e8f8f5;
+            border: 1px solid #d1f2eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             font-weight: bold;
-            font-size: 1.1rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-item {
+            text-align: center;
         }
 
         .stat-item span {
-            font-size: 1.3rem;
-            margin-left: 5px;
+            font-size: 1.5rem;
+            display: block;
+            margin-top: 5px;
         }
 
         .stat-attend {
-            color: #28a745;
+            color: #27ae60;
         }
 
         .stat-absent {
-            color: #dc3545;
+            color: #c0392b;
         }
 
         .stat-none {
-            color: #666;
+            color: #7f8c8d;
         }
 
         /* RESULT TABLE STYLE */
@@ -231,43 +329,57 @@
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
-            /* FIXED WIDTHS */
-            border: 1px solid #ccc;
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            /* For rounded corners */
+            box-shadow: 0 0 0 1px #eee;
         }
 
         th,
         td {
-            border: 1px solid #ddd;
             text-align: center;
-            /* Center */
             vertical-align: middle;
             word-wrap: break-word;
-            /* Prevent overflow */
-            padding: 8px;
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
         }
 
         th {
-            background: #f8f9fa;
-            color: #555;
+            background: var(--primary);
+            color: #fff;
             font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
         }
 
-        /* Specific Column Widths (20/20/60) */
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Column Widths (20/20/60) */
         .col-name {
             width: 20%;
-            padding: 8px;
+            font-weight: bold;
+            color: var(--primary);
         }
 
         .col-status {
             width: 20%;
-            padding: 0;
+            padding: 0 !important;
             height: 1px;
         }
 
         .col-comment {
             width: 60%;
             text-align: left;
-            padding-left: 10px;
+            padding-left: 15px;
+            color: #555;
         }
 
         /* Sparkle Animation */
@@ -286,7 +398,7 @@
             display: flex;
             width: 100%;
             height: 100%;
-            min-height: 40px;
+            min-height: 45px;
             align-items: center;
             justify-content: center;
             color: white;
@@ -294,54 +406,77 @@
             font-size: 0.9rem;
             background-size: 200% auto;
             animation: sparkle 3s linear infinite;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .status-attend {
-            background-image: linear-gradient(to right, #28a745 0%, #85e09b 50%, #28a745 100%);
+            background-image: linear-gradient(to right, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
         }
 
         .status-absent {
-            background-image: linear-gradient(to right, #dc3545 0%, #ff858d 50%, #dc3545 100%);
+            background-image: linear-gradient(to right, #c0392b 0%, #e74c3c 50%, #c0392b 100%);
         }
 
         /* SCROLL TO TOP BTN */
         #scrollTopBtn {
             display: none;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             z-index: 99;
-            font-size: 18px;
+            font-size: 20px;
             border: none;
             outline: none;
             background-color: var(--primary);
             color: white;
             cursor: pointer;
-            padding: 15px;
+            padding: 0;
             border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             width: 50px;
             height: 50px;
+            line-height: 50px;
             text-align: center;
-            line-height: 20px;
-            /* Center '▲' */
+            transition: all 0.3s;
         }
 
         #scrollTopBtn:hover {
-            background-color: #357abd;
+            background-color: var(--accent);
+            transform: translateY(-5px);
         }
 
-        /* DEBUG CONSOLE */
-        .debug-box {
+        /* COLLAPSIBLE DEBUG CONSOLE */
+        details.debug-box {
             margin-top: 50px;
-            padding: 15px;
-            background: #222;
-            color: #0f0;
-            font-family: Consolas, monospace;
+            background: #2c3e50;
+            color: #2ecc71;
+            font-family: 'Consolas', monospace;
             font-size: 12px;
-            border-radius: 5px;
+            border-radius: 8px;
             white-space: pre-wrap;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 10px 15px;
+            background: #34495e;
+            color: #ecf0f1;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            outline: none;
+        }
+
+        summary:hover {
+            background: #3e5871;
+        }
+
+        #debugLog {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -353,7 +488,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・確認 (Ver 9.2)</h1>
+            <h1>2026年 参加登録・確認 (Ver 9.3 Cool UI)</h1>
 
             <!-- Warning Message -->
             <div class="warning-box">
@@ -362,7 +497,7 @@
 
             <!-- Month Navigation -->
             <div class="month-nav">
-                <label>月を選択: </label>
+                <label>月を選択</label>
                 <select id="monthNav">
                     <option value="">-- 移動 --</option>
                     <option value="m3">3月</option>
@@ -384,8 +519,7 @@
 
         <!-- FORM AREA -->
         <div id="formSection" class="form-section">
-            <h2 id="selectedDateTitle" style="margin-bottom: 10px; border-bottom:1px solid #eee; padding-bottom:5px;">
-            </h2>
+            <h2 id="selectedDateTitle"></h2>
             <form id="attendanceForm">
                 <input type="hidden" id="inputDate" name="date">
 
@@ -413,16 +547,25 @@
 
             <!-- Stats Display -->
             <div class="stats-box">
-                <div class="stat-item stat-attend">参加: <span id="countAttend">0</span>名</div>
-                <div class="stat-item stat-absent">不参加: <span id="countAbsent">0</span>名</div>
-                <div class="stat-item stat-none">未回答: <span id="countNone">0</span>名</div>
+                <div class="stat-item">
+                    <div style="font-size:0.9rem; color:#7f8c8d;">参加</div>
+                    <div class="stat-attend"><span id="countAttend">0</span>名</div>
+                </div>
+                <div class="stat-item">
+                    <div style="font-size:0.9rem; color:#7f8c8d;">不参加</div>
+                    <div class="stat-absent"><span id="countAbsent">0</span>名</div>
+                </div>
+                <div class="stat-item">
+                    <div style="font-size:0.9rem; color:#7f8c8d;">未回答</div>
+                    <div class="stat-none"><span id="countNone">0</span>名</div>
+                </div>
             </div>
 
             <table>
                 <thead>
                     <tr>
                         <th class="col-name">名前</th>
-                        <th class="col-status">状況</th> <!-- Header Change -->
+                        <th class="col-status">状況</th>
                         <th class="col-comment">備考</th>
                     </tr>
                 </thead>
@@ -430,17 +573,31 @@
             </table>
         </div>
 
-        <!-- DEBUG AREA -->
-        <div class="debug-box">
-            <h4>DEBUG LOG</h4>
+        <!-- DEBUG AREA (Collapsible) -->
+        <details class="debug-box">
+            <summary>DEBUG LOG (Click to Toggle)</summary>
             <div id="debugLog">System Ready.</div>
-        </div>
+        </details>
     </div>
 
     <div id="loading"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999; justify-content:center; align-items:center; color:#4a90e2; font-weight:bold; font-size:1.2rem;">
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999; justify-content:center; align-items:center; color:#2c3e50; font-weight:bold; font-size:1.2rem; flex-direction:column;">
+        <div
+            style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;">
+        </div>
         通信中...
     </div>
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 
     <script>
         // Found URL from history
@@ -490,7 +647,7 @@
             ];
             // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-            log("Generating calendar...");
+            log("Generating cool calendar...");
             for (let m = 3; m <= 12; m++) {
                 const group = document.createElement('div');
                 group.className = 'month-group';
@@ -498,7 +655,14 @@
 
                 const title = document.createElement('div');
                 title.className = 'month-title';
-                title.textContent = `${m}月`;
+
+                // Special 12月 Title
+                if (m === 12) {
+                    title.textContent = `12月 (納会予定)`;
+                } else {
+                    title.textContent = `${m}月`;
+                }
+
                 group.appendChild(title);
 
                 const grid = document.createElement('div');
@@ -531,8 +695,7 @@
                     if (shouldAdd) {
                         const btn = document.createElement('div');
                         btn.className = 'date-btn';
-                        btn.textContent = `${date.getDate()}日` + (m === 12 && day === 5 ? "(土)" : ""); // Optional: Add (Sat) label? Just number is fine.
-                        btn.textContent = `${date.getDate()}日`;
+                        btn.textContent = `${date.getDate()}日` + (m === 12 && day === 5 ? "" : "");
                         btn.onclick = function () { selectDate(ymd, this); };
                         grid.appendChild(btn);
                     }
@@ -549,7 +712,14 @@
                 if (targetId) {
                     const el = document.getElementById(targetId);
                     if (el) {
-                        el.scrollIntoView({ behavior: 'smooth' });
+                        // Offset for header
+                        const headerOffset = 20;
+                        const elementPosition = el.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: "smooth"
+                        });
                     }
                 }
             });
