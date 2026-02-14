@@ -4,19 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認アプリ</title>
+    <title>日曜出欠確認 2026 (Ver 4.0 Debug)</title>
     <style>
+        /* ... existing styles ... */
         :root {
             --primary: #4a90e2;
             --primary-dark: #357abd;
             --bg: #f8f9fa;
             --card-bg: #ffffff;
             --text: #333333;
-            --text-light: #666666;
             --border: #e0e0e0;
             --success: #28a745;
             --danger: #dc3545;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -26,10 +25,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            font-family: sans-serif;
+            background: var(--bg);
             color: var(--text);
-            line-height: 1.6;
             padding: 20px;
         }
 
@@ -43,114 +41,44 @@
             margin-bottom: 30px;
         }
 
-        header h1 {
-            color: var(--primary);
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        .calendar-section {
-            margin-bottom: 30px;
-        }
-
-        .month-group {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .month-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            border-bottom: 2px solid var(--bg);
-            padding-bottom: 5px;
-            color: var(--primary-dark);
-        }
-
-        .date-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 10px;
-        }
-
         .date-btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 5px;
-            text-align: center;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px;
+            display: inline-block;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .date-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+            border-radius: 5px;
         }
 
         .date-btn.active {
-            background: var(--primary-dark);
+            background: var(--primary);
             color: white;
-            border-color: var(--primary-dark);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .form-section {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        select,
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
+        .month-group {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
             border-radius: 8px;
-            font-size: 1rem;
         }
 
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            padding: 10px 0;
+        .form-section,
+        .result-section {
+            display: none;
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
         }
 
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
 
         .btn-submit {
@@ -159,93 +87,26 @@
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: 5px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .btn-submit:hover {
-            background: var(--primary-dark);
+        .debug-box {
+            margin-top: 30px;
+            padding: 15px;
+            background: #333;
+            color: #0f0;
+            font-family: monospace;
+            border-radius: 5px;
+            font-size: 12px;
         }
 
-        .btn-submit:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .result-section {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .result-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--primary-dark);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-        }
-
+        td,
         th {
-            background: var(--bg);
-            font-size: 0.9rem;
-        }
-
-        .status-badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: white;
-        }
-
-        .status-attend {
-            background: var(--success);
-        }
-
-        .status-absent {
-            background: var(--danger);
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-
-            header h1 {
-                font-size: 1.5rem;
-            }
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
         }
     </style>
 </head>
@@ -254,49 +115,37 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 2026 (Ver 3.0)</h1>
-            <p>3月〜12月の日曜日を選択してください</p>
+            <h1>日曜出欠確認 (Ver 4.0)</h1>
+            <p>日付を選択してください</p>
         </header>
 
-        <div id="calendar" class="calendar-section">
-            <!-- JS generates months and buttons here -->
-        </div>
+        <div id="calendar"></div>
 
         <div id="formSection" class="form-section">
-            <h2 id="selectedDateTitle" style="margin-bottom: 15px; font-size: 1.3rem;"></h2>
+            <h2 id="selectedDateTitle"></h2>
             <form id="attendanceForm">
                 <input type="hidden" id="inputDate" name="date">
-                <div class="form-group">
-                    <label for="inputName">名前</label>
-                    <select id="inputName" name="name" required>
-                        <option value="">選択してください</option>
-                    </select>
+                <label>名前</label>
+                <select id="inputName" name="name" required>
+                    <option value="">読込中...</option>
+                </select>
+
+                <label style="margin-top: 15px; display:block;">出欠</label>
+                <div style="margin-bottom: 15px;">
+                    <label><input type="radio" name="status" value="出席" checked> 出席</label>
+                    <label style="margin-left: 20px;"><input type="radio" name="status" value="欠席"> 欠席</label>
                 </div>
-                <div class="form-group">
-                    <label>出欠</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="status" value="出席" required checked> 出席
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="status" value="欠席" required> 欠席
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputComment">備考</label>
-                    <input type="text" id="inputComment" name="comment" placeholder="何かつぶやきがあれば">
-                </div>
+
+                <label>備考</label>
+                <input type="text" name="comment" placeholder="コメント">
+
                 <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
             </form>
         </div>
 
         <div id="resultSection" class="result-section">
-            <div class="result-title">
-                <span>出席状況</span>
-                <span id="resultCount" style="font-size: 0.9rem; color: var(--text-light);"></span>
-            </div>
-            <table id="resultTable">
+            <h3>出席状況</h3>
+            <table style="width:100%">
                 <thead>
                     <tr>
                         <th>名前</th>
@@ -304,186 +153,131 @@
                         <th>備考</th>
                     </tr>
                 </thead>
-                <tbody id="resultBody">
-                    <!-- Rows injected here -->
-                </tbody>
+                <tbody id="resultBody"></tbody>
             </table>
+        </div>
+
+        <div class="debug-box">
+            <h4>デバッグログ</h4>
+            <div id="debugLog"></div>
         </div>
     </div>
 
-    <div id="loading" class="loading-overlay">
-        <div style="font-weight: bold; color: var(--primary);">通信中...</div>
-    </div>
-
     <script>
-        // --- 1. CONFIGURATION ---
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz0U4MtIoF_WyblYup5ETEEBrtlIBc05LpL5N_RquvJFqGsSkBiU8qImol3bwgkrMNf2A/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxezP-1C1u70FAZzOlZN0v7b2Xd5RTyZIuy0CtTBh7K3Mp-K-RNpMUfCXWqEkeNS0l9Ew/exec";
 
-        // --- 2. DATA CALCULATION ---
-        function generateSundayData(year, startMonth, endMonth) {
-            const months = [];
-            for (let m = startMonth - 1; m < endMonth; m++) {
-                const sundays = [];
-                // Set to noon (12:00) to avoid timezone shifts at 00:00
-                const date = new Date(year, m, 1, 12, 0, 0);
-                while (date.getMonth() === m) {
-                    if (date.getDay() === 0) {
-                        sundays.push(new Date(date));
+        function log(msg) {
+            const d = new Date();
+            const time = d.toTimeString().split(' ')[0];
+            document.getElementById('debugLog').innerHTML = `[${time}] ${msg}<br>` + document.getElementById('debugLog').innerHTML;
+        }
+
+        // Generate Calendar
+        function init() {
+            const calendar = document.getElementById('calendar');
+            for (let m = 3; m <= 12; m++) { // March to Dec
+                const group = document.createElement('div');
+                group.className = 'month-group';
+                group.innerHTML = `<h3>${m}月</h3>`;
+
+                const div = document.createElement('div');
+                let date = new Date(2026, m - 1, 1, 12, 0, 0); // Noon to match GAS
+
+                while (date.getMonth() === m - 1) {
+                    if (date.getDay() === 0) { // Sunday
+                        const btn = document.createElement('div');
+                        btn.className = 'date-btn';
+                        const yyyymmdd = date.getFullYear() + '-' +
+                            String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(date.getDate()).padStart(2, '0');
+                        btn.innerText = date.getDate() + '日';
+                        btn.onclick = () => selectDate(yyyymmdd, btn);
+                        div.appendChild(btn);
                     }
                     date.setDate(date.getDate() + 1);
                 }
-                months.push({
-                    name: (m + 1) + "月",
-                    dates: sundays
-                });
-            }
-            return months;
-        }
-
-        // --- 3. UI RENDERING ---
-        function init() {
-            const calendar = document.getElementById('calendar');
-            const monthData = generateSundayData(2026, 3, 12);
-
-            monthData.forEach(month => {
-                const group = document.createElement('div');
-                group.className = 'month-group';
-
-                const title = document.createElement('div');
-                title.className = 'month-title';
-                title.textContent = month.name;
-                group.appendChild(title);
-
-                const grid = document.createElement('div');
-                grid.className = 'date-grid';
-
-                month.dates.forEach(date => {
-                    const btn = document.createElement('div');
-                    btn.className = 'date-btn';
-                    const dateStr = date.getFullYear() + '-' +
-                        String(date.getMonth() + 1).padStart(2, '0') + '-' +
-                        String(date.getDate()).padStart(2, '0');
-                    btn.textContent = date.getDate() + "日";
-                    btn.onclick = () => selectDate(dateStr, btn);
-                    grid.appendChild(btn);
-                });
-
-                group.appendChild(grid);
+                group.appendChild(div);
                 calendar.appendChild(group);
-            });
+            }
         }
 
-        let currentSelectedDate = "";
-
-        async function selectDate(dateStr, btnElement) {
-            // UI reset
+        async function selectDate(dateStr, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
+            btn.classList.add('active');
 
-            currentSelectedDate = dateStr;
             document.getElementById('inputDate').value = dateStr;
-            document.getElementById('selectedDateTitle').textContent = dateStr + " の出欠";
+            document.getElementById('selectedDateTitle').innerText = dateStr;
 
-            showLoading(true);
+            log(`通信開始: ${dateStr}`);
+
             try {
-                const response = await fetch(`${GAS_API_URL}?date=${dateStr}`);
-                const data = await response.json();
+                // Add timestamp to bypass cache
+                const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
+                const data = await res.json();
 
-                updateMemberDropdown(data.members);
-                updateResultTable(data.attendance);
+                log(`受信成功: メンバー${data.members.length}件, データ${data.attendance.length}件`);
+
+                // Render Members
+                const select = document.getElementById('inputName');
+                select.innerHTML = '<option value="">選択してください</option>';
+                data.members.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.innerText = m;
+                    select.appendChild(opt);
+                });
+
+                // Render Results
+                const tbody = document.getElementById('resultBody');
+                tbody.innerHTML = '';
+                data.attendance.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${row.name}</td><td>${row.status}</td><td>${row.comment}</td>`;
+                    tbody.appendChild(tr);
+                });
 
                 document.getElementById('formSection').style.display = 'block';
                 document.getElementById('resultSection').style.display = 'block';
-
-                // Scroll to form
                 document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
-            } catch (error) {
-                console.error(error);
-                alert("データの取得に失敗しました。URLが正しいか確認してください。");
-            } finally {
-                showLoading(false);
+
+            } catch (e) {
+                log(`エラー: ${e.message}`);
+                alert("データ取得エラー\nURLを確認してください");
             }
         }
 
-        function updateMemberDropdown(members) {
-            const select = document.getElementById('inputName');
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">選択してください</option>';
-            members.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m;
-                select.appendChild(opt);
-            });
-            select.value = currentValue;
-        }
-
-        function updateResultTable(attendance) {
-            const body = document.getElementById('resultBody');
-            body.innerHTML = '';
-
-            attendance.sort((a, b) => a.status === '出席' ? -1 : 1);
-
-            attendance.forEach(row => {
-                const tr = document.createElement('tr');
-                const statusClass = row.status === '出席' ? 'status-attend' : 'status-absent';
-                tr.innerHTML = `
-                <td>${row.name}</td>
-                <td><span class="status-badge ${statusClass}">${row.status}</span></td>
-                <td style="font-size: 0.85rem; color: #666;">${row.comment || ''}</td>
-            `;
-                body.appendChild(tr);
-            });
-
-            const attendCount = attendance.filter(a => a.status === '出席').length;
-            document.getElementById('resultCount').textContent = `出席: ${attendCount}名 / 全体: ${attendance.length}名`;
-        }
-
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'flex' : 'none';
-            document.getElementById('submitBtn').disabled = show;
-        }
-
-        // --- 4. FORM SUBMISSION ---
         document.getElementById('attendanceForm').onsubmit = async (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = {
-                date: formData.get('date'),
-                name: formData.get('name'),
-                status: formData.get('status'),
-                comment: formData.get('comment')
-            };
+            const fd = new FormData(e.target);
+            const json = Object.fromEntries(fd.entries());
 
-            showLoading(true);
+            log(`送信中... ${json.name} / ${json.status}`);
+            document.getElementById('submitBtn').disabled = true;
+
             try {
-                // Send as simple POST to avoid CORS Preflight (OPTIONS request) which GAS doesn't handle well
-                const response = await fetch(GAS_API_URL, {
+                // Using no-cors then standard POST to ensure it goes through
+                await fetch(GAS_API_URL, {
                     method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    },
-                    body: JSON.stringify(data)
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(json)
                 });
 
-                // Even if response isn't "ok" due to CORS, it often succeeds.
-                // But we'll try to check if we can get a JSON back if no-cors isn't used.
-                alert("送信完了しました！");
-                // Refresh data
-                selectDate(currentSelectedDate, document.querySelector('.date-btn.active'));
-            } catch (error) {
-                console.error(error);
-                alert("送信に失敗しました。GASのURLの設定を確認してください。");
-            } finally {
-                showLoading(false);
+                // Wait a sec for sheet to update
+                setTimeout(() => {
+                    alert("送信完了");
+                    document.getElementById('submitBtn').disabled = false;
+                    selectDate(json.date, document.querySelector('.date-btn.active'));
+                }, 1000);
+
+            } catch (e) {
+                log(`送信エラー: ${e.message}`);
+                document.getElementById('submitBtn').disabled = false;
             }
         };
 
-        // Start
         init();
     </script>
-
 </body>
 
 </html>
