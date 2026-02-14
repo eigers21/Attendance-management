@@ -4,18 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 2026 (Ver 4.0 Debug)</title>
+    <title>日曜出欠確認 (Ver 5.0 Layout Fix)</title>
     <style>
-        /* ... existing styles ... */
         :root {
             --primary: #4a90e2;
-            --primary-dark: #357abd;
             --bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --text: #333333;
-            --border: #e0e0e0;
-            --success: #28a745;
-            --danger: #dc3545;
+            --text: #333;
         }
 
         * {
@@ -36,24 +30,23 @@
             margin: 0 auto;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        /* Calendar Styles */
         .date-btn {
             background: #fff;
             border: 1px solid #ccc;
-            padding: 10px;
-            margin: 5px;
+            padding: 8px;
+            margin: 4px;
             display: inline-block;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 4px;
+            min-width: 40px;
+            text-align: center;
         }
 
         .date-btn.active {
             background: var(--primary);
             color: white;
+            border-color: var(--primary);
         }
 
         .month-group {
@@ -61,8 +54,18 @@
             background: white;
             padding: 15px;
             border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .month-title {
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            color: var(--primary);
+        }
+
+        /* Form Styles */
         .form-section,
         .result-section {
             display: none;
@@ -70,15 +73,40 @@
             padding: 20px;
             margin-top: 20px;
             border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        input,
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
         select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+
+        /* Radio Button Fix */
+        .radio-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .radio-label {
+            display: flex !important;
+            align-items: center;
+            font-weight: normal !important;
+            cursor: pointer;
+        }
+
+        .radio-label input {
+            margin-right: 6px;
         }
 
         .btn-submit {
@@ -88,25 +116,47 @@
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
+            font-weight: bold;
         }
 
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f1f1;
+        }
+
+        /* Debug Box */
         .debug-box {
-            margin-top: 30px;
+            margin-top: 40px;
             padding: 15px;
-            background: #333;
+            background: #222;
             color: #0f0;
             font-family: monospace;
             border-radius: 5px;
-            font-size: 12px;
-        }
-
-        td,
-        th {
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-            text-align: left;
+            font-size: 11px;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -114,38 +164,43 @@
 <body>
 
     <div class="container">
-        <header>
-            <h1>日曜出欠確認 (Ver 4.0)</h1>
-            <p>日付を選択してください</p>
+        <header style="text-align: center; margin-bottom: 20px;">
+            <h1>日曜出欠確認 (Ver 5.0)</h1>
+            <p>日付をクリックして入力してください</p>
         </header>
 
         <div id="calendar"></div>
 
         <div id="formSection" class="form-section">
-            <h2 id="selectedDateTitle"></h2>
+            <h2 id="selectedDateTitle" style="margin-bottom: 15px;"></h2>
             <form id="attendanceForm">
                 <input type="hidden" id="inputDate" name="date">
+
                 <label>名前</label>
                 <select id="inputName" name="name" required>
                     <option value="">読込中...</option>
                 </select>
 
-                <label style="margin-top: 15px; display:block;">出欠</label>
-                <div style="margin-bottom: 15px;">
-                    <label><input type="radio" name="status" value="出席" checked> 出席</label>
-                    <label style="margin-left: 20px;"><input type="radio" name="status" value="欠席"> 欠席</label>
+                <label>出欠</label>
+                <div class="radio-container">
+                    <label class="radio-label">
+                        <input type="radio" name="status" value="出席" checked> 出席
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="status" value="欠席"> 欠席
+                    </label>
                 </div>
 
                 <label>備考</label>
-                <input type="text" name="comment" placeholder="コメント">
+                <input type="text" name="comment" placeholder="ひとことメモ">
 
                 <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
             </form>
         </div>
 
         <div id="resultSection" class="result-section">
-            <h3>出席状況</h3>
-            <table style="width:100%">
+            <h3>出席状況一覧</h3>
+            <table id="resultTable">
                 <thead>
                     <tr>
                         <th>名前</th>
@@ -158,125 +213,107 @@
         </div>
 
         <div class="debug-box">
-            <h4>デバッグログ</h4>
-            <div id="debugLog"></div>
+            <h3>▼ デバッグ情報</h3>
+            <p>うまく動かない場合はここを確認してください</p>
+            <div id="debugLog">待機中...</div>
         </div>
     </div>
 
+    <div id="loading"
+        style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);display:none;justify-content:center;align-items:center;font-weight:bold;color:var(--primary);">
+        読み込み中...
+    </div>
+
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxezP-1C1u70FAZzOlZN0v7b2Xd5RTyZIuy0CtTBh7K3Mp-K-RNpMUfCXWqEkeNS0l9Ew/exec";
+    // ▼▼▼ ここを新しいURLに書き換えてください ▼▼▼
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_xD1P2joz-Nkn0ebTXs6EDZRxC3fY05VOheUkMYvkJo0sxH7SRZBpS67HlSfLycX5ig/exec";
+         / ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲            ▲▲
 
-        function log(msg) {
-            const d = new Date();
-            const time = d.toTimeString().split(' ')[0];
-            document.getElementById('debugLog').innerHTML = `[${time}] ${msg}<br>` + document.getElementById('debugLog').innerHTML;
-        }
+    function log(m                  const d = new Date();
+        const t =            urs() + ":" + String(d.getMinutes()).padStart(2,'0') + ":" + String(d.getSeconds()).padStart(2,'0');
+        const box =        ume        etElementById('debugL        ;
+        box.inne            `<div><span style="color:#888">[${t}]</span> ${msg}</d            ox.innerHTML;
+    }
 
-        // Generate Calendar
-        function init() {
-            const calendar = document.getElementById('calendar');
-            for (let m = 3; m <= 12; m++) { // March to Dec
-                const group = document.createElement('div');
-                group.className = 'month-group';
-                group.innerHTML = `<h3>${m}月</h3>`;
-
-                const div = document.createElement('div');
-                let date = new Date(2026, m - 1, 1, 12, 0, 0); // Noon to match GAS
-
-                while (date.getMonth() === m - 1) {
-                    if (date.getDay() === 0) { // Sunday
-                        const btn = document.createElement('div');
-                        btn.className = 'date-btn';
-                        const yyyymmdd = date.getFullYear() + '-' +
-                            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-                            String(date.getDate()).padStart(2, '0');
-                        btn.innerText = date.getDate() + '日';
-                        btn.onclick = () => selectDate(yyyymmdd, btn);
-                        div.appendChild(btn);
-                    }
-                    date.setDate(date.getDate() + 1);
-                }
-                group.appendChild(div);
-                calendar.appendChild(group);
+    // Initialize Calendar
+                 init() {
+        const cal = document.getEle                lendar');
+        for (let m = 3;                +) {
+            const grp = documene                           grp.className = 'month-group';
+                 / Month Header
+            const title = document.createElement('div                 ssName = 'month-title';
+                                = m + "月";
+            grp.appendChil                           let date = new Date(2026, m - 1, 1, 12,                         pprox
+            while (dat                         1) {
+                if (date.getDay() ===0                            st btn = document.crea t eElement('div' );
+                                                          const ymd = da te.get                                                        String                        padStart(2,'0') + '-' + 
+                                              e.getDate()).padStart(                                          nerText = date.getDate() + '日';
+                                    ick = () => selectDate(y                                  grp.appendC            );                         }
+                date.setDate(date.            ) + 1);
             }
+            cal.appendChild(grp);
         }
+    }
 
-        async function selectDate(dateStr, btn) {
-            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    async              selectDate(dateStr, btn) {
+ o            uerySelectorAll('.date-btn').forEach(b => b.classList.            active'));
+        btn.classList.add('active');
+        document.gt            putDate').value = dateStr             t.getE                selectedDateTitle').innerText = d                     log(`日付選択: ${dateStr}`);
+        document.getElementById('loading').st                = 'flex';
 
-            document.getElementById('inputDate').value = dateStr;
-            document.getElementById('selectedDateTitle').innerText = dateStr;
-
-            log(`通信開始: ${dateStr}`);
-
-            try {
-                // Add timestamp to bypass cache
-                const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
-                const data = await res.json();
-
-                log(`受信成功: メンバー${data.members.length}件, データ${data.attendance.length}件`);
-
-                // Render Members
-                const select = document.getElementById('inputName');
-                select.innerHTML = '<option value="">選択してください</option>';
-                data.members.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m;
-                    opt.innerText = m;
-                    select.appendChild(opt);
-                });
-
-                // Render Results
-                const tbody = document.getElementById('resultBody');
-                tbody.innerHTML = '';
-                data.attendance.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${row.name}</td><td>${row.status}</td><td>${row.comment}</td>`;
-                    tbody.appendChild(tr);
-                });
-
-                document.getElementById('formSection').style.display = 'block';
-                document.getElementById('resultSection').style.display = 'block';
-                document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
-
-            } catch (e) {
-                log(`エラー: ${e.message}`);
-                alert("データ取得エラー\nURLを確認してください");
+        try {
+      r                etch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
+            constt                
+            
+                    how data in log
+            log(`★取得完了: メンバー${data.me                }名, 出欠${data.attendance.length}件`);
+            if(data.d                                log(`[シート確認]                    N.stringify(data.debug_raw)}`);
             }
+                    Update Dropdown                    st sel = document.g                    nputName');
+            s                 = '<                ="">選択してください</opti                      data.members.forEach(m => {
+                con                ument.createElement('o                             opt.value = m;
+                         innerText = m;
+                sel.append                             });
+
+            // Update Table
+            const tbody = document.getElem                    Body');
+            tbo                 = ''                  data.attendance.forEach(row => {
+                const tr = do                eElement('tr');
+                tr.innerHTML = `<td>${row.name}</t                status}</td><td>${row.comment}</td>`;
+                t body.appe ndChild( tr);
+                }); 
+
+                    ment.getElementById('formS                le.display = 'block';
+                       t.        lem        yId('resultSection').style.display = 'block';
+            document.g            tById('formSection')            ntoView({ behavior: 'smooth' });
+
+              catch(e) {
+            log(`エラー発生: ${e.message             alert("データの取得に失敗しました。URLを確認してください。");
+                   ly {
+            document.getElementById('loading').sty            ay = '                   }
+    }
+
+    document.getElementById('attendanceForm').onsu                 (e) => {
+        e.prevent                       const fd = ne                    get);
+        con                    .fromEntri es(fd.entries());
+        do cum                    Id('submitBtn').disabled =                   loo                son.status}`);
+
+        try {
+                    t fetch(GAS_API_URL                        method: 'PO                         mode: 'no-cors',
+                headers: { 'Conte                    plain' },
+                body: JSON.stringify(json)
+            })                  
+                    imeout( () =>                       alert("送信しました");
+                     ocument.getElementById('submitBtn').disabled = false;
+                        sel        ate(json.daument.querySelector('.date-btn.active'));
+            }, 1000);
+        } catch(err) {
+            log(`送信エラー: ${err.message}`);
+            document.getElementById('submitBtn').disabled = false;
         }
+    };
 
-        document.getElementById('attendanceForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            const json = Object.fromEntries(fd.entries());
-
-            log(`送信中... ${json.name} / ${json.status}`);
-            document.getElementById('submitBtn').disabled = true;
-
-            try {
-                // Using no-cors then standard POST to ensure it goes through
-                await fetch(GAS_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(json)
-                });
-
-                // Wait a sec for sheet to update
-                setTimeout(() => {
-                    alert("送信完了");
-                    document.getElementById('submitBtn').disabled = false;
-                    selectDate(json.date, document.querySelector('.date-btn.active'));
-                }, 1000);
-
-            } catch (e) {
-                log(`送信エラー: ${e.message}`);
-                document.getElementById('submitBtn').disabled = false;
-            }
-        };
-
-        init();
+    init();
     </script>
 </body>
 
