@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 (Ver 8.4 Layout Fix)</title>
+    <title>日曜出欠確認 (Ver 8.5 Mobile Fix)</title>
     <style>
         /* Base Reset */
         :root {
@@ -227,20 +227,20 @@
 
         /* Specific Column Widths */
         .col-name {
-            width: 10%;
+            width: 15%;
         }
 
-        /* Very narrow for Name (2 chars) */
+        /* 15% for Mobile (prev 10%) */
         .col-status {
-            width: 10%;
+            width: 15%;
         }
 
-        /* Very narrow for Status (2 chars) */
+        /* 15% for Mobile (prev 10%) */
         .col-comment {
-            width: 80%;
+            width: 70%;
         }
 
-        /* Wide for Comment */
+        /* 70% Remaining */
 
         /* Status colors */
         .status-badge {
@@ -273,7 +273,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 (Ver 8.4 Layout Fix)</h1>
+            <h1>日曜出欠確認 (Ver 8.5 Mobile Fix)</h1>
             <p>日付を選択してください</p>
         </header>
 
@@ -447,7 +447,6 @@
                 });
 
                 // Update Stats
-                const countNone = data.members.length - data.attendance.length; // Approximate, depends on if all members submitted
                 // Note: Simplistic count based on rows returned vs member list length
                 // If duplicate submissions exist, this logic might be slightly off but acceptable for simple use
 
