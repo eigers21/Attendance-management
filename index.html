@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 (Ver 6.0 Recovery)</title>
+    <title>日曜出欠確認 (Ver 7.0 Persistence Fix)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -89,7 +89,6 @@
             border-radius: 4px;
         }
 
-        /* Layout Fix: Horizontal Radios */
         .radio-container {
             display: flex;
             gap: 20px;
@@ -145,7 +144,6 @@
             background: #f1f1f1;
         }
 
-        /* Error Log Layout */
         .debug-box {
             margin-top: 40px;
             padding: 15px;
@@ -165,7 +163,7 @@
 
     <div class="container">
         <header style="text-align: center; margin-bottom: 20px;">
-            <h1>日曜出欠確認 (Ver 6.0)</h1>
+            <h1>日曜出欠確認 (Ver 7.0)</h1>
             <p>日付をクリックして入力してください</p>
         </header>
 
@@ -210,7 +208,7 @@
 
         <div class="debug-box" id="debugBox">
             <h3>▼ デバッグ・エラーログ</h3>
-            <div id="debugLog">正常に動作していればここにログが出ます...</div>
+            <div id="debugLog">Ver 7.0 Ready...</div>
         </div>
     </div>
 
@@ -220,17 +218,16 @@
     </div>
 
     <script>
-        // Global Error Handler to catch Syntax Errors or Runtime Errors
         window.onerror = function (msg, url, line, col, error) {
             const box = document.getElementById('debugLog');
             const errText = `[CRITICAL ERROR]\n${msg}\nLine: ${line}, Col: ${col}`;
             box.innerHTML = `<div style="color:red; font-weight:bold;">${errText}</div>` + box.innerHTML;
-            alert("プログラムのエラーが発生しました。画面下のログを確認してください。");
+            alert("エラーが発生しました。ログを確認してください。");
             return false;
         };
 
         // ▼▼▼ ここを新しいURLに書き換えてください ▼▼▼
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzNOIrgfBUEhyeTUQFZ_IgiAkd6Sp1uNBRYmUYfSOsTxK7ypkfhKcNTc8EgGgDYzrRe-Q/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0GQm2DwuhqTcb1xotVWoe_xYx3QgauTDVXjHxHDWhsAYlAeDjPCoYYY2MM2uLx3YVfA/exec";
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         function log(msg) {
@@ -242,10 +239,7 @@
 
         function init() {
             try {
-                log("カレンダー生成開始...");
                 const cal = document.getElementById('calendar');
-                if (!cal) throw new Error("Calendar div not found");
-
                 for (let m = 3; m <= 12; m++) {
                     const grp = document.createElement('div');
                     grp.className = 'month-group';
@@ -274,10 +268,7 @@
                     grp.appendChild(div);
                     cal.appendChild(grp);
                 }
-                log("カレンダー生成完了");
-            } catch (e) {
-                log(`INIT ERROR: ${e.message}`);
-            }
+            } catch (e) { log(`INIT: ${e.message}`); }
         }
 
         async function selectDate(dateStr, btn) {
@@ -286,24 +277,23 @@
             document.getElementById('inputDate').value = dateStr;
             document.getElementById('selectedDateTitle').innerText = dateStr;
 
-            log(`日付選択: ${dateStr} - 通信開始`);
+            log(`日付選択: ${dateStr}`);
             document.getElementById('loading').style.display = 'flex';
 
             try {
                 const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
-                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
                 const data = await res.json();
-                log(`受信成功: メンバー${data.members.length}件, データ${data.attendance.length}件`);
 
-                if (data.debug_raw_member) {
-                    log(`[シートMember A列] ${JSON.stringify(data.debug_raw_member)}`);
+                // --- DEBUG DISPLAY ---
+                if (data.debug_log_count) log(`Logシート行数: ${data.debug_log_count}`);
+                if (data.debug_raw_log_bottom) {
+                    log(`[Logシート下位5行] ${JSON.stringify(data.debug_raw_log_bottom)}`);
                 }
-                if (data.debug_raw_log) {
-                    log(`[シートLog 上位5行] ${JSON.stringify(data.debug_raw_log)}`);
-                }
+                log(`取得結果: メンバー${data.members.length}件, データ${data.attendance.length}件`);
+                // ---------------------
 
-                // Dropdown
                 const sel = document.getElementById('inputName');
                 sel.innerHTML = '<option value="">選択してください</option>';
                 data.members.forEach(m => {
@@ -313,7 +303,6 @@
                     sel.appendChild(opt);
                 });
 
-                // Table
                 const tbody = document.getElementById('resultBody');
                 tbody.innerHTML = '';
                 data.attendance.forEach(row => {
@@ -327,8 +316,8 @@
                 document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
 
             } catch (e) {
-                log(`FETCH ERROR: ${e.message}`);
-                alert(`エラーが発生しました:\n${e.message}`);
+                log(`Error: ${e.message}`);
+                alert("データ取得失敗\nログを確認してください");
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -339,9 +328,9 @@
             const fd = new FormData(e.target);
             const json = Object.fromEntries(fd.entries());
             document.getElementById('submitBtn').disabled = true;
+            log('送信中...');
 
             try {
-                log(`送信中...`);
                 await fetch(GAS_API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -354,12 +343,11 @@
                     selectDate(json.date, document.querySelector('.date-btn.active'));
                 }, 1000);
             } catch (err) {
-                log(`POST ERROR: ${err.message}`);
+                log(`Error: ${err.message}`);
                 document.getElementById('submitBtn').disabled = false;
             }
         };
 
-        // Execute
         init();
     </script>
 </body>
