@@ -136,26 +136,78 @@
         th,
         td {
             padding: 10px;
-            border-bottom: 1px solid #eee;
-            text-align: left;
-        }
 
-        th {
-            background: #f1f1f1;
-        }
+            /* Table Layout Fix */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                table-layout: fixed;
+            }
 
-        .debug-box {
-            margin-top: 40px;
-            padding: 15px;
-            background: #222;
-            color: #0f0;
-            font-family: monospace;
-            border-radius: 5px;
-            font-size: 11px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
+            /* Fixed layout */
+            th,
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            th {
+                background: #f1f1f1;
+            }
+
+            /* Column Widths */
+            th:nth-child(1),
+            td:nth-child(1) {
+                width: 30%;
+                white-space: nowrap;
+            }
+
+            /* Name: Prevent wrap */
+            th:nth-child(2),
+            td:nth-child(2) {
+                width: 20%;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+            /* Status */
+            th:nth-child(3),
+            td:nth-child(3) {
+                width: 50%;
+                word-break: break-all;
+            }
+
+            /* Comment: Allow wrap */
+
+            /* Status Colors */
+            .status-attend {
+                color: #28a745;
+                font-weight: bold;
+            }
+
+            /* Green */
+            .status-absent {
+                color: #dc3545;
+                font-weight: bold;
+            }
+
+            /* Red */
+
+            .debug-box {
+                margin-top: 40px;
+                padding: 15px;
+                background: #222;
+                color: #0f0;
+                font-family: monospace;
+                border-radius: 5px;
+                font-size: 11px;
+                line-height: 1.4;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
     </style>
 </head>
 
@@ -163,7 +215,7 @@
 
     <div class="container">
         <header style="text-align: center; margin-bottom: 20px;">
-            <h1>日曜出欠確認 (Ver 7.0)</h1>
+            <h1>日曜出欠確認 (Ver 7.1 UI Polish)</h1>
             <p>日付をクリックして入力してください</p>
         </header>
 
@@ -307,7 +359,16 @@
                 tbody.innerHTML = '';
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${row.name}</td><td>${row.status}</td><td>${row.comment}</td>`;
+
+                    // Color coding
+                    let statusHtml = row.status;
+                    if (row.status === '出席') {
+                        statusHtml = `<span style="color:#28a745; font-weight:bold;">${row.status}</span>`;
+                    } else if (row.status === '欠席') {
+                        statusHtml = `<span style="color:#dc3545; font-weight:bold;">${row.status}</span>`;
+                    }
+
+                    tr.innerHTML = `<td>${row.name}</td><td style="text-align:center;">${statusHtml}</td><td>${row.comment}</td>`;
                     tbody.appendChild(tr);
                 });
 
