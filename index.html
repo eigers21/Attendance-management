@@ -230,7 +230,7 @@
         };
 
         // ▼▼▼ ここを新しいURLに書き換えてください ▼▼▼
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycby_xD1P2joz-Nkn0ebTXs6EDZRxC3fY05VOheUkMYvkJo0sxH7SRZBpS67HlSfLycX5ig/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzNOIrgfBUEhyeTUQFZ_IgiAkd6Sp1uNBRYmUYfSOsTxK7ypkfhKcNTc8EgGgDYzrRe-Q/exec";
         // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         function log(msg) {
@@ -296,8 +296,11 @@
                 const data = await res.json();
                 log(`受信成功: メンバー${data.members.length}件, データ${data.attendance.length}件`);
 
-                if (data.debug_raw) {
-                    log(`[RAW DUMP] ${JSON.stringify(data.debug_raw)}`);
+                if (data.debug_raw_member) {
+                    log(`[シートMember A列] ${JSON.stringify(data.debug_raw_member)}`);
+                }
+                if (data.debug_raw_log) {
+                    log(`[シートLog 上位5行] ${JSON.stringify(data.debug_raw_log)}`);
                 }
 
                 // Dropdown
