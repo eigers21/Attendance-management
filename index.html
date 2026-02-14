@@ -524,11 +524,16 @@
             ];
             // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-            // Get Current Day (00:00:00) for comparison
-            const today = new Date();
+            // ▼▼▼ TEST MODE: FORCE DATE TO 2026-04-01 ▼▼▼
+            // This simulates that today is April 1st.
+            // March dates should become "Finished".
+            const today = new Date(2026, 3, 1);
+            // const today = new Date(); // <--- ORIGINAL CODE (Restore this later)
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
             today.setHours(0, 0, 0, 0);
 
-            log("Generating calendar with Past Date Lock...");
+            log("Generating calendar with Past Date Lock (TEST MODE: 2026-04-01)...");
             for (let m = 3; m <= 12; m++) {
                 const group = document.createElement('div');
                 group.className = 'month-group';
