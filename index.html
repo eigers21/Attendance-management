@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日曜出欠確認アプリ</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --success: #28a745;
+            --danger: #dc3545;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .calendar-section {
+            margin-bottom: 30px;
+        }
+
+        .month-group {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .month-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 5px;
+            color: var(--primary-dark);
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+        }
+
+        .date-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .date-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .date-btn.active {
+            background: var(--primary-dark);
+            color: white;
+            border-color: var(--primary-dark);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-section {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status-attend {
+            background: var(--success);
+        }
+
+        .status-absent {
+            background: var(--danger);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>日曜出欠確認 2026</h1>
+            <p>3月〜12月の日曜日を選択してください</p>
+        </header>
+
+        <div id="calendar" class="calendar-section">
+            <!-- JS generates months and buttons here -->
+        </div>
+
+        <div id="formSection" class="form-section">
+            <h2 id="selectedDateTitle" style="margin-bottom: 15px; font-size: 1.3rem;"></h2>
+            <form id="attendanceForm">
+                <input type="hidden" id="inputDate" name="date">
+                <div class="form-group">
+                    <label for="inputName">名前</label>
+                    <select id="inputName" name="name" required>
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>出欠</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="status" value="出席" required checked> 出席
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="status" value="欠席" required> 欠席
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputComment">備考</label>
+                    <input type="text" id="inputComment" name="comment" placeholder="何かつぶやきがあれば">
+                </div>
+                <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
+            </form>
+        </div>
+
+        <div id="resultSection" class="result-section">
+            <div class="result-title">
+                <span>出席状況</span>
+                <span id="resultCount" style="font-size: 0.9rem; color: var(--text-light);"></span>
+            </div>
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>名前</th>
+                        <th>出欠</th>
+                        <th>備考</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody">
+                    <!-- Rows injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="loading" class="loading-overlay">
+        <div style="font-weight: bold; color: var(--primary);">通信中...</div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx8fuwCJTXGeoOrIRuJF-Cd4tTj7zPvLPDmtGdjJfmaDxN_T7QZntdt1p5xCSoUxcyUNw/exec";
+
+        // --- 2. DATA CALCULATION ---
+        function generateSundayData(year, startMonth, endMonth) {
+            const months = [];
+            for (let m = startMonth - 1; m < endMonth; m++) {
+                const sundays = [];
+                const date = new Date(year, m, 1);
+                while (date.getMonth() === m) {
+                    if (date.getDay() === 0) {
+                        sundays.push(new Date(date));
+                    }
+                    date.setDate(date.getDate() + 1);
+                }
+                months.push({
+                    name: (m + 1) + "月",
+                    dates: sundays
+                });
+            }
+            return months;
+        }
+
+        // --- 3. UI RENDERING ---
+        function init() {
+            const calendar = document.getElementById('calendar');
+            const monthData = generateSundayData(2026, 3, 12);
+
+            monthData.forEach(month => {
+                const group = document.createElement('div');
+                group.className = 'month-group';
+
+                const title = document.createElement('div');
+                title.className = 'month-title';
+                title.textContent = month.name;
+                group.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'date-grid';
+
+                month.dates.forEach(date => {
+                    const btn = document.createElement('div');
+                    btn.className = 'date-btn';
+                    const dateStr = date.toISOString().split('T')[0];
+                    btn.textContent = date.getDate() + "日";
+                    btn.onclick = () => selectDate(dateStr, btn);
+                    grid.appendChild(btn);
+                });
+
+                group.appendChild(grid);
+                calendar.appendChild(group);
+            });
+        }
+
+        let currentSelectedDate = "";
+
+        async function selectDate(dateStr, btnElement) {
+            // UI reset
+            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            currentSelectedDate = dateStr;
+            document.getElementById('inputDate').value = dateStr;
+            document.getElementById('selectedDateTitle').textContent = dateStr + " の出欠";
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${GAS_API_URL}?date=${dateStr}`);
+                const data = await response.json();
+
+                updateMemberDropdown(data.members);
+                updateResultTable(data.attendance);
+
+                document.getElementById('formSection').style.display = 'block';
+                document.getElementById('resultSection').style.display = 'block';
+
+                // Scroll to form
+                document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error(error);
+                alert("データの取得に失敗しました。URLが正しいか確認してください。");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function updateMemberDropdown(members) {
+            const select = document.getElementById('inputName');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">選択してください</option>';
+            members.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                select.appendChild(opt);
+            });
+            select.value = currentValue;
+        }
+
+        function updateResultTable(attendance) {
+            const body = document.getElementById('resultBody');
+            body.innerHTML = '';
+
+            attendance.sort((a, b) => a.status === '出席' ? -1 : 1);
+
+            attendance.forEach(row => {
+                const tr = document.createElement('tr');
+                const statusClass = row.status === '出席' ? 'status-attend' : 'status-absent';
+                tr.innerHTML = `
+                <td>${row.name}</td>
+                <td><span class="status-badge ${statusClass}">${row.status}</span></td>
+                <td style="font-size: 0.85rem; color: #666;">${row.comment || ''}</td>
+            `;
+                body.appendChild(tr);
+            });
+
+            const attendCount = attendance.filter(a => a.status === '出席').length;
+            document.getElementById('resultCount').textContent = `出席: ${attendCount}名 / 全体: ${attendance.length}名`;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+            document.getElementById('submitBtn').disabled = show;
+        }
+
+        // --- 4. FORM SUBMISSION ---
+        document.getElementById('attendanceForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                date: formData.get('date'),
+                name: formData.get('name'),
+                status: formData.get('status'),
+                comment: formData.get('comment')
+            };
+
+            showLoading(true);
+            try {
+                const response = await fetch(GAS_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Added to avoid CORS issues in some environments
+                    headers: {
+                        'Content-Type': 'text/plain' // Using text/plain to avoid preflight
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Note: with 'no-cors', response.ok will be false and we can't read the body.
+                // But for simple POST to GAS, the data will still be sent.
+                // For a better UX, we'll revert to a simple POST and explain the URL requirement.
+
+                // Re-trying a direct POST which is usually fine if the URL is correct (/exec)
+                const responseDirect = await fetch(GAS_API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+
+                if (responseDirect.ok) {
+                    alert("送信完了しました！");
+                    selectDate(currentSelectedDate, document.querySelector('.date-btn.active'));
+                } else {
+                    throw new Error("Submit failed");
+                }
+            } catch (error) {
+                console.error(error);
+                // If it's a CORS error, sometimes it still succeeded. 
+                // We'll advise the user to check the spreadsheet.
+                alert("送信に失敗しました。GASのURLが『/exec』で終わっているか、また『全員』に公開されているか確認してください。");
+            }
+
+        };
+
+        // Start
+        init();
+    </script>
+
+</body>
+
+</html>
