@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曜出欠確認 (Ver 8.0 Complete Reset)</title>
+    <title>日曜出欠確認 (Ver 8.4 Layout Fix)</title>
     <style>
         /* Base Reset */
         :root {
@@ -27,7 +27,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: transparent;
         }
@@ -155,7 +155,7 @@
             cursor: not-allowed;
         }
 
-        /* RESULT TABLE STYLE */
+        /* RESULT SECTION STYLE */
         .result-section {
             display: none;
             /* JS toggles this */
@@ -165,25 +165,58 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border: 2px solid #ccc;
-            /* Frame added */
+            /* Outer Frame */
         }
 
+        /* Stats Box */
+        .stats-box {
+            background: #f1f8ff;
+            border: 1px solid #cce5ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .stat-item span {
+            font-size: 1.3rem;
+            margin-left: 5px;
+        }
+
+        .stat-attend {
+            color: #28a745;
+        }
+
+        .stat-absent {
+            color: #dc3545;
+        }
+
+        .stat-none {
+            color: #666;
+        }
+
+        /* RESULT TABLE STYLE */
         table {
             width: 100%;
             border-collapse: collapse;
             table-layout: fixed;
             /* FIXED WIDTHS */
             border: 1px solid #ccc;
-            /* Table border */
         }
 
         th,
         td {
-            padding: 12px;
+            padding: 8px;
+            /* Reduced padding for compact layout */
             border: 1px solid #ddd;
-            /* Grid borders */
             text-align: center;
+            /* Center Align All Cells */
             vertical-align: middle;
+            word-wrap: break-word;
         }
 
         th {
@@ -192,30 +225,34 @@
             font-weight: bold;
         }
 
-        /* Column Width Definitions */
+        /* Specific Column Widths */
         .col-name {
-            width: 30%;
+            width: 10%;
         }
 
+        /* Very narrow for Name (2 chars) */
         .col-status {
-            width: 20%;
-            text-align: center;
+            width: 10%;
         }
 
+        /* Very narrow for Status (2 chars) */
         .col-comment {
-            width: 50%;
-            word-break: break-all;
+            width: 80%;
         }
 
-        /* Status Badges */
+        /* Wide for Comment */
+
+        /* Status colors */
+        .status-badge {
+            font-weight: bold;
+        }
+
         .status-attend {
             color: #28a745;
-            font-weight: bold;
         }
 
         .status-absent {
             color: #dc3545;
-            font-weight: bold;
         }
 
         /* DEBUG CONSOLE */
@@ -236,7 +273,7 @@
 
     <div class="container">
         <header>
-            <h1>日曜出欠確認 (Ver 8.2 Stats)</h1>
+            <h1>日曜出欠確認 (Ver 8.4 Layout Fix)</h1>
             <p>日付を選択してください</p>
         </header>
 
@@ -270,7 +307,7 @@
 
         <!-- TABLE AREA -->
         <div id="resultSection" class="result-section">
-            <h3>出席状況</h3>
+            <h3>出席状況一覧</h3>
 
             <!-- Stats Display -->
             <div class="stats-box">
@@ -304,9 +341,8 @@
     </div>
 
     <script>
-        // ▼ GAS URL ▼
+        // Found URL from history
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0GQm2DwuhqTcb1xotVWoe_xYx3QgauTDVXjHxHDWhsAYlAeDjPCoYYY2MM2uLx3YVfA/exec";
-        // ▲▲▲▲▲▲▲
 
         function log(msg) {
             const d = new Date();
@@ -395,10 +431,10 @@
 
                     let statusHtml = row.status;
                     if (row.status === '出席') {
-                        statusHtml = `<span class="status-attend">出席</span>`;
+                        statusHtml = `<span class="status-badge status-attend">出席</span>`;
                         countAttend++;
                     } else if (row.status === '欠席') {
-                        statusHtml = `<span class="status-absent">欠席</span>`;
+                        statusHtml = `<span class="status-badge status-absent">欠席</span>`;
                         countAbsent++;
                     }
 
@@ -411,10 +447,22 @@
                 });
 
                 // Update Stats
-                const countNone = data.members.length - data.attendance.length;
-                document.getElementById('countAttend').innerText = countAttend;
-                document.getElementById('countAbsent').innerText = countAbsent;
-                document.getElementById('countNone').innerText = Math.max(0, countNone); // Prevent negative
+                const countNone = data.members.length - data.attendance.length; // Approximate, depends on if all members submitted
+                // Note: Simplistic count based on rows returned vs member list length
+                // If duplicate submissions exist, this logic might be slightly off but acceptable for simple use
+
+                // Wait, if 3 attended and 1 absent, total 4 submitted. 
+                // If member list has 8, then 4 have not submitted (or duplicate submissions exist).
+                // For now, simple diff is okay.
+                const submittedCount = data.attendance.length; // This counts rows.
+
+                // Better logic: unique names in attendance vs total members
+                const uniqueAttended = new Set(data.attendance.map(r => r.name)).size;
+                const realNoResponse = Math.max(0, data.members.length - uniqueAttended);
+
+                document.getElementById('countAttend').textContent = countAttend;
+                document.getElementById('countAbsent').textContent = countAbsent;
+                document.getElementById('countNone').textContent = realNoResponse;
 
                 // Show Sections
                 document.getElementById('formSection').style.display = 'block';
