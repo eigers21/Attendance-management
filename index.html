@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・確認 (Ver 9.5)</title>
+    <title>2026年 参加登録・確認 (Ver 9.6 Name Map)</title>
+    <!-- Keep Ver 9.5 CSS as base (omitted for brevity in Artifact, full content in file) -->
     <style>
         /* Base Reset (Standard Ver 9.2 Style) */
         :root {
@@ -387,7 +388,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・確認 (Ver 9.5 Finished)</h1>
+            <h1>2026年 参加登録・確認 (Ver 9.6 Name Map)</h1>
 
             <!-- Warning Message -->
             <div class="warning-box">
@@ -478,7 +479,7 @@
 
     <script>
         // Found URL from history
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx0GQm2DwuhqTcb1xotVWoe_xYx3QgauTDVXjHxHDWhsAYlAeDjPCoYYY2MM2uLx3YVfA/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
 
         function log(msg) {
             const d = new Date();
@@ -578,11 +579,9 @@
                         btn.className = 'date-btn';
 
                         // Logic: Check if date is in the PAST (strictly before today)
-                        // If you want "today" to be locked too, change to <=. Usually today is open.
                         if (date < today) {
                             btn.className += ' date-finished';
                             btn.textContent = `${date.getDate()}日 (終了)`;
-                            // No logic attached (click disabled via css pointer-events, but safe to not add handler)
                         } else {
                             btn.textContent = `${date.getDate()}日`;
                             btn.onclick = function () { selectDate(ymd, this); };
@@ -633,13 +632,21 @@
 
                 log(`Success: Members=${data.members.length}, Data=${data.attendance.length}`);
 
-                // Render Dropdown
+                // Create Name Mapping (Full Name -> Display Name)
+                const nameMap = {};
                 const sel = document.getElementById('inputName');
                 sel.innerHTML = '<option value="">選択してください</option>';
+
                 data.members.forEach(m => {
+                    // Support both legacy (string) and new (object) API responses
+                    const fullName = m.name || m;
+                    const dispName = m.displayName || fullName;
+
+                    nameMap[fullName] = dispName;
+
                     const opt = document.createElement('option');
-                    opt.value = m;
-                    opt.textContent = m;
+                    opt.value = fullName; // Value is always the full name (ID)
+                    opt.textContent = fullName; // Dropdown shows "1. Takahashi"
                     sel.appendChild(opt);
                 });
 
@@ -668,8 +675,11 @@
                         countAbsent++;
                     }
 
+                    // Use Display Name from Map (fallback to original if not found)
+                    const tableDisplayName = nameMap[row.name] || row.name;
+
                     tr.innerHTML = `
-                    <td class="col-name">${row.name}</td>
+                    <td class="col-name">${tableDisplayName}</td>
                     <td class="col-status">${statusHtml}</td>
                     <td class="col-comment">${row.comment}</td>
                 `;
