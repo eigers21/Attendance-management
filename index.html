@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.11)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.12)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,7 +14,7 @@
             --border: #ddd;
         }
 
-        /* Ver 10.11: "Sparkle" Animation for BOTH Attend/Absent */
+        /* Ver 10.11-10.12: "Sparkle" Animation for BOTH Attend/Absent */
         @keyframes sparkle {
             0% {
                 transform: translateX(-100%);
@@ -77,7 +77,6 @@
         #resultBody td {
             padding: 0 !important;
             height: 43px;
-            /* Reduced */
             vertical-align: middle;
             border: 1px solid #ddd;
             font-size: 0.95rem;
@@ -362,7 +361,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.11)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.12)</h1>
         </header>
 
         <div class="tabs">
@@ -438,21 +437,24 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw-eNBQI0_EQfKP_kQ8S0W6tO1LIOOSrmydmHvA4foZDBVFLO64tOqtwCtNNiH_ZFtSvQ/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
 
         function log(msg) {
             const t = new Date().toTimeString().split(' ')[0];
-            document.getElementById('debugLog').innerHTML = `[${t}] ${msg}\n` + document.getElementById('debugLog').innerHTML;
+            const div = document.getElementById('debugLog');
+            if (div) div.innerHTML = `[${t}] ${msg}\n` + div.innerHTML;
         }
 
         function showMessage(msg) {
             const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.display = 'block';
-            setTimeout(() => { t.style.display = 'none'; }, 2000);
+            if (t) {
+                t.textContent = msg;
+                t.style.display = 'block';
+                setTimeout(() => { t.style.display = 'none'; }, 2000);
+            }
         }
 
         async function switchTab(tab) {
@@ -499,8 +501,8 @@
                 const tr = document.createElement('tr');
                 const fullName = m.name || m;
                 const dispName = m.displayName || fullName;
-                tr.innerHTML = `<td class="col-fee-name">${dispName}</td>`;
-                 months.forEach((month) => {
+                tr.innerHTML =  `<td class="col-fee-name">${dispName}</td>`;
+                months.forEach((month) => {
                     const td = document.createElement('td');
                     td.className = 'col-fee-month fee-cell';
                     const isPaid = fees[fullName] && fees[fullName][month] === 1;
@@ -519,8 +521,8 @@
                 cell.classList.toggle('paid');
                 if (!cachedData.fees) cachedData.fees = {};
                 if (!cachedData.fees[name]) cachedData.fees[name] = {};
-                cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
-            } catch (e) { alert("Error: " + e.me ssage); }
+                cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 :  0;
+            } catch (e) { alert("Error: " + e.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -598,22 +600,29 @@
                 group.appendChild(grid);
                 cal.appendChild(group);
             }
-            document.getElementById('attendanceForm').onsubmit = async (e) => {
-                e.preventDefault();
-                document.getElementById('submitBtn').disabled = true;
-                const fd = new FormData(e.target);
-                const json = Object.fromEntries(fd.entries());
-                document.getElementById('loading').style.display = 'flex';
-                try {
-                    await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
-                    if (json.status === "削除") showMessage("一覧から削除しました");
-                    else showMessage("完了しました");
-                    selectDate(json.date, document.querySelector('.date-btn.active'));
-                } catch (e) { alert("Error: " + e.message); }
-                finally { document.getElementById('submitBtn').disabled = false; }
+            const form = document.getElementById('attendanceForm');
+            if (form) {
+                form.onsubmit = async (e) => {
+                    e.preventDefault();
+                    document.getElementById('submitBtn').disabled = true;
+                    const fd = new FormData(e.target);
+                    const json = Object.fromEntries(fd.entries());
+                    document.getElementById('loading').style.display = 'flex';
+                    try {
+                        await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
+                        if (json.status === "削除") showMessage("一覧から削除しました");
+                        else showMessage("完了しました");
+                        selectDate(json.date, document.querySelector('.date-btn.active'));
+                    } catch (e)lerr: " + e.message); }
+                    finally { document.getElementById('submitBtn').disabled = false; }
+                };
+            }
+            window.onscroll = () => { 
+                const btn = document.getElementById('scrollTopBtn');
+                if (btn) btn.style.display = (window.scrollY > 300) ? 'block' : 'none'; 
             };
-            window.onsl ={ document.getElementById('scrollTopBtn').style.display = (window.scrollY > 300) ? 'block' : 'none'; };
-            document.getElementById('scrollTopBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            if (scrollBtn) scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         init();
     </script>
