@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.9)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.10)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,35 +14,68 @@
             --border: #ddd;
         }
 
-        /* Ver 10.9: Total Restoration of Ver 8.7 Premium "Glass" Visuals */
+        /* Ver 10.10: "Sparkle" Animation (Ver 9.5 style) Restoration */
+        @keyframes sparkle {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            50% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
         .status-cell-fill {
+            position: relative;
             display: flex;
             width: 100%;
             height: 100%;
-            min-height: 45px;
+            min-height: 48px;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
-            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             border-radius: 4px;
+            overflow: hidden;
+            /* Contains the sparkle */
+        }
+
+        /* The Sparkle Effect */
+        .status-attend::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.4) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: translateX(-100%);
+            animation: sparkle 3s infinite;
         }
 
         .status-attend {
-            background: linear-gradient(to bottom, #28a745 0%, #218838 100%);
+            background: linear-gradient(to bottom, #28a745, #218838);
             border: 1px solid #1e7e34;
         }
 
         .status-absent {
-            background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%);
+            background: linear-gradient(to bottom, #dc3545, #c82333);
             border: 1px solid #bd2130;
         }
 
-        /* Result table cell override for 8.7 full-bleed look */
+        /* Result table cell override for full-bleed look */
         #resultBody td {
             padding: 0 !important;
-            height: 45px;
+            height: 48px;
             vertical-align: middle;
             border: 1px solid #ddd;
         }
@@ -303,12 +336,12 @@
 
 <body>
 
-    <div id="loading"><b>確認中</b></div>
+    <div id="loading"><b>確認中...</b></div>
     <button id="scrollTopBtn">▲</button>
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.9)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.10)</h1>
         </header>
 
         <div class="tabs">
@@ -384,7 +417,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw9F2LjlmMNqk88_2htmVQLa7eKllu0ttWQLEsvAEh7TPcr9d61AJJdKV8hCDHoXXsq/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDTiHQJK5KkB9GHlCwnLFpXQR4E2RgNkHX7F_Xr_G1yqx4K0QLd8TNjxWkENiqMntJ9A/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
@@ -546,8 +579,8 @@
                 try {
                     await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
                     if (json.status === "削除") alert("一覧から削除しました");
-                    else alert("送信完了しました");
-                    selectDate(json.date, null);
+                    else alert("完了しました"); // 以前のシンプルな文言
+                    selectDate(json.date, document.querySelector('.date-btn.active'));
                 } catch (e) { alert("Error: " + e.message); }
                 finally { document.getElementById('submitBtn').disabled = false; }
             };
