@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.8)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.9)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,7 +14,7 @@
             --border: #ddd;
         }
 
-        /* Ver 10.8: Complete Restoration of Ver 8.7 Elegant Visuals */
+        /* Ver 10.9: Total Restoration of Ver 8.7 Premium "Glass" Visuals */
         .status-cell-fill {
             display: flex;
             width: 100%;
@@ -24,22 +24,22 @@
             justify-content: center;
             color: white;
             font-weight: bold;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
             border-radius: 4px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
         }
 
         .status-attend {
-            background: linear-gradient(135deg, #28a745, #34ce57);
-            box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(to bottom, #28a745 0%, #218838 100%);
+            border: 1px solid #1e7e34;
         }
 
         .status-absent {
-            background: linear-gradient(135deg, #dc3545, #e4606d);
-            box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(to bottom, #dc3545 0%, #c82333 100%);
+            border: 1px solid #bd2130;
         }
 
-        /* Table styles for full-bleed cells */
+        /* Result table cell override for 8.7 full-bleed look */
         #resultBody td {
             padding: 0 !important;
             height: 45px;
@@ -95,7 +95,7 @@
             content: "済";
         }
 
-        /* Shared General Styles */
+        /* General UI Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -308,7 +308,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.8)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.9)</h1>
         </header>
 
         <div class="tabs">
@@ -384,7 +384,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw9F2LjlmMNqk88_2htmVQLa7eKllu0ttWQLEsvAEh7TPcr9d61AJJdKV8hCDHoXXsq/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
@@ -412,14 +412,14 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById(tab + 'Section').classList.add('active');
-            if (tab === 'fees') refreshAll();
+            if (tab === 'fees') refreshFees();
             window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
-        async function refreshAll() {
+        async function refreshFees() {
             document.getElementById('loading').style.display = 'flex';
             try {
-                const res = await fetch(GAS_API_URL);
+                const res = await fetch(`${GAS_API_URL}?fees=true`);
                 cachedData = await res.json();
                 renderFeeTable();
             } catch (e) { log("Refresh Error: " + e.message); }
@@ -430,7 +430,7 @@
             if (!cachedData) return;
             const header = document.getElementById('feeHeader');
             const body = document.getElementById('feeBody');
-            const months = (cachedData.monthHeaders && cachedData.monthHeaders.length > 0) ? cachedData.monthHeaders : ["3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+            const months = cachedData.monthHeaders || ["3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
             const fees = cachedData.fees || {};
             header.innerHTML = '<th class="col-fee-name">名前</th>' + months.map(m => `<th class="col-fee-month">${m}</th>`).join('');
             body.innerHTML = '';
