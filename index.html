@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.10)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.11)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,7 +14,7 @@
             --border: #ddd;
         }
 
-        /* Ver 10.10: "Sparkle" Animation (Ver 9.5 style) Restoration */
+        /* Ver 10.11: "Sparkle" Animation for BOTH Attend/Absent */
         @keyframes sparkle {
             0% {
                 transform: translateX(-100%);
@@ -34,7 +34,8 @@
             display: flex;
             width: 100%;
             height: 100%;
-            min-height: 48px;
+            min-height: 43px;
+            /* Reduced by 10% (was 48px) */
             align-items: center;
             justify-content: center;
             color: white;
@@ -43,11 +44,11 @@
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             border-radius: 4px;
             overflow: hidden;
-            /* Contains the sparkle */
         }
 
-        /* The Sparkle Effect */
-        .status-attend::after {
+        /* Sparkle Sweep for both statuses */
+        .status-attend::after,
+        .status-absent::after {
             content: "";
             position: absolute;
             top: 0;
@@ -72,63 +73,34 @@
             border: 1px solid #bd2130;
         }
 
-        /* Result table cell override for full-bleed look */
+        /* Ver 10.11: Reduced Row Height (10% shorter) */
         #resultBody td {
             padding: 0 !important;
-            height: 48px;
+            height: 43px;
+            /* Reduced */
             vertical-align: middle;
             border: 1px solid #ddd;
+            font-size: 0.95rem;
         }
 
-        /* Fee Table Styles */
-        .fee-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            table-layout: fixed;
-        }
-
-        .col-fee-name {
-            width: 12%;
-        }
-
-        .col-fee-month {
-            width: 8.8%;
-        }
-
-        .fee-table th,
-        .fee-table td {
-            border: 1px solid var(--border);
-            text-align: center;
-            padding: 10px 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .fee-table th {
-            background: #f1f8ff;
-            font-size: 0.8rem;
-            border-bottom: 2px solid #ccc;
-        }
-
-        .fee-cell {
-            cursor: pointer;
-            transition: background 0.2s;
-            min-height: 40px;
-        }
-
-        .fee-cell.paid {
-            background: #d4edda;
-            color: #155724;
+        /* Custom Toast Notification */
+        #toast {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 10000;
             font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
 
-        .fee-cell.paid::after {
-            content: "済";
-        }
-
-        /* General UI Styles */
+        /* Shared UI Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -331,17 +303,66 @@
             justify-content: center;
             align-items: center;
         }
+
+        /* Fee Table Adjustments */
+        .fee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            table-layout: fixed;
+        }
+
+        .col-fee-name {
+            width: 12%;
+        }
+
+        .col-fee-month {
+            width: 8.8%;
+        }
+
+        .fee-table th,
+        .fee-table td {
+            border: 1px solid var(--border);
+            text-align: center;
+            padding: 10px 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .fee-table th {
+            background: #f1f8ff;
+            font-size: 0.8rem;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .fee-cell {
+            cursor: pointer;
+            transition: background 0.2s;
+            min-height: 40px;
+        }
+
+        .fee-cell.paid {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .fee-cell.paid::after {
+            content: "済";
+        }
     </style>
 </head>
 
 <body>
 
     <div id="loading"><b>確認中...</b></div>
+    <div id="toast"></div>
     <button id="scrollTopBtn">▲</button>
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.10)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.11)</h1>
         </header>
 
         <div class="tabs">
@@ -417,7 +438,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwDTiHQJK5KkB9GHlCwnLFpXQR4E2RgNkHX7F_Xr_G1yqx4K0QLd8TNjxWkENiqMntJ9A/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw-eNBQI0_EQfKP_kQ8S0W6tO1LIOOSrmydmHvA4foZDBVFLO64tOqtwCtNNiH_ZFtSvQ/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
@@ -425,6 +446,13 @@
         function log(msg) {
             const t = new Date().toTimeString().split(' ')[0];
             document.getElementById('debugLog').innerHTML = `[${t}] ${msg}\n` + document.getElementById('debugLog').innerHTML;
+        }
+
+        function showMessage(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2000);
         }
 
         async function switchTab(tab) {
@@ -472,11 +500,11 @@
                 const fullName = m.name || m;
                 const dispName = m.displayName || fullName;
                 tr.innerHTML = `<td class="col-fee-name">${dispName}</td>`;
-                months.forEach((month) => {
+                 months.forEach((month) => {
                     const td = document.createElement('td');
                     td.className = 'col-fee-month fee-cell';
                     const isPaid = fees[fullName] && fees[fullName][month] === 1;
-                    if (isPaid) td.classList.add('paid');
+                    if(isPaid) td.classList.add('paid');
                     td.onclick = async () => toggleFee(fullName, month, td);
                     tr.appendChild(td);
                 });
@@ -492,13 +520,13 @@
                 if (!cachedData.fees) cachedData.fees = {};
                 if (!cachedData.fees[name]) cachedData.fees[name] = {};
                 cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
-            } catch (e) { alert("Error: " + e.message); }
+            } catch (e) { alert("Error: " + e.me ssage); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
         async function selectDate(dateStr, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
+            if(btn) btn.classList.add('active');
             document.getElementById('inputDate').value = dateStr;
             const p = dateStr.split('-');
             document.getElementById('selectedDateTitle').textContent = `${parseInt(p[1])}月${parseInt(p[2])}日`;
@@ -530,7 +558,7 @@
                         if (st === '参加') cA++; else cAb++;
                     }
                     tr.innerHTML = `<td style="border:1px solid #ddd; padding:4px;">${nameMap[row.name] || row.name}</td>
-                                    <td style="border:1px solid #ddd; padding:0; height:45px;">${html}</td>
+                                    <td style="border:1px solid #ddd; padding:0; height:43px;">${html}</td>
                                     <td style="border:1px solid #ddd; padding:4px; text-align:left;">${row.comment}</td>`;
                     tbody.appendChild(tr);
                 });
@@ -578,13 +606,13 @@
                 document.getElementById('loading').style.display = 'flex';
                 try {
                     await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
-                    if (json.status === "削除") alert("一覧から削除しました");
-                    else alert("完了しました"); // 以前のシンプルな文言
+                    if (json.status === "削除") showMessage("一覧から削除しました");
+                    else showMessage("完了しました");
                     selectDate(json.date, document.querySelector('.date-btn.active'));
                 } catch (e) { alert("Error: " + e.message); }
                 finally { document.getElementById('submitBtn').disabled = false; }
             };
-            window.onscroll = () => { document.getElementById('scrollTopBtn').style.display = (window.scrollY > 300) ? 'block' : 'none'; };
+            window.onsl ={ document.getElementById('scrollTopBtn').style.display = (window.scrollY > 300) ? 'block' : 'none'; };
             document.getElementById('scrollTopBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         init();
