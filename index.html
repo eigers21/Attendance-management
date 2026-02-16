@@ -21,12 +21,8 @@
                 transform: translateX(-100%) skewX(-15deg);
             }
 
-            40% {
-                transform: translateX(110%) skewX(-15deg);
-            }
-
             100% {
-                transform: translateX(110%) skewX(-15deg);
+                transform: translateX(200%) skewX(-15deg);
             }
         }
 
@@ -55,7 +51,7 @@
             height: 100%;
             background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
             transform: translateX(-100%) skewX(-15deg);
-            animation: sparkle-sweep 3s ease-in-out infinite;
+            animation: sparkle-sweep 2s linear infinite;
         }
 
         .status-attend {
@@ -427,7 +423,7 @@
                     <div class="radio-set">
                         <label><input type="radio" name="status" value="参加" checked> 参加</label>
                         <label><input type="radio" name="status" value="不参加"> 不参加</label>
-                        <label style="color:#999"><input type="radio" name="status" value="削除"> 削除（取消）</label>
+
                     </div>
 
                     <label>備考</label>
@@ -473,7 +469,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbxTku0Hy8fqJHJCV7mIWCMnJgTwhoF6ZuGxv6IbgHQwsDagSRxvWqYzjOGLgd3ffPIHdA/exec";
+        const API = "https://script.google.com/macros/s/AKfycbwDOgE_NDBDVUPs9zD4uqVVEX4DKhix2Ie2v6Awo-u0tpIG5dgPxEVkWfGXmIPRm_NB/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
