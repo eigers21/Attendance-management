@@ -30,8 +30,8 @@
             position: relative;
             display: flex;
             width: 100%;
-            height: 43px;
-            /* 10% Shorter than before */
+            height: 39px;
+            /* 10% Shorter than before (43px -> 39px) */
             align-items: center;
             justify-content: center;
             color: white;
@@ -83,7 +83,7 @@
         .result-table td {
             border: 1px solid var(--border);
             padding: 0 !important;
-            height: 43px;
+            height: 39px;
             text-align: center;
         }
 
@@ -342,28 +342,70 @@
 
         .fee-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             min-width: 600px;
             font-size: 0.85rem;
+            table-layout: fixed;
+            /* Unified column widths */
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
         .fee-table th,
         .fee-table td {
             border: 1px solid var(--border);
-            padding: 12px 4px;
+            padding: 10px 4px;
             text-align: center;
+            width: 8.3%;
+            /* 100% / 12 cols (1 name + 10 months is 11... wait, name needs more space) */
+        }
+
+        /* Specific widths for unified look */
+        .fee-table th:first-child,
+        .fee-table td:first-child {
+            width: 20%;
+            /* Name column */
+        }
+
+        .fee-table th:not(:first-child),
+        .fee-table td:not(:first-child) {
+            width: 8%;
+            /* Month columns (remaining 80% / 10 months = 8%) */
+        }
+
+        .fee-table th {
+            background: #34495e;
+            /* Dark cool gray header */
+            color: white;
+            font-weight: bold;
+            border-color: #34495e;
+        }
+
+        .fee-table tr:nth-child(even) {
+            background: #f8f9fa;
+            /* Zebra striping */
+        }
+
+        .fee-table tr:hover {
+            background-color: #eaeff5;
+            /* Row hover effect */
         }
 
         .fee-cell {
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             position: relative;
         }
 
         .fee-cell.paid {
-            background: #e6fcf5;
-            color: #0ca678;
+            background: #2ecc71 !important;
+            /* Bright distinct green */
+            color: white;
             font-weight: bold;
+            border-color: #2ecc71;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
         .fee-cell.paid::after {
@@ -469,7 +511,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbwDOgE_NDBDVUPs9zD4uqVVEX4DKhix2Ie2v6Awo-u0tpIG5dgPxEVkWfGXmIPRm_NB/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzNmR3TJxhzyYxkS2r5rLVbWrUGOIh1XVvL-SdjzqOOh187Xmq7xC6v3J_oDVhf6FK5Og/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
