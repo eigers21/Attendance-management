@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.0)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.2)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,6 +14,56 @@
             --border: #ddd;
         }
 
+        /* Ver 10.2 CSS: Simplified Fees Table */
+        .fee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            table-layout: fixed;
+        }
+
+        /* Widths: Optimized to fill 100% while prioritizing months */
+        .col-fee-name {
+            width: 8%;
+        }
+
+        .col-fee-month {
+            width: 9.2%;
+        }
+
+        .fee-table th,
+        .fee-table td {
+            border: 1px solid var(--border);
+            text-align: center;
+            padding: 10px 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .fee-table th {
+            background: #f1f8ff;
+            font-size: 0.8rem;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .fee-cell {
+            cursor: pointer;
+            transition: background 0.2s;
+            min-height: 40px;
+        }
+
+        .fee-cell.paid {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .fee-cell.paid::after {
+            content: "済";
+        }
+
+        /* Shared Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -28,12 +78,11 @@
         }
 
         .container {
-            max-width: 950px;
+            max-width: 1100px;
             margin: 0 auto;
             padding-bottom: 50px;
         }
 
-        /* TABS */
         .tabs {
             display: flex;
             margin-bottom: 20px;
@@ -48,9 +97,7 @@
             background: #e9ecef;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1rem;
             border-radius: 8px 8px 0 0;
-            transition: all 0.3s;
         }
 
         .tab-btn.active {
@@ -66,7 +113,6 @@
             display: block;
         }
 
-        /* HEADER & WARNING */
         header {
             text-align: center;
             margin-bottom: 15px;
@@ -83,7 +129,6 @@
             text-align: center;
         }
 
-        /* CALENDAR / FORM STYLE */
         .month-group {
             margin-bottom: 15px;
             background: #fff;
@@ -169,76 +214,6 @@
             margin-top: 10px;
         }
 
-        /* FEE TABLE STYLE */
-        .fee-container {
-            overflow-x: auto;
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Ver 10.1 CSS Changes */
-        .fee-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            table-layout: fixed;
-            /* Force fixed layout for prescribed widths */
-        }
-
-        /* Widths: Name 5% (min-width needed for readability), months 8%, total 15% */
-        /* Note: 5% is very narrow for a name. I'll use 5% but ensure it doesn't break. */
-        .col-fee-name {
-            width: 10%;
-        }
-
-        /* Adjusted slightly from 5% because 5% is basically invisible */
-        .col-fee-month {
-            width: 7.5%;
-        }
-
-        .col-fee-total {
-            width: 15%;
-            background: #fffde7;
-            font-weight: bold;
-        }
-
-        .fee-table th,
-        .fee-table td {
-            border: 1px solid var(--border);
-            text-align: center;
-            padding: 10px 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .fee-table th {
-            background: #f1f8ff;
-            font-size: 0.8rem;
-        }
-
-        .fee-footer {
-            background: #e3f2fd;
-            font-weight: bold;
-        }
-
-        .fee-cell {
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .fee-cell.paid {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .fee-cell.paid::after {
-            content: "済";
-        }
-
-        /* STATS */
         .stats-box {
             background: #f1f8ff;
             padding: 10px;
@@ -249,7 +224,6 @@
             font-weight: bold;
         }
 
-        /* SCROLL TOP */
         #scrollTopBtn {
             display: none;
             position: fixed;
@@ -265,7 +239,6 @@
             z-index: 100;
         }
 
-        /* DEBUG */
         details.debug-box {
             margin-top: 30px;
             background: #222;
@@ -314,7 +287,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.1)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.2)</h1>
         </header>
 
         <div class="tabs">
@@ -373,7 +346,6 @@
                             <tr id="feeHeader"></tr>
                         </thead>
                         <tbody id="feeBody"></tbody>
-                        <tfoot id="feeFooter"></tfoot>
                     </table>
                 </div>
             </div>
@@ -391,7 +363,7 @@
 
     <script>
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
-        const FEE_PASSWORD = "2026"; // パスワード設定
+        const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
 
@@ -411,16 +383,13 @@
                     alert("パスワードが違います");
                     return;
                 } else {
-                    return; // Cancel
+                    return;
                 }
             }
-
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-
             document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById(tab + 'Section').classList.add('active');
-
             if (tab === 'fees') refreshAll();
         }
 
@@ -438,18 +407,16 @@
             if (!cachedData) return;
             const header = document.getElementById('feeHeader');
             const body = document.getElementById('feeBody');
-            const footer = document.getElementById('feeFooter');
-            const months = cachedData.monthHeaders || [];
 
-            // Header
+            // Month Headers Fallback logic (Ver 10.2 Fix)
+            const months = (cachedData.monthHeaders && cachedData.monthHeaders.length > 0)
+                ? cachedData.monthHeaders
+                : ["3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+
             header.innerHTML = '<th class="col-fee-name">名前</th>' +
-                months.map(m => `<th class="col-fee-month">${m}</th>`).join('') +
-                '<th class="col-fee-total">合計</th>';
+                months.map(m => `<th class="col-fee-month">${m}</th>`).join('');
 
             body.innerHTML = '';
-            let monthlySum = months.map(() => 0);
-            let grandTotal = 0;
-
             cachedData.members.forEach(m => {
                 const tr = document.createElement('tr');
                 const fullName = m.name || m;
@@ -457,38 +424,16 @@
 
                 tr.innerHTML = `<td class="col-fee-name">${dispName}</td>`;
 
-                let personalPaidCount = 0;
-                months.forEach((month, idx) => {
+                months.forEach((month) => {
                     const td = document.createElement('td');
                     td.className = 'col-fee-month fee-cell';
                     const isPaid = cachedData.fees[fullName] && cachedData.fees[fullName][month] === 1;
-                    if (isPaid) {
-                        td.classList.add('paid');
-                        personalPaidCount++;
-                        monthlySum[idx]++;
-                    }
+                    if (isPaid) td.classList.add('paid');
                     td.onclick = async () => toggleFee(fullName, month, td);
                     tr.appendChild(td);
                 });
-
-                // Row Total
-                const totalTd = document.createElement('td');
-                totalTd.className = 'col-fee-total';
-                const personalTotal = personalPaidCount * 3000;
-                totalTd.textContent = personalTotal.toLocaleString() + "円";
-                tr.appendChild(totalTd);
-                grandTotal += personalTotal;
-
                 body.appendChild(tr);
             });
-
-            // Footer Row
-            let footerHtml = '<tr class="fee-footer"><td>合計</td>';
-            monthlySum.forEach(sum => {
-                footerHtml += `<td>${(sum * 3000).toLocaleString()}円</td>`;
-            });
-            footerHtml += `<td>${grandTotal.toLocaleString()}円</td></tr>`;
-            footer.innerHTML = footerHtml;
         }
 
         async function toggleFee(name, month, cell) {
@@ -499,15 +444,9 @@
                     mode: 'no-cors',
                     body: JSON.stringify({ type: 'fee', name, month })
                 });
-                // Instant feedback
                 cell.classList.toggle('paid');
-                log(`Toggled fee: ${name} / ${month}`);
-                // Recalculate totals from UI state or just refresh?
-                // To be accurate with totals, we should fetch again or update cachedData manually.
-                // Let's update cachedData manually to avoid a full refresh delay.
                 if (!cachedData.fees[name]) cachedData.fees[name] = {};
                 cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
-                renderFeeTable();
             } catch (e) { alert("Error: " + e.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
