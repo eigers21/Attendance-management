@@ -150,6 +150,8 @@
             font-weight: bold;
             border-radius: 8px 8px 0 0;
             color: #7f8c8d;
+            font-size: 1.3rem;
+            /* 30% Larger Tabs */
         }
 
         .tab-btn.active {
@@ -167,7 +169,8 @@
             background: #fdf2f2;
             border-radius: 8px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
+            /* 20% Larger Warning */
         }
 
         #toast {
@@ -515,7 +518,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyLNiVa30K-iNT7nKxs-7krhZmCHlKHiPsgAvxA5p37fGEh-GUqJNQQmvZB_hOPOZ-z2Q/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxTCdrBkaJbn9G8P8JdaD7-RFXnXbTe8fZkBQg2Vk69okY3xLKqTZzX0snLbHuQPWlhOQ/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -666,6 +669,7 @@
             window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
             el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+
     </script>
 </body>
 
