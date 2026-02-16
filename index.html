@@ -178,68 +178,64 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
+        /* Ver 10.1 CSS Changes */
         .fee-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            table-layout: fixed;
+            /* Force fixed layout for prescribed widths */
+        }
+
+        /* Widths: Name 5% (min-width needed for readability), months 8%, total 15% */
+        /* Note: 5% is very narrow for a name. I'll use 5% but ensure it doesn't break. */
+        .col-fee-name {
+            width: 10%;
+        }
+
+        /* Adjusted slightly from 5% because 5% is basically invisible */
+        .col-fee-month {
+            width: 7.5%;
+        }
+
+        .col-fee-total {
+            width: 15%;
+            background: #fffde7;
+            font-weight: bold;
         }
 
         .fee-table th,
         .fee-table td {
             border: 1px solid var(--border);
             text-align: center;
-            padding: 8px 4px;
+            padding: 10px 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .fee-table th {
             background: #f1f8ff;
+            font-size: 0.8rem;
         }
 
-        .fee-name-col {
-            min-width: 80px;
-            position: sticky;
-            left: 0;
-            background: #fff;
-            z-index: 2;
-            border-right: 2px solid #ccc;
+        .fee-footer {
+            background: #e3f2fd;
+            font-weight: bold;
         }
 
-        /* Toggled Cell Styles */
         .fee-cell {
             cursor: pointer;
             transition: background 0.2s;
-            position: relative;
         }
 
         .fee-cell.paid {
             background: #d4edda;
             color: #155724;
-            font-weight: bold;
         }
 
         .fee-cell.paid::after {
             content: "済";
-            display: inline-block;
-        }
-
-        @keyframes sparkle-small {
-            0% {
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0.5;
-            }
-        }
-
-        .fee-cell.paid.sparkle {
-            animation: sparkle-small 1.5s infinite;
-            background-image: linear-gradient(45deg, #d4edda 25%, #fff 50%, #d4edda 75%);
-            background-size: 200% 200%;
         }
 
         /* STATS */
@@ -297,6 +293,17 @@
             justify-content: center;
             align-items: center;
         }
+
+        .status-cell-fill {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
@@ -307,12 +314,12 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.0)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.1)</h1>
         </header>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('attendance')">参加登録</button>
-            <button class="tab-btn" onclick="switchTab('fees')">会費管理</button>
+            <button id="tab-attendance" class="tab-btn active" onclick="switchTab('attendance')">参加登録</button>
+            <button id="tab-fees" class="tab-btn" onclick="switchTab('fees')">会費管理</button>
         </div>
 
         <!-- ATTENDANCE SECTION -->
@@ -357,15 +364,22 @@
 
         <!-- FEES SECTION -->
         <div id="feesSection" class="section">
-            <div class="fee-container">
+            <div class="fee-container" id="feeContent" style="display: none;">
                 <h3>会費支払い状況 (3,000円/月)</h3>
                 <p style="font-size: 0.8rem; margin-bottom: 5px; color: #666;">※マスをタップすると「支払い済み」に切り替わります。</p>
-                <table class="fee-table">
-                    <thead>
-                        <tr id="feeHeader"></tr>
-                    </thead>
-                    <tbody id="feeBody"></tbody>
-                </table>
+                <div style="overflow-x: auto; margin-top: 10px;">
+                    <table class="fee-table">
+                        <thead>
+                            <tr id="feeHeader"></tr>
+                        </thead>
+                        <tbody id="feeBody"></tbody>
+                        <tfoot id="feeFooter"></tfoot>
+                    </table>
+                </div>
+            </div>
+            <div id="feePlaceholder" style="text-align: center; padding: 50px; color: #888;">
+                <p>※会費管理を表示するにはパスワードが必要です。</p>
+                <button class="btn-submit" style="width: 200px;" onclick="switchTab('fees')">パスワード入力</button>
             </div>
         </div>
 
@@ -376,7 +390,9 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz_GY0qTHhfULrFaQsKPociNOUMOYiwrjWelhJb1wUlmXy-Yj0sm5FYzdb6_zKWPuglgg/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
+        const FEE_PASSWORD = "2026"; // パスワード設定
+        let isFeesUnlocked = false;
         let cachedData = null;
 
         function log(msg) {
@@ -384,11 +400,25 @@
             document.getElementById('debugLog').innerHTML = `[${t}] ${msg}\n` + document.getElementById('debugLog').innerHTML;
         }
 
-        function switchTab(tab) {
+        async function switchTab(tab) {
+            if (tab === 'fees' && !isFeesUnlocked) {
+                const pass = prompt("会費管理パスワードを入力してください");
+                if (pass === FEE_PASSWORD) {
+                    isFeesUnlocked = true;
+                    document.getElementById('feeContent').style.display = 'block';
+                    document.getElementById('feePlaceholder').style.display = 'none';
+                } else if (pass !== null) {
+                    alert("パスワードが違います");
+                    return;
+                } else {
+                    return; // Cancel
+                }
+            }
+
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
 
-            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById(tab + 'Section').classList.add('active');
 
             if (tab === 'fees') refreshAll();
@@ -408,43 +438,76 @@
             if (!cachedData) return;
             const header = document.getElementById('feeHeader');
             const body = document.getElementById('feeBody');
+            const footer = document.getElementById('feeFooter');
             const months = cachedData.monthHeaders || [];
 
-            header.innerHTML = '<th class="fee-name-col">名前</th>' + months.map(m => `<th>${m}</th>`).join('');
+            // Header
+            header.innerHTML = '<th class="col-fee-name">名前</th>' +
+                months.map(m => `<th class="col-fee-month">${m}</th>`).join('') +
+                '<th class="col-fee-total">合計</th>';
+
             body.innerHTML = '';
+            let monthlySum = months.map(() => 0);
+            let grandTotal = 0;
 
             cachedData.members.forEach(m => {
                 const tr = document.createElement('tr');
                 const fullName = m.name || m;
                 const dispName = m.displayName || fullName;
 
-                tr.innerHTML = `<td class="fee-name-col">${dispName}</td>`;
+                tr.innerHTML = `<td class="col-fee-name">${dispName}</td>`;
 
-                months.forEach(month => {
+                let personalPaidCount = 0;
+                months.forEach((month, idx) => {
                     const td = document.createElement('td');
-                    td.className = 'fee-cell';
+                    td.className = 'col-fee-month fee-cell';
                     const isPaid = cachedData.fees[fullName] && cachedData.fees[fullName][month] === 1;
-                    if (isPaid) td.classList.add('paid', 'sparkle');
-
+                    if (isPaid) {
+                        td.classList.add('paid');
+                        personalPaidCount++;
+                        monthlySum[idx]++;
+                    }
                     td.onclick = async () => toggleFee(fullName, month, td);
                     tr.appendChild(td);
                 });
+
+                // Row Total
+                const totalTd = document.createElement('td');
+                totalTd.className = 'col-fee-total';
+                const personalTotal = personalPaidCount * 3000;
+                totalTd.textContent = personalTotal.toLocaleString() + "円";
+                tr.appendChild(totalTd);
+                grandTotal += personalTotal;
+
                 body.appendChild(tr);
             });
+
+            // Footer Row
+            let footerHtml = '<tr class="fee-footer"><td>合計</td>';
+            monthlySum.forEach(sum => {
+                footerHtml += `<td>${(sum * 3000).toLocaleString()}円</td>`;
+            });
+            footerHtml += `<td>${grandTotal.toLocaleString()}円</td></tr>`;
+            footer.innerHTML = footerHtml;
         }
 
         async function toggleFee(name, month, cell) {
             document.getElementById('loading').style.display = 'flex';
             try {
-                const res = await fetch(GAS_API_URL, {
+                await fetch(GAS_API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({ type: 'fee', name, month })
                 });
-                // no-cors means we can't see the result, so we toggle locally for UX and refresh later
+                // Instant feedback
                 cell.classList.toggle('paid');
-                cell.classList.toggle('sparkle');
                 log(`Toggled fee: ${name} / ${month}`);
+                // Recalculate totals from UI state or just refresh?
+                // To be accurate with totals, we should fetch again or update cachedData manually.
+                // Let's update cachedData manually to avoid a full refresh delay.
+                if (!cachedData.fees[name]) cachedData.fees[name] = {};
+                cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
+                renderFeeTable();
             } catch (e) { alert("Error: " + e.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
@@ -452,18 +515,14 @@
         async function selectDate(dateStr, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
             document.getElementById('inputDate').value = dateStr;
             const p = dateStr.split('-');
             document.getElementById('selectedDateTitle').textContent = `${parseInt(p[1])}月${parseInt(p[2])}日`;
-
             document.getElementById('loading').style.display = 'flex';
             try {
                 const res = await fetch(`${GAS_API_URL}?date=${dateStr}&t=${Date.now()}`);
                 const data = await res.json();
-                cachedData = data; // Update cache
-
-                // Update Name Dropdown
+                cachedData = data;
                 const sel = document.getElementById('inputName');
                 sel.innerHTML = '<option value="">選択してください</option>';
                 data.members.forEach(m => {
@@ -472,33 +531,28 @@
                     opt.textContent = m.name || m;
                     sel.appendChild(opt);
                 });
-
-                // Table
                 const tbody = document.getElementById('resultBody');
                 tbody.innerHTML = '';
                 let cA = 0, cAb = 0;
                 const nameMap = {};
                 data.members.forEach(m => nameMap[m.name || m] = m.displayName || (m.name || m));
-
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
                     let st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
                     let html = st;
-                    if (st === '参加') { html = `<div class="status-cell-fill paid" style="background:#28a745; min-height:30px;">参加</div>`; cA++; }
-                    else if (st === '不参加') { html = `<div class="status-cell-fill" style="background:#dc3545; color:white; min-height:30px;">不参加</div>`; cAb++; }
-
+                    if (st === '参加') { html = `<div class="status-cell-fill" style="background:#28a745;">参加</div>`; cA++; }
+                    else if (st === '不参加') { html = `<div class="status-cell-fill" style="background:#dc3545; color:white;">不参加</div>`; cAb++; }
                     tr.innerHTML = `<td style="border:1px solid #ddd; padding:4px;">${nameMap[row.name] || row.name}</td>
-                                <td style="border:1px solid #ddd; padding:0;">${html}</td>
-                                <td style="border:1px solid #ddd; padding:4px; text-align:left;">${row.comment}</td>`;
+                                    <td style="border:1px solid #ddd; padding:0;">${html}</td>
+                                    <td style="border:1px solid #ddd; padding:4px; text-align:left;">${row.comment}</td>`;
                     tbody.appendChild(tr);
                 });
                 document.getElementById('countAttend').textContent = cA;
                 document.getElementById('countAbsent').textContent = cAb;
                 document.getElementById('countNone').textContent = Math.max(0, data.members.length - new Set(data.attendance.map(r => r.name)).size);
-
                 document.getElementById('formSection').style.display = 'block';
                 document.getElementById('resultSection').style.display = 'block';
-            } catch (e) { log("Error selecting date: " + e.message); }
+            } catch (e) { log("Error: " + e.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
@@ -506,13 +560,11 @@
             const cal = document.getElementById('calendar');
             const exclusionDates = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
             const today = new Date(); today.setHours(0, 0, 0, 0);
-
             for (let m = 3; m <= 12; m++) {
                 const group = document.createElement('div'); group.className = 'month-group';
                 const title = document.createElement('div'); title.className = 'month-title';
                 title.textContent = m === 12 ? '12月 (納会予定)' : m + '月';
                 group.appendChild(title);
-
                 const grid = document.createElement('div'); grid.className = 'date-grid';
                 let d = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (d.getMonth() === m - 1) {
@@ -530,7 +582,6 @@
                 group.appendChild(grid);
                 cal.appendChild(group);
             }
-
             document.getElementById('attendanceForm').onsubmit = async (e) => {
                 e.preventDefault();
                 document.getElementById('submitBtn').disabled = true;
@@ -543,13 +594,9 @@
                 } catch (e) { alert("Error: " + e.message); }
                 finally { document.getElementById('submitBtn').disabled = false; }
             };
-
             window.onscroll = () => { document.getElementById('scrollTopBtn').style.display = (window.scrollY > 300) ? 'block' : 'none'; };
             document.getElementById('scrollTopBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            refreshAll(); // Initial load
         }
-
         init();
     </script>
 </body>
