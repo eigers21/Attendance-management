@@ -3,137 +3,156 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.12)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026年 参加登録・会費管理 (Ver 11.0)</title>
     <style>
         :root {
             --primary: #4a90e2;
             --secondary: #2ecc71;
-            --bg: #f8f9fa;
+            --bg: #f5f7fa;
             --text: #333;
             --border: #ddd;
+            --header-bg: #fff;
         }
 
-        /* Ver 10.11-10.12: "Sparkle" Animation for BOTH Attend/Absent */
-        @keyframes sparkle {
+        /* Ver 8.7 Sparkling Animation Restoration */
+        @keyframes sparkle-sweep {
             0% {
-                transform: translateX(-100%);
+                transform: translateX(-100%) skewX(-15deg);
             }
 
-            50% {
-                transform: translateX(100%);
+            40% {
+                transform: translateX(110%) skewX(-15deg);
             }
 
             100% {
-                transform: translateX(100%);
+                transform: translateX(110%) skewX(-15deg);
             }
         }
 
-        .status-cell-fill {
+        .status-badge {
             position: relative;
             display: flex;
             width: 100%;
-            height: 100%;
-            min-height: 43px;
-            /* Reduced by 10% (was 48px) */
+            height: 43px;
+            /* 10% Shorter than before */
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             border-radius: 4px;
             overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
         }
 
-        /* Sparkle Sweep for both statuses */
-        .status-attend::after,
-        .status-absent::after {
+        .status-badge::after {
             content: "";
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 50%;
             height: 100%;
-            background: linear-gradient(90deg,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.4) 50%,
-                    rgba(255, 255, 255, 0) 100%);
-            transform: translateX(-100%);
-            animation: sparkle 3s infinite;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%) skewX(-15deg);
+            animation: sparkle-sweep 3s ease-in-out infinite;
         }
 
         .status-attend {
-            background: linear-gradient(to bottom, #28a745, #218838);
-            border: 1px solid #1e7e34;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: 1px solid #27ae60;
         }
 
         .status-absent {
-            background: linear-gradient(to bottom, #dc3545, #c82333);
-            border: 1px solid #bd2130;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: 1px solid #c0392b;
         }
 
-        /* Ver 10.11: Reduced Row Height (10% shorter) */
-        #resultBody td {
+        /* Results Table Layout */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .result-table th {
+            background: #f8f9fa;
+            padding: 10px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .result-table td {
+            border: 1px solid var(--border);
             padding: 0 !important;
             height: 43px;
-            vertical-align: middle;
-            border: 1px solid #ddd;
-            font-size: 0.95rem;
-        }
-
-        /* Custom Toast Notification */
-        #toast {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 10px;
-            z-index: 10000;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
 
-        /* Shared UI Styles */
+        .cell-name {
+            width: 25%;
+            font-weight: bold;
+            padding: 4px 8px !important;
+        }
+
+        .cell-status {
+            width: 25%;
+        }
+
+        .cell-comment {
+            padding: 4px 8px !important;
+            text-align: left !important;
+            font-size: 0.85rem;
+        }
+
+        /* Layout & Containers */
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
-            padding: 10px;
+            padding: 12px;
+            margin: 0;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 900px;
             margin: 0 auto;
-            padding-bottom: 50px;
         }
 
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+
+        /* Tabs */
         .tabs {
             display: flex;
-            margin-bottom: 20px;
+            gap: 4px;
+            margin-bottom: 15px;
             border-bottom: 2px solid var(--primary);
-            gap: 5px;
         }
 
         .tab-btn {
             flex: 1;
             padding: 12px;
             border: none;
-            background: #e9ecef;
+            background: #e0e6ed;
             cursor: pointer;
             font-weight: bold;
             border-radius: 8px 8px 0 0;
+            color: #7f8c8d;
         }
 
         .tab-btn.active {
@@ -141,153 +160,34 @@
             color: white;
         }
 
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
+        /* Warning & Message */
         .warning-box {
-            border: 2px solid #dc3545;
-            color: #dc3545;
-            padding: 10px;
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+            padding: 12px;
             margin-bottom: 15px;
             font-weight: bold;
-            background: #fff5f5;
-            border-radius: 5px;
+            background: #fdf2f2;
+            border-radius: 8px;
             text-align: center;
+            font-size: 0.9rem;
         }
 
-        .month-group {
-            margin-bottom: 15px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .month-title {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .date-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .date-btn {
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 8px 12px;
-            cursor: pointer;
-            min-width: 55px;
-            text-align: center;
-        }
-
-        .date-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .date-finished {
-            background: #eee;
-            color: #aaa;
-            pointer-events: none;
-        }
-
-        .form-card {
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 15px;
-            border: 2px solid var(--primary);
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        select,
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        .radio-group {
-            display: flex;
-            gap: 15px;
-            padding: 10px 0;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .stats-box {
-            background: #f1f8ff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-around;
-            font-weight: bold;
-        }
-
-        #scrollTopBtn {
+        #toast {
             display: none;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        details.debug-box {
-            margin-top: 30px;
-            background: #222;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        #debugLog {
-            max-height: 200px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-size: 11px;
+            padding: 16px 32px;
+            border-radius: 12px;
+            z-index: 10000;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 1.1rem;
         }
 
         #loading {
@@ -297,334 +197,432 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.7);
             z-index: 9999;
             justify-content: center;
             align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
-        /* Fee Table Adjustments */
+        /* Calendar Grid */
+        .month-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .month-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+        }
+
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 8px;
+        }
+
+        .date-btn {
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            padding: 10px 5px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .date-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+        }
+
+        .date-off {
+            background: #f1f3f5;
+            color: #adb5bd;
+            cursor: default;
+        }
+
+        /* Form Card */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #dee2e6;
+        }
+
+        .card-header {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin: 12px 0 6px;
+            font-size: 0.9rem;
+        }
+
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .radio-set {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .radio-set label {
+            display: inline-flex;
+            align-items: center;
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .radio-set input {
+            margin-right: 6px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+        }
+
+        /* Stats & Fees */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #e8f4fd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .fee-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .fee-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
             font-size: 0.85rem;
-            table-layout: fixed;
-        }
-
-        .col-fee-name {
-            width: 12%;
-        }
-
-        .col-fee-month {
-            width: 8.8%;
         }
 
         .fee-table th,
         .fee-table td {
             border: 1px solid var(--border);
+            padding: 12px 4px;
             text-align: center;
-            padding: 10px 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .fee-table th {
-            background: #f1f8ff;
-            font-size: 0.8rem;
-            border-bottom: 2px solid #ccc;
         }
 
         .fee-cell {
             cursor: pointer;
             transition: background 0.2s;
-            min-height: 40px;
+            position: relative;
         }
 
         .fee-cell.paid {
-            background: #d4edda;
-            color: #155724;
+            background: #e6fcf5;
+            color: #0ca678;
             font-weight: bold;
         }
 
         .fee-cell.paid::after {
             content: "済";
         }
+
+        #back-top {
+            display: none;
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 100;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 
 <body>
 
-    <div id="loading"><b>確認中...</b></div>
+    <div id="loading">確認中...</div>
     <div id="toast"></div>
-    <button id="scrollTopBtn">▲</button>
+    <button id="back-top">▲</button>
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.12)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 11.0)</h1>
         </header>
 
         <div class="tabs">
-            <button id="tab-attendance" class="tab-btn active" onclick="switchTab('attendance')">参加登録</button>
-            <button id="tab-fees" class="tab-btn" onclick="switchTab('fees')">会費管理</button>
+            <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
+            <button id="tab-fee" class="tab-btn" onclick="switchView('fee')">会費管理</button>
         </div>
 
-        <!-- ATTENDANCE SECTION -->
-        <div id="attendanceSection" class="section active">
-            <div class="warning-box">同じ名前で登録すると上書きされます！</div>
-            <div id="calendar"></div>
-            <div id="formSection" class="form-card" style="display:none;">
-                <h2 id="selectedDateTitle"></h2>
+        <!-- REGISTER VIEW -->
+        <div id="view-reg">
+            <div class="warning-box">同名での登録は最新の内容に書き換えられます。</div>
+            <div id="calendar-container"></div>
+
+            <div id="form-section" class="card" style="display: none;">
+                <div id="form-date-title" class="card-header"></div>
                 <form id="attendanceForm">
-                    <input type="hidden" id="inputDate" name="date">
+                    <input type="hidden" id="field-date" name="date">
                     <label>名前</label>
-                    <select id="inputName" name="name" required></select>
+                    <select id="field-name" name="name" required>
+                        <option value="">読込中...</option>
+                    </select>
+
                     <label>参加状況</label>
-                    <div class="radio-group" style="flex-wrap: wrap;">
+                    <div class="radio-set">
                         <label><input type="radio" name="status" value="参加" checked> 参加</label>
                         <label><input type="radio" name="status" value="不参加"> 不参加</label>
-                        <label style="color: #888;"><input type="radio" name="status" value="削除"> 削除（取消）</label>
+                        <label style="color:#999"><input type="radio" name="status" value="削除"> 削除（取消）</label>
                     </div>
+
                     <label>備考</label>
-                    <input type="text" name="comment" placeholder="ひとこと">
-                    <button type="submit" id="submitBtn" class="btn-submit">送信する</button>
+                    <input type="text" name="comment" placeholder="ひとことメッセージ">
+                    <button type="submit" id="btn-submit" class="submit-btn">送信する</button>
                 </form>
             </div>
-            <div id="resultSection" class="form-card" style="display:none; border-color: #ccc;">
-                <h3>参加状況一覧</h3>
-                <div class="stats-box">
-                    <span style="color:#28a745;">参加: <span id="countAttend">0</span></span>
-                    <span style="color:#dc3545;">不参加: <span id="countAbsent">0</span></span>
-                    <span style="color:#666;">未回答: <span id="countNone">0</span></span>
-                </div>
-                <table style="width:100%; border-collapse:collapse; text-align:center;">
+
+            <div id="result-section" class="card" style="display: none;">
+                <div class="card-header">参加状況一覧</div>
+                <div id="stats-area" class="stats"></div>
+                <table class="result-table">
                     <thead>
-                        <tr style="background:#f8f9fa;">
-                            <th style="border:1px solid #ddd; padding:8px; width:25%;">名前</th>
-                            <th style="border:1px solid #ddd; padding:8px; width:20%;">状況</th>
-                            <th style="border:1px solid #ddd; padding:8px;">備考</th>
+                        <tr>
+                            <th>名前</th>
+                            <th>状況</th>
+                            <th>備考</th>
                         </tr>
                     </thead>
-                    <tbody id="resultBody"></tbody>
+                    <tbody id="result-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- FEES SECTION -->
-        <div id="feesSection" class="section">
-            <div class="fee-container" id="feeContent" style="display: none;">
-                <h3>会費支払い状況 (3,000円/月)</h3>
-                <p style="font-size: 0.8rem; margin-bottom: 5px; color: #666;">※マスをタップすると「支払い済み」に切り替わります。</p>
-                <div style="overflow-x: auto; margin-top: 10px;">
+        <!-- FEE VIEW -->
+        <div id="view-fee" style="display: none;">
+            <div id="fee-unlock-area" class="card" style="text-align: center; padding: 40px;">
+                <p style="margin-bottom: 20px; color: #666;">会費管理の表示にはパスワードが必要です。</p>
+                <button class="submit-btn" style="width: auto; padding: 12px 30px;"
+                    onclick="unlockFees()">パスワード入力</button>
+            </div>
+            <div id="fee-main-area" class="card" style="display: none;">
+                <div class="card-header">会費支払い状況 (3,000円/月)</div>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※マスをタップすると「支払い済み」に切り替わります。</p>
+                <div class="fee-table-wrapper">
                     <table class="fee-table">
-                        <thead>
-                            <tr id="feeHeader"></tr>
-                        </thead>
-                        <tbody id="feeBody"></tbody>
+                        <thead id="fee-head"></thead>
+                        <tbody id="fee-body"></tbody>
                     </table>
                 </div>
             </div>
-            <div id="feePlaceholder" style="text-align: center; padding: 50px; color: #888;">
-                <p>※会費管理を表示するにはパスワードが必要です。</p>
-                <button class="btn-submit" style="width: 200px;" onclick="switchTab('fees')">パスワード入力</button>
-            </div>
         </div>
-
-        <details class="debug-box">
-            <summary>DEBUG LOG</summary>
-            <div id="debugLog">System Initialized.</div>
-        </details>
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
-        const FEE_PASSWORD = "2026";
-        let isFeesUnlocked = false;
-        let cachedData = null;
+        const API = "https://script.google.com/macros/s/AKfycbxTku0Hy8fqJHJCV7mIWCMnJgTwhoF6ZuGxv6IbgHQwsDagSRxvWqYzjOGLgd3ffPIHdA/exec";
+        let STATE = { members: [], unlocked: false, selectedDate: null };
 
-        function log(msg) {
-            const t = new Date().toTimeString().split(' ')[0];
-            const div = document.getElementById('debugLog');
-            if (div) div.innerHTML = `[${t}] ${msg}\n` + div.innerHTML;
+        const el = (id) => document.getElementById(id);
+        const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
+        const loading = (v) => el('loading').style.display = v ? 'flex' : 'none';
+
+        function switchView(v) {
+            el('view-reg').style.display = v === 'reg' ? 'block' : 'none';
+            el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
+            el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
+            el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
+            if (v === 'fee' && STATE.unlocked) loadFees();
+            window.scrollTo(0, 0);
         }
 
-        function showMessage(msg) {
-            const t = document.getElementById('toast');
-            if (t) {
-                t.textContent = msg;
-                t.style.display = 'block';
-                setTimeout(() => { t.style.display = 'none'; }, 2000);
-            }
+        async function unlockFees() {
+            if (prompt("パスワードを入力") === "2026") {
+                STATE.unlocked = true;
+                el('fee-unlock-area').style.display = 'none';
+                el('fee-main-area').style.display = 'block';
+                loadFees();
+            } else { alert("パスワードが違います"); }
         }
 
-        async function switchTab(tab) {
-            if (tab === 'fees' && !isFeesUnlocked) {
-                const pass = prompt("会費管理パスワードを入力してください");
-                if (pass === FEE_PASSWORD) {
-                    isFeesUnlocked = true;
-                    document.getElementById('feeContent').style.display = 'block';
-                    document.getElementById('feePlaceholder').style.display = 'none';
-                } else if (pass !== null) {
-                    alert("パスワードが違います");
-                    return;
-                } else {
-                    return;
-                }
-            }
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            document.getElementById(tab + 'Section').classList.add('active');
-            if (tab === 'fees') refreshFees();
-            window.scrollTo({ top: 0, behavior: 'auto' });
-        }
-
-        async function refreshFees() {
-            document.getElementById('loading').style.display = 'flex';
+        async function loadFees() {
+            loading(true);
             try {
-                const res = await fetch(`${GAS_API_URL}?fees=true`);
-                cachedData = await res.json();
-                renderFeeTable();
-            } catch (e) { log("Refresh Error: " + e.message); }
-            finally { document.getElementById('loading').style.display = 'none'; }
-        }
-
-        function renderFeeTable() {
-            if (!cachedData) return;
-            const header = document.getElementById('feeHeader');
-            const body = document.getElementById('feeBody');
-            const months = cachedData.monthHeaders || ["3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-            const fees = cachedData.fees || {};
-            header.innerHTML = '<th class="col-fee-name">名前</th>' + months.map(m => `<th class="col-fee-month">${m}</th>`).join('');
-            body.innerHTML = '';
-            cachedData.members.forEach(m => {
-                const tr = document.createElement('tr');
-                const fullName = m.name || m;
-                const dispName = m.displayName || fullName;
-                tr.innerHTML =  `<td class="col-fee-name">${dispName}</td>`;
-                months.forEach((month) => {
-                    const td = document.createElement('td');
-                    td.className = 'col-fee-month fee-cell';
-                    const isPaid = fees[fullName] && fees[fullName][month] === 1;
-                    if(isPaid) td.classList.add('paid');
-                    td.onclick = async () => toggleFee(fullName, month, td);
-                    tr.appendChild(td);
-                });
-                body.appendChild(tr);
-            });
-        }
-
-        async function toggleFee(name, month, cell) {
-            document.getElementById('loading').style.display = 'flex';
-            try {
-                await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fee', name, month }) });
-                cell.classList.toggle('paid');
-                if (!cachedData.fees) cachedData.fees = {};
-                if (!cachedData.fees[name]) cachedData.fees[name] = {};
-                cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 :  0;
-            } catch (e) { alert("Error: " + e.message); }
-            finally { document.getElementById('loading').style.display = 'none'; }
-        }
-
-        async function selectDate(dateStr, btn) {
-            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            document.getElementById('inputDate').value = dateStr;
-            const p = dateStr.split('-');
-            document.getElementById('selectedDateTitle').textContent = `${parseInt(p[1])}月${parseInt(p[2])}日`;
-            document.getElementById('loading').style.display = 'flex';
-            try {
-                const res = await fetch(`${GAS_API_URL}?date=${dateStr}`);
+                const res = await fetch(`${API}?fees=true`);
                 const data = await res.json();
-                cachedData = data;
-                const sel = document.getElementById('inputName');
-                sel.innerHTML = '<option value="">選択してください</option>';
+                const h = el('fee-head'); const b = el('fee-body');
+                h.innerHTML = `<tr><th>名前</th>${data.monthHeaders.map(m => `<th>${m}</th>`).join('')}</tr>`;
+                b.innerHTML = '';
                 data.members.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m.name || m;
-                    opt.textContent = m.name || m;
-                    sel.appendChild(opt);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${m.displayName}</td>`;
+                    data.monthHeaders.forEach(month => {
+                        const td = document.createElement('td'); td.className = 'fee-cell';
+                        if (data.fees[m.name] && data.fees[m.name][month] === 1) td.classList.add('paid');
+                        td.onclick = () => toggleFee(m.name, month, td);
+                        tr.appendChild(td);
+                    });
+                    b.appendChild(tr);
                 });
-                const tbody = document.getElementById('resultBody');
-                tbody.innerHTML = '';
-                let cA = 0, cAb = 0;
-                const nameMap = {};
-                data.members.forEach(m => nameMap[m.name || m] = m.displayName || (m.name || m));
+            } catch (e) { console.error(e); }
+            finally { loading(false); }
+        }
+
+        async function toggleFee(n, m, td) {
+            loading(true);
+            try {
+                await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fee', name: n, month: m }) });
+                td.classList.toggle('paid');
+            } finally { loading(false); }
+        }
+
+        async function selectDate(date, btn) {
+            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            STATE.selectedDate = date;
+            el('field-date').value = date;
+            const [y, m, d] = date.split('-');
+            el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
+
+            loading(true);
+            try {
+                const res = await fetch(`${API}?date=${date}`);
+                const data = await res.json();
+                STATE.members = data.members;
+
+                // Name Dropdown
+                const sel = el('field-name');
+                sel.innerHTML = '<option value="">選択してください</option>' +
+                    data.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+
+                // Results Table
+                const body = el('result-body');
+                body.innerHTML = '';
+                let counts = { "参加": 0, "不参加": 0 };
+                const mData = {}; data.members.forEach(m => mData[m.name] = m.displayName);
+
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
-                    let st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
-                    let stClass = st === '参加' ? 'status-attend' : (st === '不参加' ? 'status-absent' : '');
-                    let html = st;
+                    const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
+                    let badge = st;
                     if (st === '参加' || st === '不参加') {
-                        html = `<div class="status-cell-fill ${stClass}">${st}</div>`;
-                        if (st === '参加') cA++; else cAb++;
+                        counts[st]++;
+                        badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
-                    tr.innerHTML = `<td style="border:1px solid #ddd; padding:4px;">${nameMap[row.name] || row.name}</td>
-                                    <td style="border:1px solid #ddd; padding:0; height:43px;">${html}</td>
-                                    <td style="border:1px solid #ddd; padding:4px; text-align:left;">${row.comment}</td>`;
-                    tbody.appendChild(tr);
+                    tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
+                                <td class="cell-status">${badge}</td>
+                                <td class="cell-comment">${row.comment}</td>`;
+                    body.appendChild(tr);
                 });
-                document.getElementById('countAttend').textContent = cA;
-                document.getElementById('countAbsent').textContent = cAb;
-                document.getElementById('countNone').textContent = Math.max(0, data.members.length - new Set(data.attendance.map(r => r.name)).size);
-                document.getElementById('formSection').style.display = 'block';
-                document.getElementById('resultSection').style.display = 'block';
-                document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (e) { log("Error: " + e.message); }
-            finally { document.getElementById('loading').style.display = 'none'; }
+
+                el('stats-area').innerHTML = `<span style="color:#2ecc71">参加: ${counts["参加"]}</span>
+                                         <span style="color:#e74c3c">不参加: ${counts["不参加"]}</span>
+                                         <span style="color:#666">未回答: ${data.members.length - data.attendance.length}</span>`;
+
+                el('form-section').style.display = 'block';
+                el('result-section').style.display = 'block';
+                el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (e) { console.error(e); }
+            finally { loading(false); }
         }
 
-        function init() {
-            const cal = document.getElementById('calendar');
-            const exclusionDates = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
+        function buildCalendar() {
+            const container = el('calendar-container');
+            const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
             const today = new Date(); today.setHours(0, 0, 0, 0);
+
             for (let m = 3; m <= 12; m++) {
-                const group = document.createElement('div'); group.className = 'month-group';
-                const title = document.createElement('div'); title.className = 'month-title';
-                title.textContent = m === 12 ? '12月 (納会予定)' : m + '月';
-                group.appendChild(title);
+                const card = document.createElement('div'); card.className = 'month-card';
+                card.innerHTML = `<div class="month-name">${m === 12 ? '12月 (納会予定)' : m + '月'}</div>`;
                 const grid = document.createElement('div'); grid.className = 'date-grid';
+
                 let d = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (d.getMonth() === m - 1) {
-                    const day = d.getDate();
-                    const ymd = `2026-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    if ((d.getDay() === 0 || (m === 12 && day === 5)) && !exclusionDates.includes(ymd)) {
+                    const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
                         const btn = document.createElement('div');
-                        btn.className = 'date-btn';
-                        if (d < today) { btn.classList.add('date-finished'); btn.textContent = day + '日(終)'; }
-                        else { btn.textContent = day + '日'; btn.onclick = () => selectDate(ymd, btn); }
+                        btn.className = 'date-btn' + (d < today ? ' date-off' : '');
+                        btn.textContent = d.getDate() + '日' + (d < today ? '(終)' : '');
+                        if (d >= today) btn.onclick = () => selectDate(dateStr, btn);
                         grid.appendChild(btn);
                     }
                     d.setDate(d.getDate() + 1);
                 }
-                group.appendChild(grid);
-                cal.appendChild(group);
+                card.appendChild(grid);
+                container.appendChild(card);
             }
-            const form = document.getElementById('attendanceForm');
-            if (form) {
-                form.onsubmit = async (e) => {
-                    e.preventDefault();
-                    document.getElementById('submitBtn').disabled = true;
-                    const fd = new FormData(e.target);
-                    const json = Object.fromEntries(fd.entries());
-                    document.getElementById('loading').style.display = 'flex';
-                    try {
-                        await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
-                        if (json.status === "削除") showMessage("一覧から削除しました");
-                        else showMessage("完了しました");
-                        selectDate(json.date, document.querySelector('.date-btn.active'));
-                    } catch (e)lerr: " + e.message); }
-                    finally { document.getElementById('submitBtn').disabled = false; }
-                };
-            }
-            window.onscroll = () => { 
-                const btn = document.getElementById('scrollTopBtn');
-                if (btn) btn.style.display = (window.scrollY > 300) ? 'block' : 'none'; 
-            };
-            const scrollBtn = document.getElementById('scrollTopBtn');
-            if (scrollBtn) scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        init();
+
+        window.onload = () => {
+            buildCalendar();
+            el('attendanceForm').onsubmit = async (e) => {
+                e.preventDefault();
+                el('btn-submit').disabled = true;
+                loading(true);
+                const data = Object.fromEntries(new FormData(e.target));
+                try {
+                    await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+                    toast(data.status === '削除' ? '削除しました' : '完了しました');
+                    selectDate(data.date, document.querySelector('.date-btn.active'));
+                } catch (e) { alert("エラーが発生しました"); }
+                finally { el('btn-submit').disabled = false; loading(false); }
+            };
+            window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
+            el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
     </script>
 </body>
 
