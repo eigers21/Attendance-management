@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.6)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.7)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,68 +14,34 @@
             --border: #ddd;
         }
 
-        /* Ver 10.6: Ultra Premium Neon-Glow Attendance */
-        @keyframes pulse-glow-green {
-            0% {
-                box-shadow: 0 0 5px #28a745, inset 0 0 10px rgba(255, 255, 255, 0.2);
-                transform: scale(1);
-            }
-
-            50% {
-                box-shadow: 0 0 20px #21ff5b, 0 0 35px rgba(33, 255, 91, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.4);
-                transform: scale(1.02);
-            }
-
-            100% {
-                box-shadow: 0 0 5px #28a745, inset 0 0 10px rgba(255, 255, 255, 0.2);
-                transform: scale(1);
-            }
-        }
-
-        @keyframes pulse-glow-red {
-            0% {
-                box-shadow: 0 0 5px #dc3545, inset 0 0 10px rgba(255, 255, 255, 0.2);
-            }
-
-            50% {
-                box-shadow: 0 0 18px #ff4d5e, 0 0 30px rgba(255, 77, 94, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.4);
-            }
-
-            100% {
-                box-shadow: 0 0 5px #dc3545, inset 0 0 10px rgba(255, 255, 255, 0.2);
-            }
-        }
-
+        /* Ver 10.7: Elegant "8.7-style" Visuals (No cheap neon) */
         .status-cell-fill {
             display: flex;
             width: 100%;
             height: 100%;
-            min-height: 52px;
-            /* Taller for better visual impact */
+            min-height: 48px;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 900;
-            text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-            letter-spacing: 2px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
         }
 
         .status-attend {
-            background: radial-gradient(circle at center, #3cff7a, #28a745);
-            animation: pulse-glow-green 2.5s infinite ease-in-out;
-            z-index: 1;
+            background: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
         }
 
         .status-absent {
-            background: radial-gradient(circle at center, #ff5e6c, #dc3545);
-            animation: pulse-glow-red 3s infinite ease-in-out;
+            background: linear-gradient(135deg, #dc3545 0%, #e4606d 100%);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
 
         /* Results table cell override for full-bleed colors */
         #resultBody td {
             padding: 0 !important;
-            height: 52px;
+            height: 48px;
             vertical-align: middle;
         }
 
@@ -121,6 +87,7 @@
             background: #d4edda;
             color: #155724;
             font-weight: bold;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
         }
 
         .fee-cell.paid::after {
@@ -335,12 +302,12 @@
 
 <body>
 
-    <div id="loading"><b>通信中...</b></div>
+    <div id="loading"><b>確認中...</b></div>
     <button id="scrollTopBtn">▲</button>
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.6)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.7)</h1>
         </header>
 
         <div class="tabs">
@@ -416,7 +383,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyex6aebZD6Y1TN2CRP2mV40f24Z2odut1JYy2l7OIeP4OH53Gpf-BoK5utstGMGMz94A/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
@@ -484,19 +451,23 @@
         }
 
         async function toggleFee(name, month, cell) {
-            document.getElementById('loading').style.display = 'flex';
-            try {
-                await fetch(GAS_API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ type: 'fee', name, month })
-                });
+            // Optimistic UI update: Immediate change without spinner
+            cell.classList.toggle('paid');
+            if (!cachedData.fees) cachedData.fees = {};
+            if (!cachedData.fees[name]) cachedData.fees[name] = {};
+            cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
+
+            // Background sync
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ type: 'fee', name, month })
+            }).catch(e => {
+                // Rollback on error
                 cell.classList.toggle('paid');
-                if (!cachedData.fees) cachedData.fees = {};
-                if (!cachedData.fees[name]) cachedData.fees[name] = {};
                 cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
-            } catch (e) { alert("Error: " + e.message); }
-            finally { document.getElementById('loading').style.display = 'none'; }
+                alert("データの保存に失敗しました。再読み込みしてください。");
+            });
         }
 
         async function selectDate(dateStr, btn) {
@@ -579,10 +550,17 @@
                 document.getElementById('submitBtn').disabled = true;
                 const fd = new FormData(e.target);
                 const json = Object.fromEntries(fd.entries());
+
+                // Optimistic UI for attendance list isn't feasible because it's a full list refresh, 
+                // but we can speed up the "Delete" by showing the confirmation faster.
+                document.getElementById('loading').style.display = 'flex';
+
                 try {
                     await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
                     if (json.status === "削除") alert("一覧から削除しました");
-                    else alert("送信完了しました");
+                    else alert("完了しました");
+
+                    // Instant re-fetch for the current date
                     selectDate(json.date, document.querySelector('.date-btn.active'));
                 } catch (e) { alert("Error: " + e.message); }
                 finally { document.getElementById('submitBtn').disabled = false; }
