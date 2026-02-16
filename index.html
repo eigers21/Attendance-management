@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026年 参加登録・会費管理 (Ver 10.5)</title>
+    <title>2026年 参加登録・会費管理 (Ver 10.6)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -14,18 +14,35 @@
             --border: #ddd;
         }
 
-        /* Ver 10.5: Ultra Premium Glowing Attendance */
-        @keyframes glow {
+        /* Ver 10.6: Ultra Premium Neon-Glow Attendance */
+        @keyframes pulse-glow-green {
             0% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 5px #28a745, inset 0 0 10px rgba(255, 255, 255, 0.2);
+                transform: scale(1);
             }
 
             50% {
-                box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+                box-shadow: 0 0 20px #21ff5b, 0 0 35px rgba(33, 255, 91, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.4);
+                transform: scale(1.02);
             }
 
             100% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 5px #28a745, inset 0 0 10px rgba(255, 255, 255, 0.2);
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse-glow-red {
+            0% {
+                box-shadow: 0 0 5px #dc3545, inset 0 0 10px rgba(255, 255, 255, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 18px #ff4d5e, 0 0 30px rgba(255, 77, 94, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 5px #dc3545, inset 0 0 10px rgba(255, 255, 255, 0.2);
             }
         }
 
@@ -33,22 +50,33 @@
             display: flex;
             width: 100%;
             height: 100%;
-            min-height: 48px;
+            min-height: 52px;
+            /* Taller for better visual impact */
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s ease;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .status-attend {
-            background: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
-            animation: glow 2s infinite ease-in-out;
+            background: radial-gradient(circle at center, #3cff7a, #28a745);
+            animation: pulse-glow-green 2.5s infinite ease-in-out;
+            z-index: 1;
         }
 
         .status-absent {
-            background: linear-gradient(135deg, #dc3545 0%, #e4606d 100%);
+            background: radial-gradient(circle at center, #ff5e6c, #dc3545);
+            animation: pulse-glow-red 3s infinite ease-in-out;
+        }
+
+        /* Results table cell override for full-bleed colors */
+        #resultBody td {
+            padding: 0 !important;
+            height: 52px;
+            vertical-align: middle;
         }
 
         /* Fee Table Styles */
@@ -99,7 +127,7 @@
             content: "済";
         }
 
-        /* Shared Styles */
+        /* General Styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -312,7 +340,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.5)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.6)</h1>
         </header>
 
         <div class="tabs">
@@ -330,10 +358,11 @@
                     <input type="hidden" id="inputDate" name="date">
                     <label>名前</label>
                     <select id="inputName" name="name" required></select>
-                    <label>参加できますか？</label>
-                    <div class="radio-group">
+                    <label>参加状況</label>
+                    <div class="radio-group" style="flex-wrap: wrap;">
                         <label><input type="radio" name="status" value="参加" checked> 参加</label>
                         <label><input type="radio" name="status" value="不参加"> 不参加</label>
+                        <label style="color: #888;"><input type="radio" name="status" value="削除"> 削除（取消）</label>
                     </div>
                     <label>備考</label>
                     <input type="text" name="comment" placeholder="ひとこと">
@@ -387,7 +416,7 @@
     </div>
 
     <script>
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxOG-72jodpgoJ9og5it3Hpaz7p_tieizuAHZxyr9FV5Li6OP3Lr3A_ET6AJz_8Ngm3Og/exec";
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyex6aebZD6Y1TN2CRP2mV40f24Z2odut1JYy2l7OIeP4OH53Gpf-BoK5utstGMGMz94A/exec";
         const FEE_PASSWORD = "2026";
         let isFeesUnlocked = false;
         let cachedData = null;
@@ -552,7 +581,8 @@
                 const json = Object.fromEntries(fd.entries());
                 try {
                     await fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(json) });
-                    alert("送信完了しました");
+                    if (json.status === "削除") alert("一覧から削除しました");
+                    else alert("送信完了しました");
                     selectDate(json.date, document.querySelector('.date-btn.active'));
                 } catch (e) { alert("Error: " + e.message); }
                 finally { document.getElementById('submitBtn').disabled = false; }
