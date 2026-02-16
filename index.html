@@ -14,7 +14,7 @@
             --border: #ddd;
         }
 
-        /* Ver 10.2 CSS: Simplified Fees Table */
+        /* Ver 10.3 CSS: Refined Fee Table */
         .fee-table {
             width: 100%;
             border-collapse: collapse;
@@ -22,13 +22,13 @@
             table-layout: fixed;
         }
 
-        /* Widths: Optimized to fill 100% while prioritizing months */
+        /* Adjusted widths: Name 12% to ensure it's visible, months ~8.8% Each */
         .col-fee-name {
-            width: 8%;
+            width: 12%;
         }
 
         .col-fee-month {
-            width: 9.2%;
+            width: 8.8%;
         }
 
         .fee-table th,
@@ -287,7 +287,7 @@
 
     <div class="container">
         <header>
-            <h1>2026年 参加登録・会費管理 (Ver 10.2)</h1>
+            <h1>2026年 参加登録・会費管理 (Ver 10.3)</h1>
         </header>
 
         <div class="tabs">
@@ -391,6 +391,7 @@
             document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById(tab + 'Section').classList.add('active');
             if (tab === 'fees') refreshAll();
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         async function refreshAll() {
@@ -408,10 +409,12 @@
             const header = document.getElementById('feeHeader');
             const body = document.getElementById('feeBody');
 
-            // Month Headers Fallback logic (Ver 10.2 Fix)
+            // Month Headers Fallback logic
             const months = (cachedData.monthHeaders && cachedData.monthHeaders.length > 0)
                 ? cachedData.monthHeaders
                 : ["3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+
+            const fees = cachedData.fees || {}; // Safety fallback
 
             header.innerHTML = '<th class="col-fee-name">名前</th>' +
                 months.map(m => `<th class="col-fee-month">${m}</th>`).join('');
@@ -427,7 +430,7 @@
                 months.forEach((month) => {
                     const td = document.createElement('td');
                     td.className = 'col-fee-month fee-cell';
-                    const isPaid = cachedData.fees[fullName] && cachedData.fees[fullName][month] === 1;
+                    const isPaid = fees[fullName] && fees[fullName][month] === 1;
                     if (isPaid) td.classList.add('paid');
                     td.onclick = async () => toggleFee(fullName, month, td);
                     tr.appendChild(td);
@@ -445,6 +448,7 @@
                     body: JSON.stringify({ type: 'fee', name, month })
                 });
                 cell.classList.toggle('paid');
+                if (!cachedData.fees) cachedData.fees = {};
                 if (!cachedData.fees[name]) cachedData.fees[name] = {};
                 cachedData.fees[name][month] = cell.classList.contains('paid') ? 1 : 0;
             } catch (e) { alert("Error: " + e.message); }
@@ -489,8 +493,12 @@
                 document.getElementById('countAttend').textContent = cA;
                 document.getElementById('countAbsent').textContent = cAb;
                 document.getElementById('countNone').textContent = Math.max(0, data.members.length - new Set(data.attendance.map(r => r.name)).size);
+
                 document.getElementById('formSection').style.display = 'block';
                 document.getElementById('resultSection').style.display = 'block';
+
+                // Auto-scroll to form
+                document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
             } catch (e) { log("Error: " + e.message); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
