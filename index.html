@@ -88,16 +88,17 @@
         }
 
         .cell-name {
-            width: 25%;
+            width: 15%;
             font-weight: bold;
             padding: 4px 8px !important;
         }
 
         .cell-status {
-            width: 25%;
+            width: 15%;
         }
 
         .cell-comment {
+            width: 70%;
             padding: 4px 8px !important;
             text-align: left !important;
             font-size: 0.85rem;
@@ -475,7 +476,7 @@
             </div>
 
             <div id="result-section" class="card" style="display: none;">
-                <div class="card-header">参加状況一覧</div>
+                <div id="result-header" class="card-header">参加状況一覧</div>
                 <div id="stats-area" class="stats"></div>
                 <table class="result-table">
                     <thead>
@@ -511,7 +512,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzNmR3TJxhzyYxkS2r5rLVbWrUGOIh1XVvL-SdjzqOOh187Xmq7xC6v3J_oDVhf6FK5Og/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzRyIIXmSB2o0aSS0pHdkOP753-NSCa6nAds2midPvPDD-BGgrW609X9xT9r_eBjIfn4Q/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -574,6 +575,7 @@
             el('field-date').value = date;
             const [y, m, d] = date.split('-');
             el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
+            el('result-header').textContent = `参加状況一覧 (${parseInt(m)}月${parseInt(d)}日)`;
 
             loading(true);
             try {
