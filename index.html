@@ -355,12 +355,8 @@
         }
 
         .fee-table-wrapper {
-            overflow-x: auto;
-            max-height: 80vh;
-            /* Allow vertical scrolling */
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            border-bottom: 1px solid var(--border);
+            /* Removed native scroll to fix sticky header issue */
+            /* Using page-level scrolling instead */
         }
 
         .fee-table {
@@ -547,7 +543,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzZXhc59IjmkgeTLX6BRmGNRYcJtA3HyfhDUTY2zMxNKhgufpnO7yi56EfE79ZQdcr9FA/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxpy0-cGoPAuJtsIuko_qy5nbPTMjMonFhDa2daY2isYa390yUyFcX4_BO-4XUHW7720A/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
