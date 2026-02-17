@@ -40,6 +40,8 @@
             overflow: hidden;
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            font-size: 0.95rem;
+            /* 5% smaller */
         }
 
         .status-badge::after {
@@ -116,6 +118,10 @@
             color: var(--text);
             padding: 12px;
             margin: 0;
+            padding-bottom: 100px;
+            /* Fix for mobile scrolling in Google Sites iframe */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
         }
 
         .container {
@@ -169,8 +175,8 @@
             background: #fdf2f2;
             border-radius: 8px;
             text-align: center;
-            font-size: 1.1rem;
-            /* 20% Larger Warning */
+            font-size: 1.0rem;
+            /* Reduced by 10% from 1.1rem */
         }
 
         #toast {
@@ -212,6 +218,15 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            white-space: pre-line;
+            /* Allow line breaks */
         }
 
         .month-name {
@@ -362,24 +377,31 @@
             border: 1px solid var(--border);
             padding: 10px 4px;
             text-align: center;
-            width: 8.3%;
-            /* 100% / 12 cols (1 name + 10 months is 11... wait, name needs more space) */
+            padding: 10px 4px;
+            text-align: center;
         }
 
         /* Specific widths for unified look */
         .fee-table th:first-child,
         .fee-table td:first-child {
-            width: 20%;
+            width: 15%;
             /* Name column */
             font-size: 1.1rem;
             /* 20% larger font */
             font-weight: bold;
         }
 
-        .fee-table th:not(:first-child),
-        .fee-table td:not(:first-child) {
-            width: 8%;
-            /* Month columns (remaining 80% / 10 months = 8%) */
+        /* Count Column (Last Child) */
+        .fee-table th:last-child,
+        .fee-table td:last-child {
+            width: 15%;
+            font-weight: bold;
+        }
+
+        .fee-table th:not(:first-child):not(:last-child),
+        .fee-table td:not(:first-child):not(:last-child) {
+            width: 7%;
+            /* Month columns (remaining 70% / 10 months = 7%) */
         }
 
         .fee-table th {
@@ -407,16 +429,15 @@
         }
 
         .fee-cell.paid {
-            background: #2ecc71 !important;
-            /* Bright distinct green */
+            background-color: #2ecc71 !important;
             color: white;
             font-weight: bold;
-            border-color: #2ecc71;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+            /* Increased size for Paid mark */
         }
 
         .fee-cell.paid::after {
-            content: "済";
+            content: '済';
         }
 
         #back-top {
@@ -445,9 +466,9 @@
     <button id="back-top">▲</button>
 
     <div class="container">
-        <header>
-            <h1>2026年 参加登録・会費管理 (Ver 11.0)</h1>
-        </header>
+        <h2>2026年<br>参加登録・会費管理</h2>
+
+        <!-- TABS -->
 
         <div class="tabs">
             <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
@@ -501,12 +522,12 @@
         <div id="view-fee" style="display: none;">
             <div id="fee-main-area" class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>会費支払い状況 (3,000円/月)</span>
+                    <span>会費支払い状況</span>
                     <button id="admin-btn" class="submit-btn"
-                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem;"
-                        onclick="unlockFees()">管理者入口</button>
+                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
+                        onclick="unlockFees()">管理者</button>
                 </div>
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。編集するには管理者入口からログインしてください。</p>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。</p>
                 <div class="fee-table-wrapper">
                     <table class="fee-table">
                         <thead id="fee-head"></thead>
@@ -518,7 +539,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzQEzmjJ1dJ6Lp5rvFFyBuEBFqyzjvZ-sp-J_32ER4vig9Nmhi0L-enxOGdGif5I7JlNw/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyNUn7FTwXyZYneXiwFo6aZktCITqk5JgLriVyC3SUP4F3_0poLiaAJhSyu54Si4n1W/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -552,15 +573,24 @@
             try {
                 const res = await fetch(`${API}?fees=true`);
                 const data = await res.json();
-                const h = el('fee-head'); const b = el('fee-body');
-                h.innerHTML = `<tr><th>名前</th>${data.monthHeaders.map(m => `<th>${m}</th>`).join('')}</tr>`;
+                const h = el('fee-head'); h.innerHTML = '';
+                const tr = document.createElement('tr');
+                ['名前', ...data.monthHeaders, '回数'].forEach(t => {
+                    const th = document.createElement('th'); th.textContent = t; tr.appendChild(th);
+                });
+                h.appendChild(tr);
+                const b = el('fee-body');
                 b.innerHTML = '';
                 data.members.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
+                    let count = 0;
                     data.monthHeaders.forEach(month => {
                         const td = document.createElement('td'); td.className = 'fee-cell';
-                        if (data.fees[m.name] && data.fees[m.name][month] === 1) td.classList.add('paid');
+                        if (data.fees[m.name] && data.fees[m.name][month] === 1) {
+                            td.classList.add('paid');
+                            count++;
+                        }
                         td.onclick = () => {
                             if (STATE.unlocked) {
                                 toggleFee(m.name, month, td);
@@ -570,6 +600,14 @@
                         };
                         tr.appendChild(td);
                     });
+
+                    // Add Count Column
+                    const tdCount = document.createElement('td');
+                    tdCount.className = 'fee-cell';
+                    tdCount.style.fontWeight = 'bold';
+                    tdCount.textContent = count;
+                    tr.appendChild(tdCount);
+
                     b.appendChild(tr);
                 });
             } catch (e) { console.error(e); }
