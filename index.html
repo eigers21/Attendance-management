@@ -539,7 +539,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbw4Rot43rhZHafs4tm_3etTJ_mhvqSPFO6WJzuES7BNoQGkvx9YjDpnr1Aol9X5pN80lA/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzZXhc59IjmkgeTLX6BRmGNRYcJtA3HyfhDUTY2zMxNKhgufpnO7yi56EfE79ZQdcr9FA/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -580,10 +580,12 @@
                 });
                 h.appendChild(tr);
                 const b = el('fee-body');
-                b.innerHTML = ''   // Use FeeMember list if available, otherwise fallback to Attendance Member list
+                b.innerHTML = '';
+
+                // Use FeeMember list if available, otherwise fallback to Attendance Member list
                 const memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
 
-             rEach(m => {
+                memberList.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
                     let count = 0;
@@ -612,7 +614,10 @@
 
                     b.appendChild(tr);
                 });
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+                alert("データの読み込みに失敗しました。\n" + e.message + "\n\n※WebアプリのURLが正しいか、または新しいバージョンでデプロイされているか確認してください。");
+            }
             finally { loading(false); }
         }
 
@@ -621,7 +626,7 @@
             try {
                 await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fee', name: n, month: m }) });
                 const isPaid = td.classList.toggle('paid');
-                
+
                 // Update Count (Last cell in the row)
                 const tr = td.parentElement;
                 const countCell = tr.lastElementChild;
@@ -722,7 +727,7 @@
                 try {
                     await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                     toast(data.status === '削除' ? '削除しました' : '完了しました');
-                    selectDate(daateent.querySelector('.date-btn.active'));
+                    selectDate(data.date, document.querySelector('.date-btn.active'));
                 } catch (e) { alert("エラーが発生しました"); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
