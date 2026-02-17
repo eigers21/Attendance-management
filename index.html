@@ -580,12 +580,10 @@
                 });
                 h.appendChild(tr);
                 const b = el('fee-body');
-                b.innerHTML = '';
-
-                // Use FeeMember list if available, otherwise fallback to Attendance Member list
+                b.innerHTML = ''   // Use FeeMember list if available, otherwise fallback to Attendance Member list
                 const memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
 
-                memberList.forEach(m => {
+             rEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
                     let count = 0;
@@ -622,7 +620,17 @@
             loading(true);
             try {
                 await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fee', name: n, month: m }) });
-                td.classList.toggle('paid');
+                const isPaid = td.classList.toggle('paid');
+                
+                // Update Count (Last cell in the row)
+                const tr = td.parentElement;
+                const countCell = tr.lastElementChild;
+                let currentCount = parseInt(countCell.textContent) || 0;
+                countCell.textContent = isPaid ? currentCount + 1 : currentCount - 1;
+
+            } catch (e) {
+                alert("更新に失敗しました");
+                console.error(e);
             } finally { loading(false); }
         }
 
@@ -714,7 +722,7 @@
                 try {
                     await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                     toast(data.status === '削除' ? '削除しました' : '完了しました');
-                    selectDate(data.date, document.querySelector('.date-btn.active'));
+                    selectDate(daateent.querySelector('.date-btn.active'));
                 } catch (e) { alert("エラーが発生しました"); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
