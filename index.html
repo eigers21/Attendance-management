@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 11.5)</title>
+    <title>2026年 参加登録・会費管理 (Ver 12.0)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -15,88 +15,7 @@
             --header-bg: #fff;
         }
 
-        /* --- APP SHELL LAYOUT (Ver 11.5) --- */
-        html,
-        body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            /* Prevent body scroll */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Fixed Header Area */
-        .app-header {
-            flex: 0 0 auto;
-            background: var(--bg);
-            padding: 10px 10px 0 10px;
-            z-index: 100;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        header h1 {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            margin: 0;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: #e0e6ed;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            color: #7f8c8d;
-            font-size: 1.1rem;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Scrollable Content Area */
-        .scroll-content {
-            flex: 1;
-            overflow: auto;
-            /* Handles ALL scrolling */
-            padding: 10px;
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding-bottom: 40px;
-        }
-
-        /* Common Elements */
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* ... (Keep existing Sparkle Animation & Status Badge styles) ... */
+        /* Ver 8.7 Sparkling Animation Restoration */
         @keyframes sparkle-sweep {
             0% {
                 transform: translateX(-100%) skewX(-15deg);
@@ -112,6 +31,7 @@
             display: flex;
             width: 100%;
             height: 39px;
+            /* 10% Shorter than before (43px -> 39px) */
             align-items: center;
             justify-content: center;
             color: white;
@@ -121,6 +41,7 @@
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             font-size: 0.95rem;
+            /* 5% smaller */
         }
 
         .status-badge::after {
@@ -145,14 +66,13 @@
             border: 1px solid #c0392b;
         }
 
-        /* Results Table */
+        /* Results Table Layout */
         .result-table {
             width: 100%;
             border-collapse: collapse;
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            margin-top: 10px;
         }
 
         .result-table th {
@@ -186,103 +106,66 @@
             font-size: 0.85rem;
         }
 
-        /* FEE TABLE MATRIX SCROLL (Fixed for App Shell) */
-        /* .fee-table-wrapper removed as it's no longer needed for scrolling */
-
-        .fee-table {
-            width: 100%;
-            border-collapse: separate;
-            /* Required for sticky */
-            border-spacing: 0;
-            min-width: 800px;
-            /* Force overflow for horizontal scroll */
-            font-size: 0.85rem;
-            table-layout: fixed;
-            border: 1px solid var(--border);
+        /* Layout & Containers */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .fee-table th,
-        .fee-table td {
-            border: 1px solid var(--border);
-            padding: 10px 4px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 12px;
+            margin: 0;
+            padding-bottom: 100px;
+            /* Fix for mobile scrolling in Google Sites iframe */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        /* 1. Sticky Header (Top) */
-        .fee-table th {
-            background: #34495e;
+        header h1 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #e0e6ed;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            color: #7f8c8d;
+            font-size: 1.3rem;
+            /* 30% Larger Tabs */
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
             color: white;
-            font-weight: bold;
-            border-color: #34495e;
-            position: sticky;
-            top: 0;
-            z-index: 20;
         }
 
-        /* 2. Sticky Column (Left) */
-        .fee-table th:first-child,
-        .fee-table td:first-child {
-            position: sticky;
-            left: 0;
-            z-index: 21;
-            /* Higher than data */
-            border-right: 2px solid #bdc3c7;
-        }
-
-        .fee-table th:first-child {
-            z-index: 25;
-            /* Highest (Top-Left Corner) */
-        }
-
-        /* Column Widths & Backgrounds */
-        .fee-table th:first-child,
-        .fee-table td:first-child {
-            width: 100px;
-            min-width: 100px;
-        }
-
-        /* Fixed width for name */
-        .fee-table td:first-child {
-            background: #fff;
-        }
-
-        .fee-table tr:nth-child(even) td:first-child {
-            background: #f8f9fa;
-        }
-
-        .fee-table th:last-child,
-        .fee-table td:last-child {
-            width: 60px;
-            font-weight: bold;
-        }
-
-        /* Month Columns */
-        .fee-table th:not(:first-child):not(:last-child),
-        .fee-table td:not(:first-child):not(:last-child) {
-            width: 60px;
-        }
-
-        /* Row Stripe & Hover */
-        .fee-table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        .fee-table tr:hover {
-            background-color: #eaeff5;
-        }
-
-        .fee-cell.paid {
-            background-color: #2ecc71 !important;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .fee-cell.paid::after {
-            content: '済';
-        }
-
-        /* Other UI Elements */
+        /* Warning & Message */
         .warning-box {
             border: 2px solid #e74c3c;
             color: #e74c3c;
@@ -293,6 +176,7 @@
             border-radius: 8px;
             text-align: center;
             font-size: 1.0rem;
+            /* Reduced by 10% from 1.1rem */
         }
 
         #toast {
@@ -307,6 +191,7 @@
             border-radius: 12px;
             z-index: 10000;
             font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             text-align: center;
             font-size: 1.1rem;
         }
@@ -326,47 +211,22 @@
             font-size: 1.2rem;
         }
 
-        /* Cards & Forms */
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            border: 1px solid #dee2e6;
-        }
-
-        .card-header {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-        }
-
-        /* Calendar */
+        /* Calendar Grid */
         .month-card {
             background: white;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            white-space: pre-line;
+            /* Allow line breaks */
         }
 
         .month-name {
@@ -391,6 +251,7 @@
             padding: 10px 5px;
             cursor: pointer;
             text-align: center;
+            transition: all 0.2s;
             font-size: 0.95rem;
         }
 
@@ -398,15 +259,90 @@
             background: var(--primary);
             color: white;
             border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
         }
 
-        .date-btn.date-off {
+        .date-off {
             background: #f1f3f5;
             color: #adb5bd;
             cursor: default;
         }
 
-        /* Stats */
+        /* Form Card */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #dee2e6;
+        }
+
+        .card-header {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin: 12px 0 6px;
+            font-size: 0.9rem;
+        }
+
+        select,
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .radio-set {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .radio-set label {
+            display: inline-flex;
+            align-items: center;
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .radio-set input {
+            margin-right: 6px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+        }
+
+        /* Stats & Fees */
         .stats {
             display: flex;
             justify-content: space-around;
@@ -418,28 +354,92 @@
             font-size: 0.9rem;
         }
 
-        /* Form Inputs */
-        input,
-        select {
+        .fee-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fee-table {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 1rem;
-            margin-bottom: 10px;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 600px;
+            font-size: 0.85rem;
+            table-layout: fixed;
+            /* Unified column widths */
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
-        .radio-set {
-            display: flex;
-            gap: 15px;
-            margin: 10px 0;
+        .fee-table th,
+        .fee-table td {
+            border: 1px solid var(--border);
+            padding: 10px 4px;
+            text-align: center;
+            padding: 10px 4px;
+            text-align: center;
         }
 
-        .radio-set label {
-            display: inline-flex;
-            align-items: center;
-            font-weight: normal;
+        /* Specific widths for unified look */
+        .fee-table th:first-child,
+        .fee-table td:first-child {
+            width: 15%;
+            /* Name column */
+            font-size: 1.1rem;
+            /* 20% larger font */
+            font-weight: bold;
+        }
+
+        /* Count Column (Last Child) */
+        /* Count Column (Last Child) */
+        .fee-table th:last-child,
+        .fee-table td:last-child {
+            width: 15%;
+            font-weight: bold;
+        }
+
+        .fee-table th:not(:first-child):not(:last-child),
+        .fee-table td:not(:first-child):not(:last-child) {
+            width: 7%;
+            /* Month columns (remaining 70% / 10 months = 7%) */
+        }
+
+        .fee-table th {
+            background: #34495e;
+            /* Dark cool gray header */
+            color: white;
+            font-weight: bold;
+            border-color: #34495e;
+        }
+
+        .fee-table tr:nth-child(even) {
+            background: #f8f9fa;
+            /* Zebra striping */
+        }
+
+        .fee-table tr:hover {
+            background-color: #eaeff5;
+            /* Row hover effect */
+        }
+
+        .fee-cell {
             cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .fee-cell.paid {
+            background-color: #2ecc71 !important;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            /* Increased size for Paid mark */
+        }
+
+        .fee-cell.paid::after {
+            content: '済';
         }
 
         #back-top {
@@ -453,6 +453,7 @@
             color: white;
             border: none;
             border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             z-index: 100;
             font-size: 1.2rem;
@@ -461,95 +462,86 @@
 </head>
 
 <body>
-    <!-- APP SHELL STRUCTURE -->
 
     <div id="loading">確認中...</div>
     <div id="toast"></div>
     <button id="back-top">▲</button>
 
-    <!-- FIXED HEADER -->
-    <div class="app-header">
-        <header>
-            <h1>2026年<br>参加登録・会費管理</h1>
-        </header>
+    <div class="container">
+        <h2>2026年<br>参加登録・会費管理</h2>
+
+        <!-- TABS -->
 
         <div class="tabs">
             <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
             <button id="tab-fee" class="tab-btn" onclick="switchView('fee')">会費管理</button>
         </div>
-    </div>
 
-    <!-- SCROLLABLE CONTENT -->
-    <div id="scroll-container" class="scroll-content">
-        <div class="container">
+        <!-- REGISTER VIEW -->
+        <div id="view-reg">
+            <div class="warning-box">同名での登録は最新の内容に書き換えられます。</div>
+            <div id="calendar-container"></div>
 
-            <!-- REGISTER VIEW -->
-            <div id="view-reg">
-                <div class="warning-box">同名での登録は最新の内容に書き換えられます。</div>
-                <div id="calendar-container"></div>
+            <div id="form-section" class="card" style="display: none;">
+                <div id="form-date-title" class="card-header"></div>
+                <form id="attendanceForm">
+                    <input type="hidden" id="field-date" name="date">
+                    <label>名前</label>
+                    <select id="field-name" name="name" required>
+                        <option value="">読込中...</option>
+                    </select>
 
-                <div id="form-section" class="card" style="display: none;">
-                    <div id="form-date-title" class="card-header"></div>
-                    <form id="attendanceForm">
-                        <input type="hidden" id="field-date" name="date">
-                        <label>名前</label>
-                        <select id="field-name" name="name" required>
-                            <option value="">読込中...</option>
-                        </select>
+                    <label>参加状況</label>
+                    <div class="radio-set">
+                        <label><input type="radio" name="status" value="参加" checked> 参加</label>
+                        <label><input type="radio" name="status" value="不参加"> 不参加</label>
 
-                        <label>参加状況</label>
-                        <div class="radio-set">
-                            <label><input type="radio" name="status" value="参加" checked> 参加</label>
-                            <label><input type="radio" name="status" value="不参加"> 不参加</label>
+                    </div>
 
-                        </div>
+                    <label>備考</label>
+                    <input type="text" name="comment" placeholder="ひとことメッセージ">
+                    <button type="submit" id="btn-submit" class="submit-btn">送信する</button>
+                </form>
+            </div>
 
-                        <label>備考</label>
-                        <input type="text" name="comment" placeholder="ひとことメッセージ">
-                        <button type="submit" id="btn-submit" class="submit-btn">送信する</button>
-                    </form>
+            <div id="result-section" class="card" style="display: none;">
+                <div id="result-header" class="card-header">参加状況一覧</div>
+                <div id="stats-area" class="stats"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>名前</th>
+                            <th>状況</th>
+                            <th>備考</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FEE VIEW -->
+        <div id="view-fee" style="display: none;">
+            <div id="fee-main-area" class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>会費支払い状況</span>
+                    <button id="admin-btn" class="submit-btn"
+                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
+                        onclick="unlockFees()">管理者</button>
                 </div>
-
-                <div id="result-section" class="card" style="display: none;">
-                    <div id="result-header" class="card-header">参加状況一覧</div>
-                    <div id="stats-area" class="stats"></div>
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>名前</th>
-                                <th>状況</th>
-                                <th>備考</th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-body"></tbody>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。</p>
+                <div class="fee-table-wrapper">
+                    <table class="fee-table">
+                        <thead id="fee-head"></thead>
+                        <tbody id="fee-body"></tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- FEE VIEW -->
-            <div id="view-fee" style="display: none;">
-                <div id="fee-main-area" class="card">
-                    <div class="card-header"
-                        style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>会費支払い状況</span>
-                        <button id="admin-btn" class="submit-btn"
-                            style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
-                            onclick="unlockFees()">管理者</button>
-                    </div>
-                    <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。</p>
-                    <div class="fee-table-wrapper">
-                        <table class="fee-table">
-                            <thead id="fee-head"></thead>
-                            <tbody id="fee-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- End .container -->
-    </div> <!-- End .scroll-content -->
+        </div>
+    </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbztOeVfNGkKOlyvpJ_skDdh_EICRxn8MdxpBlMz3RGBuihJOr8tPSAVeW00huNLjHInbQ/exec";
+        const API = "https://script.google.com/macros/s/AKfycbxheFR8-kqyutaP4e-URhiy5wqU4cjlClJZB7-27azSPry3UCF41yIngCLpN-6YNp1n/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -563,8 +555,7 @@
             el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
 
             if (v === 'fee') loadFees();
-            // Scroll top of container, not window
-            el('scroll-container').scrollTop = 0;
+            window.scrollTo(0, 0);
         }
 
         async function unlockFees() {
@@ -742,12 +733,8 @@
                 } catch (e) { alert("エラーが発生しました"); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
-
-            // Updated Scroll Listener for App Shell
-            el('scroll-container').onscroll = () => {
-                el('back-top').style.display = el('scroll-container').scrollTop > 300 ? 'block' : 'none';
-            };
-            el('back-top').onclick = () => el('scroll-container').scrollTo({ top: 0, behavior: 'smooth' });
+            window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
+            el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
     </script>
