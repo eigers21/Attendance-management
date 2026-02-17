@@ -499,14 +499,14 @@
 
         <!-- FEE VIEW -->
         <div id="view-fee" style="display: none;">
-            <div id="fee-unlock-area" class="card" style="text-align: center; padding: 40px;">
-                <p style="margin-bottom: 20px; color: #666;">会費管理の表示にはパスワードが必要です。</p>
-                <button class="submit-btn" style="width: auto; padding: 12px 30px;"
-                    onclick="unlockFees()">パスワード入力</button>
-            </div>
-            <div id="fee-main-area" class="card" style="display: none;">
-                <div class="card-header">会費支払い状況 (3,000円/月)</div>
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※マスをタップすると「支払い済み」に切り替わります。</p>
+            <div id="fee-main-area" class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>会費支払い状況 (3,000円/月)</span>
+                    <button id="admin-btn" class="submit-btn"
+                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem;"
+                        onclick="unlockFees()">管理者入口</button>
+                </div>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。編集するには管理者入口からログインしてください。</p>
                 <div class="fee-table-wrapper">
                     <table class="fee-table">
                         <thead id="fee-head"></thead>
@@ -518,7 +518,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbxTCdrBkaJbn9G8P8JdaD7-RFXnXbTe8fZkBQg2Vk69okY3xLKqTZzX0snLbHuQPWlhOQ/exec";
+        const API = "https://script.google.com/macros/s/AKfycbzQEzmjJ1dJ6Lp5rvFFyBuEBFqyzjvZ-sp-J_32ER4vig9Nmhi0L-enxOGdGif5I7JlNw/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -530,16 +530,20 @@
             el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
             el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
             el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
-            if (v === 'fee' && STATE.unlocked) loadFees();
+
+            if (v === 'fee') loadFees();
             window.scrollTo(0, 0);
         }
 
         async function unlockFees() {
-            if (prompt("パスワードを入力") === "2026") {
+            if (STATE.unlocked) return; // Already unlocked
+            if (prompt("管理者パスワードを入力") === "2026") {
                 STATE.unlocked = true;
-                el('fee-unlock-area').style.display = 'none';
-                el('fee-main-area').style.display = 'block';
-                loadFees();
+                el('admin-btn').textContent = "管理者モード中";
+                el('admin-btn').style.background = "#2ecc71";
+                el('admin-btn').disabled = true;
+                toast("管理者モードになりました");
+                loadFees(); // Re-render to enable clicks
             } else { alert("パスワードが違います"); }
         }
 
@@ -557,7 +561,13 @@
                     data.monthHeaders.forEach(month => {
                         const td = document.createElement('td'); td.className = 'fee-cell';
                         if (data.fees[m.name] && data.fees[m.name][month] === 1) td.classList.add('paid');
-                        td.onclick = () => toggleFee(m.name, month, td);
+                        td.onclick = () => {
+                            if (STATE.unlocked) {
+                                toggleFee(m.name, month, td);
+                            } else {
+                                toast("編集には管理者ログインが必要です");
+                            }
+                        };
                         tr.appendChild(td);
                     });
                     b.appendChild(tr);
