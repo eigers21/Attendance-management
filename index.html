@@ -356,7 +356,11 @@
 
         .fee-table-wrapper {
             overflow-x: auto;
+            max-height: 80vh;
+            /* Allow vertical scrolling */
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            border-bottom: 1px solid var(--border);
         }
 
         .fee-table {
@@ -410,6 +414,10 @@
             color: white;
             font-weight: bold;
             border-color: #34495e;
+            position: sticky;
+            /* Make header sticky */
+            top: 0;
+            z-index: 10;
         }
 
         .fee-table tr:nth-child(even) {
