@@ -539,7 +539,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyNUn7FTwXyZYneXiwFo6aZktCITqk5JgLriVyC3SUP4F3_0poLiaAJhSyu54Si4n1W/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyG3JsicBOtsH9kJ2OnNOvFWwvGQvEvE9FIJkGms0V0W7iKfS5gi0Kirs8b2uYNdv8ohQ/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -581,7 +581,11 @@
                 h.appendChild(tr);
                 const b = el('fee-body');
                 b.innerHTML = '';
-                data.members.forEach(m => {
+
+                // Use FeeMember list if available, otherwise fallback to Attendance Member list
+                const memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
+
+                memberList.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
                     let count = 0;
