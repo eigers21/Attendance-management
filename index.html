@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 14.5)</title>
+    <title>2026年 参加登録・会費管理 (Ver 14.6)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -819,7 +819,7 @@
                     let badge = st;
                     if (st === '参加' || st === '不参加') {
                         counts[st]++;
-                        `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
+                        badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
                     tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
                                 <td class="cell-status">${badge}</td>
