@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 13.0)</title>
+    <title>2026年 参加登録・会費管理 (Ver 13.5)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -541,7 +541,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbxXwhyEUs4bGGNIJHhOY-GnAHMDNxtL6KfrtaVvAP9Zq78AORxY6lfh9fFxX81Lk0gU5A/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyY0aO4Voy3tmDBtY9UaxBvH5aN8hZi9W6JCyNOkO1Cc8Tq_xBOAui34SdF_kp60eZBGw/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null };
 
         const el = (id) => document.getElementById(id);
@@ -585,17 +585,25 @@
                 b.innerHTML = '';
 
                 // Use FeeMember list if available, otherwise fallback to Attendance Member list
-                const memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
+                let memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
+
+                // --- Pre-calculate counts and Sort (Descending) ---
+                memberList = memberList.map(m => {
+                    let count = 0;
+                    data.monthHeaders.forEach(month => {
+                        if (data.fees[m.name] && data.fees[m.name][month] === 1) count++;
+                    });
+                    return { ...m, _count: count };
+                }).sort((a, b) => b._count - a._count);
 
                 memberList.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
-                    let count = 0;
+                    
                     data.monthHeaders.forEach(month => {
                         const td = document.createElement('td'); td.className = 'fee-cell';
                         if (data.fees[m.name] && data.fees[m.name][month] === 1) {
                             td.classList.add('paid');
-                            count++;
                         }
                         td.onclick = () => {
                             if (STATE.unlocked) {
@@ -611,7 +619,7 @@
                     const tdCount = document.createElement('td');
                     tdCount.className = 'fee-cell';
                     tdCount.style.fontWeight = 'bold';
-                    tdCount.textContent = count;
+                    tdCount.textContent = m._count;
                     tr.appendChild(tdCount);
 
                     b.appendChild(tr);
@@ -666,6 +674,14 @@
                 body.innerHTML = '';
                 let counts = { "参加": 0, "不参加": 0 };
                 const mData = {}; data.members.forEach(m => mData[m.name] = m.displayName);
+
+                // --- Sort by Status (Participating > Absent > Others) ---
+                const statusOrder = { "出席": 0, "欠席": 1 };
+                data.attendance.sort((a, b) => {
+                    const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
+                    const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
+                    return sA - sB;
+                });
 
                 data.attendance.forEach(row => {
                     const tr = document.createElement('tr');
@@ -722,7 +738,7 @@
         window.onload = () => {
             buildCalendar();
             el('attendanceForm').onsubmit = async (e) => {
-                e.preventDefault();
+            e.pefault();
                 el('btn-submit').disabled = true;
                 loading(true);
                 const data = Object.fromEntries(new FormData(e.target));
