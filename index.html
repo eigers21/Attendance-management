@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 14.6)</title>
+    <title>2026年 参加登録・会費管理 (Ver 15.1)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -387,8 +387,8 @@
         /* Specific widths for unified look */
         .fee-table th:first-child,
         .fee-table td:first-child {
-            width: 25%;
-            /* Name column */
+            width: 20%;
+            /* Name column reduced to 20% */
             font-size: 1.1rem;
             /* 20% larger font */
             font-weight: bold;
@@ -404,8 +404,11 @@
 
         .fee-table th:not(:first-child):not(:last-child),
         .fee-table td:not(:first-child):not(:last-child) {
-            width: 10%;
-            /* Session columns */
+            width: 13%;
+            /* Session columns (5 sessions) increased to fill space */
+            font-size: 1.1rem;
+            /* Match Name column font size */
+            font-weight: bold;
         }
 
         .fee-table th {
@@ -526,7 +529,7 @@
 
         <!-- REGISTER VIEW -->
         <div id="view-reg">
-            <div class="warning-box">同名での登録は最新の内容に書き換えられます。</div>
+            <div class="warning-box">同名での登録は最新の内容に上書きされます。</div>
             <div id="calendar-container"></div>
 
             <div id="form-section" class="card" style="display: none;">
@@ -595,7 +598,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyybJpu574Q979kmsdMwSZ99i0b3EkPM9RJ1hxme-hkkMqrROn8Ms_svGSCBEOQv6Iw/exec";
+        const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {} };
 
         const el = (id) => document.getElementById(id);
