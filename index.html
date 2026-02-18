@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 13.5)</title>
+    <title>2026年 参加登録・会費管理 (Ver 14.0)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -13,6 +13,8 @@
             --text: #333;
             --border: #ddd;
             --header-bg: #fff;
+            --pending: #f39c12;
+            /* Orange for pending changes */
         }
 
         /* Ver 8.7 Sparkling Animation Restoration */
@@ -442,6 +444,51 @@
             content: '済';
         }
 
+        /* Pending State Styles */
+        .fee-cell.pending-paid {
+            background-color: var(--pending) !important;
+            color: white !important;
+        }
+
+        .fee-cell.pending-remove {
+            background-color: #e74c3c !important;
+            opacity: 0.7;
+            color: white !important;
+        }
+
+        .fee-cell.pending-paid::after,
+        .fee-cell.pending-remove::after {
+            content: '...';
+        }
+
+        /* Fee Control Panel */
+        #fee-controls {
+            display: none;
+            /* Hidden by default */
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-save {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #95a5a6;
+            color: white;
+        }
+
         #back-top {
             display: none;
             position: fixed;
@@ -529,6 +576,13 @@
                         style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
                         onclick="unlockFees()">管理者</button>
                 </div>
+
+                <!-- Batch Control Panel -->
+                <div id="fee-controls">
+                    <button class="btn-small btn-reset" onclick="resetFeeChanges()">元に戻す</button>
+                    <button class="btn-small btn-save" onclick="saveFeeChanges()">一括登録</button>
+                </div>
+
                 <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。</p>
                 <div class="fee-table-wrapper">
                     <table class="fee-table">
@@ -541,8 +595,8 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbyY0aO4Voy3tmDBtY9UaxBvH5aN8hZi9W6JCyNOkO1Cc8Tq_xBOAui34SdF_kp60eZBGw/exec";
-        let STATE = { members: [], unlocked: false, selectedDate: null };
+        const API = "https://script.google.com/macros/s/AKfycbypQFuAfFY0Z3oKvElYH8L30rx3WipIC529viXE5qEdxwsv2XhDDxdOLZEVI7lmkQbQhQ/exec";
+        let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {} };
 
         const el = (id) => document.getElementById(id);
         const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
@@ -572,6 +626,9 @@
 
         async function loadFees() {
             loading(true);
+            STATE.pendingChanges = {}; // Clear pending
+            updateFeeControls();
+            
             try {
                 const res = await fetch(`${API}?fees=true`);
                 const data = await res.json();
@@ -602,12 +659,18 @@
                     
                     data.monthHeaders.forEach(month => {
                         const td = document.createElement('td'); td.className = 'fee-cell';
-                        if (data.fees[m.name] && data.fees[m.name][month] === 1) {
+                        const isPaid = data.fees[m.name] && data.fees[m.name][month] === 1;
+                        if (isPaid) {
                             td.classList.add('paid');
                         }
+                        
+                        // ID for tracking changes
+                        td.dataset.id = `${m.name}|${month}`;
+                        td.dataset.current = isPaid ? "1" : "0";
+
                         td.onclick = () => {
                             if (STATE.unlocked) {
-                                toggleFee(m.name, month, td);
+                                toggleFeeLocal(td);
                             } else {
                                 toast("編集には管理者ログインが必要です");
                             }
@@ -631,27 +694,91 @@
             finally { loading(false); }
         }
 
-        async function toggleFee(n, m, td) {
+        function toggleFeeLocal(td) {
+            const id = td.dataset.id;
+            const currentVal = parseInt(td.dataset.current);
+            let pendingVal = STATE.pendingChanges[id];
+
+            // If no pending change, invert current
+            if (pendingVal === undefined) {
+                pendingVal = currentVal === 1 ? 0 : 1;
+            } else {
+                // If pending change exists, toggle it (0->1, 1->0)
+                // If toggled back to original, remove pending
+                pendingVal = pendingVal === 1 ? 0 : 1;
+                if (pendingVal === currentVal) pendingVal = undefined; // Back to original
+            }
+
+            // Update State
+            if (pendingVal !== undefined) {
+                STATE.pendingChanges[id] = pendingVal;
+            } else {
+                delete STATE.pendingChanges[id];
+            }
+
+            // Update UI
+            td.classList.remove('paid', 'pending-paid', 'pending-remove');
+            if (pendingVal !== undefined) {
+                if (pendingVal === 1) td.classList.add('pending-paid');
+                else td.classList.add('pending-remove');
+            } else {
+                // Restore original look
+                if (currentVal === 1) td.classList.add('paid');
+            }
+
+            updateFeeControls();
+        }
+
+        function updateFeeControls() {
+            const hasChanges = Object.keys(STATE.pendingChanges).length > 0;
+            el('fee-controls').style.display = hasChanges ? 'flex' : 'none';
+        }
+
+        function resetFeeChanges() {
+            STATE.pendingChanges = {};
+            document.querySelectorAll('.fee-cell').forEach(td => {
+                if (!td.dataset.current) return;
+                td.classList.remove('pending-paid', 'pending-remove', 'paid');
+                if (td.dataset.current === "1") td.classList.add('paid');
+            });
+            updateFeeControls();
+        }
+
+        async function saveFeeChanges() {
+            if (!confirm("変更を保存しますか？")) return;
             loading(true);
+            
+            const updates = Object.keys(STATE.pendingChanges).map(key => {
+                const [name, month] = key.split('|');
+                return { name, month, newVal: STATE.pendingChanges[key] };
+            });
+
             try {
-                await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fee', name: n, month: m }) });
-                const isPaid = td.classList.toggle('paid');
-
-                // Update Count (Last cell in the row)
-                const tr = td.parentElement;
-                const countCell = tr.lastElementChild;
-                let currentCount = parseInt(countCell.textContent) || 0;
-                countCell.textContent = isPaid ? currentCount + 1 : currentCount - 1;
-
+                const res = await fetch(API, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ type: 'batch_fee', updates })
+                });
+                
+                toast("保存しました");
+                loadFees(); // Reload to refresh sorting and confirm data
             } catch (e) {
-                alert("更新に失敗しました");
+                alert("保存に失敗しました");
                 console.error(e);
-            } finally { loading(false); }
+                loading(false);
+            }
         }
 
         async function selectDate(date, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active'); // Handle null btn safely
+            else {
+                // Attempt to find button if not passed (re-selection scenario)
+                const existingBtn = Array.from(document.querySelectorAll('.date-btn'))
+                    .find(b => b.textContent.includes(parseInt(date.split('-')[2]) + '日'));
+                if(existingBtn) existingBtn.classList.add('active');
+            }
+
             STATE.selectedDate = date;
             el('field-date').value = date;
             const [y, m, d] = date.split('-');
@@ -689,7 +816,7 @@
                     let badge = st;
                     if (st === '参加' || st === '不参加') {
                         counts[st]++;
-                        badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
+             badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
                     tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
                                 <td class="cell-status">${badge}</td>
@@ -703,7 +830,9 @@
 
                 el('form-section').style.display = 'block';
                 el('result-section').style.display = 'block';
-                el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Only scroll if initiated by user click, not automatic refresh
+                if(btn) el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
             } catch (e) { console.error(e); }
             finally { loading(false); }
         }
@@ -738,20 +867,24 @@
         window.onload = () => {
             buildCalendar();
             el('attendanceForm').onsubmit = async (e) => {
-            e.pefault();
+                e.preventDefault(); // STOP FORM SUBMISSION/RELOAD
                 el('btn-submit').disabled = true;
                 loading(true);
                 const data = Object.fromEntries(new FormData(e.target));
                 try {
                     await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                     toast(data.status === '削除' ? '削除しました' : '完了しました');
-                    selectDate(data.date, document.querySelector('.date-btn.active'));
+                    // Refresh current date view WITHOUT scrolling or clearing state
+                    if(STATE.selectedDate) {
+                        selectDate(STATE.selectedDate, null); 
+                    }
                 } catch (e) { alert("エラーが発生しました"); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
             window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
             el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+
 
     </script>
 </body>
