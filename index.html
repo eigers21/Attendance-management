@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 14.0)</title>
+    <title>2026年 参加登録・会費管理 (Ver 14.5)</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -595,7 +595,7 @@
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbypQFuAfFY0Z3oKvElYH8L30rx3WipIC529viXE5qEdxwsv2XhDDxdOLZEVI7lmkQbQhQ/exec";
+        const API = "https://script.google.com/macros/s/AKfycbyybJpu574Q979kmsdMwSZ99i0b3EkPM9RJ1hxme-hkkMqrROn8Ms_svGSCBEOQv6Iw/exec";
         let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {} };
 
         const el = (id) => document.getElementById(id);
@@ -628,7 +628,7 @@
             loading(true);
             STATE.pendingChanges = {}; // Clear pending
             updateFeeControls();
-            
+
             try {
                 const res = await fetch(`${API}?fees=true`);
                 const data = await res.json();
@@ -656,14 +656,14 @@
                 memberList.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
-                    
+
                     data.monthHeaders.forEach(month => {
                         const td = document.createElement('td'); td.className = 'fee-cell';
                         const isPaid = data.fees[m.name] && data.fees[m.name][month] === 1;
                         if (isPaid) {
                             td.classList.add('paid');
                         }
-                        
+
                         // ID for tracking changes
                         td.dataset.id = `${m.name}|${month}`;
                         td.dataset.current = isPaid ? "1" : "0";
@@ -747,7 +747,7 @@
         async function saveFeeChanges() {
             if (!confirm("変更を保存しますか？")) return;
             loading(true);
-            
+
             const updates = Object.keys(STATE.pendingChanges).map(key => {
                 const [name, month] = key.split('|');
                 return { name, month, newVal: STATE.pendingChanges[key] };
@@ -759,7 +759,7 @@
                     mode: 'no-cors',
                     body: JSON.stringify({ type: 'batch_fee', updates })
                 });
-                
+
                 toast("保存しました");
                 loadFees(); // Reload to refresh sorting and confirm data
             } catch (e) {
@@ -771,12 +771,12 @@
 
         async function selectDate(date, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active'); // Handle null btn safely
+            if (btn) btn.classList.add('active'); // Handle null btn safely
             else {
                 // Attempt to find button if not passed (re-selection scenario)
                 const existingBtn = Array.from(document.querySelectorAll('.date-btn'))
                     .find(b => b.textContent.includes(parseInt(date.split('-')[2]) + '日'));
-                if(existingBtn) existingBtn.classList.add('active');
+                if (existingBtn) existingBtn.classList.add('active');
             }
 
             STATE.selectedDate = date;
@@ -803,7 +803,10 @@
                 const mData = {}; data.members.forEach(m => mData[m.name] = m.displayName);
 
                 // --- Sort by Status (Participating > Absent > Others) ---
-                const statusOrder = { "出席": 0, "欠席": 1 };
+                // Mapping: "参加"(0), "出席"(0) -> Top priority
+                //          "不参加"(1), "欠席"(1) -> Second priority
+                //          Others -> Last
+                const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
                 data.attendance.sort((a, b) => {
                     const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
                     const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
@@ -816,7 +819,7 @@
                     let badge = st;
                     if (st === '参加' || st === '不参加') {
                         counts[st]++;
-             badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
+                        `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
                     tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
                                 <td class="cell-status">${badge}</td>
@@ -831,8 +834,8 @@
                 el('form-section').style.display = 'block';
                 el('result-section').style.display = 'block';
                 // Only scroll if initiated by user click, not automatic refresh
-                if(btn) el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
+                if (btn) el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             } catch (e) { console.error(e); }
             finally { loading(false); }
         }
@@ -875,8 +878,8 @@
                     await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
                     toast(data.status === '削除' ? '削除しました' : '完了しました');
                     // Refresh current date view WITHOUT scrolling or clearing state
-                    if(STATE.selectedDate) {
-                        selectDate(STATE.selectedDate, null); 
+                    if (STATE.selectedDate) {
+                        selectDate(STATE.selectedDate, null);
                     }
                 } catch (e) { alert("エラーが発生しました"); }
                 finally { el('btn-submit').disabled = false; loading(false); }
