@@ -146,25 +146,67 @@
             display: flex;
             gap: 4px;
             margin-bottom: 15px;
-            border-bottom: 2px solid var(--primary);
+            position: relative;
+            border-bottom: 2px solid #dce3ea;
+        }
+
+        /* スライドインジケーターバー */
+        .tab-indicator {
+            position: absolute;
+            bottom: -2px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
         }
 
         .tab-btn {
             flex: 1;
             padding: 12px;
             border: none;
-            background: #e0e6ed;
+            background: transparent;
             cursor: pointer;
             font-weight: bold;
             border-radius: 8px 8px 0 0;
             color: #7f8c8d;
             font-size: 1.3rem;
-            /* 30% Larger Tabs */
+            transition: color 0.3s ease, background 0.3s ease, transform 0.15s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(74, 144, 226, 0.08);
+            color: #5a9de6;
+        }
+
+        .tab-btn:active {
+            transform: scale(0.97);
         }
 
         .tab-btn.active {
-            background: var(--primary);
-            color: white;
+            background: rgba(74, 144, 226, 0.12);
+            color: var(--primary);
+        }
+
+        /* タブコンテンツのトランジション */
+        .tab-content {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .tab-content.slide-out-left {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        .tab-content.slide-out-right {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        .tab-content.slide-in {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         /* Warning & Message */
@@ -220,15 +262,39 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            /* スタッガードスライドインアニメーション */
+            opacity: 0;
+            transform: translateY(25px);
+            animation: slideUp 0.5s ease forwards;
         }
 
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ヘッダーのフェードイン+スライドダウン */
         h2 {
             text-align: center;
             color: var(--primary);
             margin-bottom: 20px;
             font-size: 1.5rem;
             white-space: pre-line;
-            /* Allow line breaks */
+            animation: fadeSlideDown 0.6s ease both;
+        }
+
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .month-name {
@@ -253,15 +319,56 @@
             padding: 10px 5px;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* ホバー時：浮き上がり（scale + shadow） */
+        .date-btn:not(.date-off):hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.25);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* リップルエフェクト */
+        .date-btn .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(74, 144, 226, 0.35);
+            transform: scale(0);
+            animation: rippleAnim 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* 選択中ボタンのパルスアニメーション */
         .date-btn.active {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
             box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 4px 18px rgba(74, 144, 226, 0.55);
+            }
         }
 
         .date-off {
@@ -492,6 +599,106 @@
             color: white;
         }
 
+        /* カスタムパスワードモーダル */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            width: 300px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-box h3 {
+            margin: 0 0 16px;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-box .modal-error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .modal-buttons button:active {
+            opacity: 0.8;
+        }
+
+        .modal-btn-cancel {
+            background: #e0e6ed;
+            color: #555;
+        }
+
+        .modal-btn-ok {
+            background: var(--primary);
+            color: white;
+        }
+
         #back-top {
             display: none;
             position: fixed;
@@ -513,22 +720,48 @@
 
 <body>
 
-    <div id="loading">確認中...</div>
+    <div id="loading">ちょっとまってね</div>
     <div id="toast"></div>
     <button id="back-top">▲</button>
+
+    <!-- パスワード入力モーダル -->
+    <div id="password-modal" class="modal-overlay" onclick="closePasswordModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3>🔐 管理者パスワードを入力</h3>
+            <input type="password" id="modal-password" placeholder="パスワード" autocomplete="off"
+                onkeydown="if(event.key==='Enter')submitPassword()">
+            <div id="modal-error" class="modal-error">パスワードが違います</div>
+            <div class="modal-buttons">
+                <button class="modal-btn-cancel" onclick="closePasswordModal()">キャンセル</button>
+                <button class="modal-btn-ok" onclick="submitPassword()">ログイン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認モーダル（confirm代替） -->
+    <div id="confirm-modal" class="modal-overlay" onclick="closeConfirmModal(false)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3 id="confirm-message"></h3>
+            <div class="modal-buttons">
+                <button class="modal-btn-cancel" onclick="closeConfirmModal(false)">キャンセル</button>
+                <button class="modal-btn-ok" onclick="closeConfirmModal(true)">はい</button>
+            </div>
+        </div>
+    </div>
 
     <div class="container">
         <h2>2026年<br>参加登録・会費管理</h2>
 
         <!-- TABS -->
 
-        <div class="tabs">
+        <div class="tabs" id="tabs-container">
             <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
             <button id="tab-fee" class="tab-btn" onclick="switchView('fee')">会費管理</button>
+            <div class="tab-indicator" id="tab-indicator"></div>
         </div>
 
         <!-- REGISTER VIEW -->
-        <div id="view-reg">
+        <div id="view-reg" class="tab-content slide-in">
             <div class="warning-box">同名での登録は最新の内容に上書きされます。</div>
             <div id="calendar-container"></div>
 
@@ -571,7 +804,7 @@
         </div>
 
         <!-- FEE VIEW -->
-        <div id="view-fee" style="display: none;">
+        <div id="view-fee" class="tab-content" style="display: none;">
             <div id="fee-main-area" class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <span>会費支払い状況</span>
@@ -599,32 +832,113 @@
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
-        let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {} };
+        let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
 
         const el = (id) => document.getElementById(id);
         const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
         const loading = (v) => el('loading').style.display = v ? 'flex' : 'none';
 
-        function switchView(v) {
-            el('view-reg').style.display = v === 'reg' ? 'block' : 'none';
-            el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
-            el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
-            el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
-
-            if (v === 'fee') loadFees();
-            window.scrollTo(0, 0);
+        // インジケーターバーの位置を更新
+        function updateIndicator() {
+            const activeBtn = document.querySelector('.tab-btn.active');
+            const indicator = el('tab-indicator');
+            if (activeBtn && indicator) {
+                indicator.style.left = activeBtn.offsetLeft + 'px';
+                indicator.style.width = activeBtn.offsetWidth + 'px';
+            }
         }
 
-        async function unlockFees() {
-            if (STATE.unlocked) return; // Already unlocked
-            if (prompt("管理者パスワードを入力") === "2026") {
+        function switchView(v) {
+            if (STATE.currentView === v) return; // 同じビューならスキップ
+
+            const oldView = STATE.currentView;
+            const outgoing = el('view-' + oldView);
+            const incoming = el('view-' + v);
+
+            // タブのアクティブ状態を即座に更新
+            el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
+            el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
+            updateIndicator();
+
+            // スライド方向を決定（regが左、feeが右）
+            const goingRight = (v === 'fee');
+
+            // 現在のビューをスライドアウト
+            outgoing.classList.remove('slide-in');
+            outgoing.classList.add(goingRight ? 'slide-out-left' : 'slide-out-right');
+
+            // アニメーション完了後に新しいビューをスライドイン
+            setTimeout(() => {
+                outgoing.style.display = 'none';
+                outgoing.classList.remove('slide-out-left', 'slide-out-right');
+
+                // 新しいビューを反対側から準備
+                incoming.classList.add(goingRight ? 'slide-out-right' : 'slide-out-left');
+                incoming.style.display = 'block';
+
+                // 次フレームでスライドインを開始
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        incoming.classList.remove('slide-out-left', 'slide-out-right');
+                        incoming.classList.add('slide-in');
+                    });
+                });
+
+                STATE.currentView = v;
+                if (v === 'fee') loadFees();
+                window.scrollTo(0, 0);
+            }, 250); // CSSトランジション時間と合わせる
+        }
+
+        // カスタムパスワードモーダル
+        function unlockFees() {
+            if (STATE.unlocked) return;
+            const modal = el('password-modal');
+            const input = el('modal-password');
+            el('modal-error').style.display = 'none';
+            input.value = '';
+            modal.classList.add('show');
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closePasswordModal(event) {
+            if (event && event.target !== el('password-modal')) return;
+            el('password-modal').classList.remove('show');
+        }
+
+        function submitPassword() {
+            const pw = el('modal-password').value;
+            if (pw === '2026') {
+                el('password-modal').classList.remove('show');
                 STATE.unlocked = true;
-                el('admin-btn').textContent = "管理者モード中";
-                el('admin-btn').style.background = "#2ecc71";
+                el('admin-btn').textContent = '管理者モード中';
+                el('admin-btn').style.background = '#2ecc71';
                 el('admin-btn').disabled = true;
-                toast("管理者モードになりました");
-                loadFees(); // Re-render to enable clicks
-            } else { alert("パスワードが違います"); }
+                toast('管理者モードになりました');
+                loadFees();
+            } else {
+                el('modal-error').style.display = 'block';
+                el('modal-password').value = '';
+                el('modal-password').focus();
+            }
+        }
+
+        // カスタム確認ダイアログ（confirm代替）
+        let _confirmResolve = null;
+        function customConfirm(message) {
+            return new Promise(resolve => {
+                _confirmResolve = resolve;
+                el('confirm-message').textContent = message;
+                el('confirm-modal').classList.add('show');
+            });
+        }
+
+        function closeConfirmModal(result) {
+            el('confirm-modal').classList.remove('show');
+            if (_confirmResolve) {
+                _confirmResolve(result);
+                _confirmResolve = null;
+            }
         }
 
         async function loadFees() {
@@ -692,7 +1006,7 @@
                 });
             } catch (e) {
                 console.error(e);
-                alert("データの読み込みに失敗しました。\n" + e.message + "\n\n※WebアプリのURLが正しいか、または新しいバージョンでデプロイされているか確認してください。");
+                toast("データの読み込みに失敗しました");
             }
             finally { loading(false); }
         }
@@ -748,7 +1062,8 @@
         }
 
         async function saveFeeChanges() {
-            if (!confirm("変更を保存しますか？")) return;
+            const confirmed = await customConfirm("変更を保存しますか？");
+            if (!confirmed) return;
             loading(true);
 
             const updates = Object.keys(STATE.pendingChanges).map(key => {
@@ -764,9 +1079,9 @@
                 });
 
                 toast("保存しました");
-                loadFees(); // Reload to refresh sorting and confirm data
+                loadFees();
             } catch (e) {
-                alert("保存に失敗しました");
+                toast("保存に失敗しました");
                 console.error(e);
                 loading(false);
             }
@@ -847,9 +1162,13 @@
             const container = el('calendar-container');
             const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
             const today = new Date(); today.setHours(0, 0, 0, 0);
+            let cardIndex = 0;
 
             for (let m = 3; m <= 12; m++) {
                 const card = document.createElement('div'); card.className = 'month-card';
+                // スタッガード遅延: 各カードが順番にスライドイン
+                card.style.animationDelay = (cardIndex * 0.08) + 's';
+                cardIndex++;
                 card.innerHTML = `<div class="month-name">${m === 12 ? '12月 (納会予定)' : m + '月'}</div>`;
                 const grid = document.createElement('div'); grid.className = 'date-grid';
 
@@ -860,7 +1179,13 @@
                         const btn = document.createElement('div');
                         btn.className = 'date-btn' + (d < today ? ' date-off' : '');
                         btn.textContent = d.getDate() + '日' + (d < today ? '(終)' : '');
-                        if (d >= today) btn.onclick = () => selectDate(dateStr, btn);
+                        if (d >= today) {
+                            btn.onclick = (e) => {
+                                // リップルエフェクト
+                                createRipple(e, btn);
+                                selectDate(dateStr, btn);
+                            };
+                        }
                         grid.appendChild(btn);
                     }
                     d.setDate(d.getDate() + 1);
@@ -870,8 +1195,24 @@
             }
         }
 
+        // リップルエフェクト生成
+        function createRipple(event, element) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (event.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (event.clientY - rect.top - size / 2) + 'px';
+            element.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove());
+        }
+
         window.onload = () => {
             buildCalendar();
+            // 初期インジケーター位置を設定
+            requestAnimationFrame(() => updateIndicator());
+            window.addEventListener('resize', updateIndicator);
             el('attendanceForm').onsubmit = async (e) => {
                 e.preventDefault(); // STOP FORM SUBMISSION/RELOAD
                 el('btn-submit').disabled = true;
