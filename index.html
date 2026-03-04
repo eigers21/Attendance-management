@@ -46,18 +46,17 @@
             position: relative;
             display: flex;
             width: 100%;
-            height: 39px;
-            /* 10% Shorter than before (43px -> 39px) */
+            height: 100%;
+            min-height: 44px;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            border-radius: 4px;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             font-size: 0.95rem;
-            /* 5% smaller */
         }
 
         .status-badge::after {
@@ -102,7 +101,8 @@
 
         .result-table td {
             border: 1px solid var(--border);
-            padding: 12px 8px !important;
+            padding: 0 !important;
+            height: 44px;
             text-align: center;
             color: #333;
         }
@@ -110,14 +110,17 @@
         .cell-name {
             width: 15%;
             font-weight: 500;
+            padding: 4px 8px !important;
         }
 
         .cell-status {
-            width: 15%;
+            width: 20%;
+            padding: 0 !important;
         }
 
         .cell-comment {
-            width: 70%;
+            width: 65%;
+            padding: 4px 8px !important;
             text-align: left !important;
             font-size: 0.85rem;
             color: #777;
@@ -598,7 +601,7 @@
 
         /* Pending State Styles */
         .fee-cell.pending-paid {
-            background-color: var(--pending) !important;
+            background-color: var(--admin-bg) !important;
             color: white !important;
         }
 
@@ -784,6 +787,21 @@
             line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-word;
+            animation: flashText 1.5s infinite;
+        }
+
+        @keyframes flashText {
+
+            0%,
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+            }
+
+            50% {
+                opacity: 0.6;
+                text-shadow: none;
+            }
         }
 
         .announcement-banner .ann-edit-btn {
