@@ -108,16 +108,16 @@
         }
 
         .cell-name {
-            width: 25%;
+            width: 15%;
             font-weight: 500;
         }
 
         .cell-status {
-            width: 25%;
+            width: 15%;
         }
 
         .cell-comment {
-            width: 50%;
+            width: 70%;
             text-align: left !important;
             font-size: 0.85rem;
             color: #777;
@@ -1026,12 +1026,7 @@
         <!-- FEE VIEW -->
         <div id="view-fee" class="tab-content" style="display: none;">
             <div id="fee-main-area" class="card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>会費支払い状況</span>
-                    <button id="admin-btn" class="submit-btn"
-                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
-                        onclick="unlockFees()">管理者</button>
-                </div>
+                <div class="card-header">会費支払い状況</div>
 
                 <!-- Batch Control Panel -->
                 <div id="fee-controls">
@@ -1164,10 +1159,7 @@
             if (pw === '2026') {
                 el('password-modal').classList.remove('show');
                 STATE.unlocked = true;
-                // 会費タブのボタンも更新
-                el('admin-btn').textContent = '管理者モード中';
-                el('admin-btn').style.background = '#2ecc71';
-                el('admin-btn').disabled = true;
+                // 会費タブの管理者ボタンは削除済み（TOP右上のボタンに統一）
                 // グローバルボタンも更新
                 const globalBtn = el('global-admin-btn');
                 globalBtn.textContent = '🔓 管理者モード';
