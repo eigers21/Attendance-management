@@ -715,6 +715,150 @@
             z-index: 100;
             font-size: 1.2rem;
         }
+
+        /* お知らせバナー */
+        .announcement-banner {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-left: 4px solid #f39c12;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(243, 156, 18, 0.15);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .announcement-banner .ann-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .announcement-banner .ann-text {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #856404;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .announcement-banner .ann-edit-btn {
+            flex-shrink: 0;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .announcement-banner .ann-edit-btn:hover {
+            background: #e67e22;
+        }
+
+        .announcement-empty {
+            display: none;
+        }
+
+        .announcement-empty.admin-visible {
+            display: flex;
+            background: #f8f9fa;
+            border-left: 4px solid #ccc;
+        }
+
+        .announcement-empty .ann-text {
+            color: #999;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* お知らせ編集モーダル */
+        .ann-modal-textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.95rem;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+        .ann-modal-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        /* 削除ボタン */
+        .btn-delete-row {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-delete-row:hover {
+            background: #c0392b;
+        }
+
+        .btn-delete-row:active {
+            transform: scale(0.95);
+        }
+
+        .cell-action {
+            width: 50px;
+            padding: 4px !important;
+        }
+
+        /* グローバル管理者ボタン */
+        .global-admin-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .global-admin-btn:hover {
+            background: #c0392b;
+        }
+
+        .global-admin-btn:active {
+            transform: scale(0.95);
+        }
+
+        .global-admin-btn.unlocked {
+            background: #2ecc71;
+            cursor: default;
+        }
     </style>
 </head>
 
@@ -749,8 +893,36 @@
         </div>
     </div>
 
+    <!-- お知らせ編集モーダル -->
+    <div id="announcement-modal" class="modal-overlay" onclick="closeAnnouncementModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3>📢 お知らせを編集</h3>
+            <textarea id="ann-edit-textarea" class="ann-modal-textarea" placeholder="お知らせメッセージを入力..."></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn-cancel" onclick="closeAnnouncementModal()">キャンセル</button>
+                <button class="modal-btn-ok" onclick="saveAnnouncement()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <h2>2026年<br>参加登録・会費管理</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 style="margin: 0;">2026年<br>参加登録・会費管理</h2>
+            <button id="global-admin-btn" class="global-admin-btn" onclick="unlockFees()">🔒 管理者</button>
+        </div>
+
+        <!-- お知らせエリア -->
+        <div id="announcement-area" class="announcement-banner" style="display: none;">
+            <span class="ann-icon">📢</span>
+            <span id="announcement-text" class="ann-text"></span>
+            <button id="ann-edit-btn" class="ann-edit-btn" style="display: none;" onclick="openAnnouncementEditor()">✏️
+                編集</button>
+        </div>
+        <div id="announcement-empty" class="announcement-banner announcement-empty">
+            <span class="ann-icon">📢</span>
+            <span class="ann-text">お知らせはまだありません。「✏️ 編集」で追加しましょう。</span>
+            <button id="ann-edit-btn-empty" class="ann-edit-btn" onclick="openAnnouncementEditor()">✏️ 編集</button>
+        </div>
 
         <!-- TABS -->
 
@@ -796,6 +968,7 @@
                             <th>名前</th>
                             <th>状況</th>
                             <th>備考</th>
+                            <th class="th-action" style="display: none;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="result-body"></tbody>
@@ -875,6 +1048,10 @@
         window.saveFeeChanges = saveFeeChanges;
         window.selectDate = selectDate;
         window.toggleFeeLocal = toggleFeeLocal;
+        window.openAnnouncementEditor = openAnnouncementEditor;
+        window.closeAnnouncementModal = closeAnnouncementModal;
+        window.saveAnnouncement = saveAnnouncement;
+        window.deleteAttendanceRow = deleteAttendanceRow;
 
         function switchView(v) {
             if (STATE.currentView === v) return; // 同じビューならスキップ
@@ -939,15 +1116,100 @@
             if (pw === '2026') {
                 el('password-modal').classList.remove('show');
                 STATE.unlocked = true;
+                // 会費タブのボタンも更新
                 el('admin-btn').textContent = '管理者モード中';
                 el('admin-btn').style.background = '#2ecc71';
                 el('admin-btn').disabled = true;
+                // グローバルボタンも更新
+                const globalBtn = el('global-admin-btn');
+                globalBtn.textContent = '🔓 管理者モード';
+                globalBtn.classList.add('unlocked');
+                globalBtn.onclick = null;
+                // お知らせの編集ボタンを表示
+                el('ann-edit-btn').style.display = 'inline-block';
+                // お知らせが空の場合、空バナーを表示
+                if (el('announcement-area').style.display === 'none') {
+                    el('announcement-empty').classList.add('admin-visible');
+                }
+                // 削除ボタンを表示
+                document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
+                document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
+                document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
                 toast('管理者モードになりました');
-                loadFees();
+                if (STATE.currentView === 'fee') loadFees();
             } else {
                 el('modal-error').style.display = 'block';
                 el('modal-password').value = '';
                 el('modal-password').focus();
+            }
+        }
+
+        // --- お知らせ機能 ---
+        function loadAnnouncement() {
+            onSnapshot(doc(db, "announcements", "main"), (docSnap) => {
+                const area = el('announcement-area');
+                const empty = el('announcement-empty');
+                if (docSnap.exists() && docSnap.data().message && docSnap.data().message.trim() !== '') {
+                    el('announcement-text').textContent = docSnap.data().message;
+                    area.style.display = 'flex';
+                    empty.classList.remove('admin-visible');
+                    if (STATE.unlocked) {
+                        el('ann-edit-btn').style.display = 'inline-block';
+                    }
+                } else {
+                    area.style.display = 'none';
+                    if (STATE.unlocked) {
+                        empty.classList.add('admin-visible');
+                    }
+                }
+            });
+        }
+
+        function openAnnouncementEditor() {
+            const currentText = el('announcement-text').textContent || '';
+            el('ann-edit-textarea').value = currentText;
+            el('announcement-modal').classList.add('show');
+            setTimeout(() => el('ann-edit-textarea').focus(), 100);
+        }
+
+        function closeAnnouncementModal() {
+            el('announcement-modal').classList.remove('show');
+        }
+
+        async function saveAnnouncement() {
+            const msg = el('ann-edit-textarea').value.trim();
+            try {
+                await setDoc(doc(db, "announcements", "main"), {
+                    message: msg,
+                    updatedAt: serverTimestamp()
+                });
+                closeAnnouncementModal();
+                toast('お知らせを保存しました');
+            } catch (e) {
+                console.error(e);
+                toast('保存に失敗しました');
+            }
+        }
+
+        // --- 出欠削除機能 ---
+        async function deleteAttendanceRow(docId, name, date) {
+            const ok = await customConfirm(`${name} の出欠データを削除しますか？`);
+            if (!ok) return;
+            loading(true);
+            try {
+                await deleteDoc(doc(db, "attendance", docId));
+                // GAS へも削除を非同期送信
+                fetch(API, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ type: 'delete_attendance', date: date, name: name })
+                }).catch(e => console.error("GAS Sync Error:", e));
+                toast(`${name} のデータを削除しました`);
+            } catch (e) {
+                console.error(e);
+                toast('削除に失敗しました');
+            } finally {
+                loading(false);
             }
         }
 
@@ -1210,7 +1472,7 @@
                 const mData = {}; STATE.members.forEach(m => mData[m.name] = m.displayName);
 
                 const attendance = [];
-                snapshot.forEach(doc => attendance.push(doc.data()));
+                snapshot.forEach(d => attendance.push({ ...d.data(), _docId: d.id }));
 
                 const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
                 attendance.sort((a, b) => {
@@ -1231,12 +1493,13 @@
                         counts[st]++;
                         badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
+                    const deleteBtn = `<td class="cell-action" style="display: ${STATE.unlocked ? 'table-cell' : 'none'}"><button class="btn-delete-row" style="display: ${STATE.unlocked ? 'inline-block' : 'none'}" onclick="deleteAttendanceRow('${row._docId}', '${row.name}', '${date}')">🗑</button></td>`;
                     tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
                                     <td class="cell-status">${badge}</td>
-                                    <td class="cell-comment">${row.comment}</td>`;
+                                    <td class="cell-comment">${row.comment || ''}</td>
+                                    ${deleteBtn}`;
                     body.appendChild(tr);
                 });
-
                 el('stats-area').innerHTML = `<span style="color:#2ecc71">参加: ${counts["参加"]}</span>
                                              <span style="color:#e74c3c">不参加: ${counts["不参加"]}</span>
                                              <span style="color:#666">未回答: ${STATE.members.length - attendance.length}</span>`;
@@ -1309,6 +1572,7 @@
 
         window.onload = () => {
             buildCalendar();
+            loadAnnouncement();
             // 初期インジケーター位置を設定
             requestAnimationFrame(() => updateIndicator());
             window.addEventListener('resize', updateIndicator);
