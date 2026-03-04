@@ -830,9 +830,25 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMyqYZMC4ytIOPNIBXKe8th-mE-rmM27o",
+            authDomain: "sunday-attendance.firebaseapp.com",
+            projectId: "sunday-attendance",
+            storageBucket: "sunday-attendance.firebasestorage.app",
+            messagingSenderId: "292299944623",
+            appId: "1:292299944623:web:5c982cc8a700e57d51da5a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
-        let STATE = { members: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
+        let STATE = { members: [], feeMembers: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
 
         const el = (id) => document.getElementById(id);
         const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
@@ -847,6 +863,18 @@
                 indicator.style.width = activeBtn.offsetWidth + 'px';
             }
         }
+
+        // グローバルに公開する関数 (Moduleのスコープから onclick 等でも呼べるようにする)
+        window.switchView = switchView;
+        window.unlockFees = unlockFees;
+        window.closePasswordModal = closePasswordModal;
+        window.submitPassword = submitPassword;
+        window.closeConfirmModal = closeConfirmModal;
+        window.loadFees = loadFees;
+        window.resetFeeChanges = resetFeeChanges;
+        window.saveFeeChanges = saveFeeChanges;
+        window.selectDate = selectDate;
+        window.toggleFeeLocal = toggleFeeLocal;
 
         function switchView(v) {
             if (STATE.currentView === v) return; // 同じビューならスキップ
@@ -941,74 +969,91 @@
             }
         }
 
+        let unsubscribeFees = null;
         async function loadFees() {
+            if (unsubscribeFees) unsubscribeFees();
             loading(true);
             STATE.pendingChanges = {}; // Clear pending
             updateFeeControls();
 
-            try {
-                const res = await fetch(`${API}?fees=true`);
-                const data = await res.json();
-                const h = el('fee-head'); h.innerHTML = '';
-                const tr = document.createElement('tr');
-                ['名前', ...data.monthHeaders, '回数'].forEach(t => {
-                    const th = document.createElement('th'); th.textContent = t; tr.appendChild(th);
-                });
-                h.appendChild(tr);
+            const monthHeaders = ["1回", "2回", "3回", "4回", "5回"];
+            const h = el('fee-head'); h.innerHTML = '';
+            const trHead = document.createElement('tr');
+            ['名前', ...monthHeaders, '回数'].forEach(t => {
+                const th = document.createElement('th'); th.textContent = t; trHead.appendChild(th);
+            });
+            h.appendChild(trHead);
+
+            // Real-time listener for fees
+            unsubscribeFees = onSnapshot(collection(db, "fees"), (snapshot) => {
                 const b = el('fee-body');
                 b.innerHTML = '';
+                const feesData = {};
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    feesData[d.name] = d;
+                });
 
-                // Use FeeMember list if available, otherwise fallback to Attendance Member list
-                let memberList = (data.feeMembers && data.feeMembers.length > 0) ? data.feeMembers : data.members;
+                let memberList = (STATE.feeMembers && STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
 
-                // --- Pre-calculate counts and Sort (Descending) ---
+                // --- If members not yet loaded, try fetching both once ---
+                if (memberList.length === 0) {
+                    Promise.all([
+                        getDocs(collection(db, "members")),
+                        getDocs(collection(db, "feeMembers"))
+                    ]).then(([mSnap, fmSnap]) => {
+                        STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                        STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                        loadFees(); // Refresh
+                    }).catch(err => console.error("Member fetch error in loadFees:", err));
+                    return;
+                }
+
+                // --- Sort by Count descending (as requested) ---
                 memberList = memberList.map(m => {
                     let count = 0;
-                    data.monthHeaders.forEach(month => {
-                        if (data.fees[m.name] && data.fees[m.name][month] === 1) count++;
+                    monthHeaders.forEach((_, i) => {
+                        if (feesData[m.name] && feesData[m.name][`session${i + 1}`] === 1) count++;
                     });
                     return { ...m, _count: count };
-                }).sort((a, b) => b._count - a._count);
+                }).sort((a, b) => b._count - a._count || (a.order || 0) - (b.order || 0));
 
                 memberList.forEach(m => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `<td>${m.displayName}</td>`;
 
-                    data.monthHeaders.forEach(month => {
+                    monthHeaders.forEach((month, i) => {
+                        const sessionKey = `session${i + 1}`;
                         const td = document.createElement('td'); td.className = 'fee-cell';
-                        const isPaid = data.fees[m.name] && data.fees[m.name][month] === 1;
-                        if (isPaid) {
-                            td.classList.add('paid');
-                        }
+                        const isPaid = feesData[m.name] && feesData[m.name][sessionKey] === 1;
+                        if (isPaid) td.classList.add('paid');
 
-                        // ID for tracking changes
-                        td.dataset.id = `${m.name}|${month}`;
+                        td.dataset.id = `${m.name}|${sessionKey}`; // session1, session2...
+                        td.dataset.displayName = m.name; // Keep internal name
+                        td.dataset.monthLabel = month; // 1回, 2回...
                         td.dataset.current = isPaid ? "1" : "0";
 
                         td.onclick = () => {
-                            if (STATE.unlocked) {
-                                toggleFeeLocal(td);
-                            } else {
-                                toast("編集には管理者ログインが必要です");
-                            }
+                            if (STATE.unlocked) toggleFeeLocal(td);
+                            else toast("編集には管理者ログインが必要です");
                         };
                         tr.appendChild(td);
                     });
 
-                    // Add Count Column
                     const tdCount = document.createElement('td');
                     tdCount.className = 'fee-cell';
                     tdCount.style.fontWeight = 'bold';
                     tdCount.textContent = m._count;
                     tr.appendChild(tdCount);
-
                     b.appendChild(tr);
                 });
-            } catch (e) {
-                console.error(e);
-                toast("データの読み込みに失敗しました");
-            }
-            finally { loading(false); }
+                loading(false);
+                updateFeeControls(); // Keep pending highlights if any
+            }, (err) => {
+                console.error(err);
+                toast("データの受信に失敗しました");
+                loading(false);
+            });
         }
 
         function toggleFeeLocal(td) {
@@ -1066,32 +1111,66 @@
             if (!confirmed) return;
             loading(true);
 
-            const updates = Object.keys(STATE.pendingChanges).map(key => {
-                const [name, month] = key.split('|');
-                return { name, month, newVal: STATE.pendingChanges[key] };
+            // Group updates by name to avoid race conditions and duplicates
+            const groupedUpdates = {};
+            Object.keys(STATE.pendingChanges).forEach(key => {
+                const [name, sessionKey] = key.split('|');
+                if (!groupedUpdates[name]) groupedUpdates[name] = {};
+                groupedUpdates[name][sessionKey] = STATE.pendingChanges[key];
             });
 
             try {
-                const res = await fetch(API, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ type: 'batch_fee', updates })
+                const names = Object.keys(groupedUpdates);
+                const batchPromises = names.map(async name => {
+                    const q = query(collection(db, "fees"), where("name", "==", name));
+                    const snap = await getDocs(q);
+                    const updateData = groupedUpdates[name];
+
+                    if (!snap.empty) {
+                        // Existing doc found, update it
+                        return setDoc(doc(db, "fees", snap.docs[0].id), updateData, { merge: true });
+                    } else {
+                        // New doc
+                        return addDoc(collection(db, "fees"), { name, ...updateData });
+                    }
                 });
 
+                await Promise.all(batchPromises);
+
+                // Duel Write to GAS (Async, don't block UI)
+                const monthHeaders = ["1回", "2回", "3回", "4回", "5回"];
+                const gasUpdates = [];
+                names.forEach(name => {
+                    Object.keys(groupedUpdates[name]).forEach(sessionKey => {
+                        gasUpdates.push({
+                            name: name,
+                            month: monthHeaders[parseInt(sessionKey.replace('session', '')) - 1],
+                            newVal: groupedUpdates[name][sessionKey]
+                        });
+                    });
+                });
+
+                fetch(API, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ type: 'batch_fee', updates: gasUpdates })
+                }).catch(e => console.error("GAS Sync Error:", e));
+
                 toast("保存しました");
-                loadFees();
+                STATE.pendingChanges = {}; // Clear after success
             } catch (e) {
                 toast("保存に失敗しました");
                 console.error(e);
+            } finally {
                 loading(false);
             }
         }
 
+        let unsubscribeAttendance = null;
         async function selectDate(date, btn) {
             document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active'); // Handle null btn safely
+            if (btn) btn.classList.add('active');
             else {
-                // Attempt to find button if not passed (re-selection scenario)
                 const existingBtn = Array.from(document.querySelectorAll('.date-btn'))
                     .find(b => b.textContent.includes(parseInt(date.split('-')[2]) + '日'));
                 if (existingBtn) existingBtn.classList.add('active');
@@ -1103,35 +1182,48 @@
             el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
             el('result-header').textContent = `参加状況一覧 (${parseInt(m)}月${parseInt(d)}日)`;
 
+            if (unsubscribeAttendance) unsubscribeAttendance();
             loading(true);
-            try {
-                const res = await fetch(`${API}?date=${date}`);
-                const data = await res.json();
-                STATE.members = data.members;
 
-                // Name Dropdown
-                const sel = el('field-name');
-                sel.innerHTML = '<option value="">選択してください</option>' +
-                    data.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+            // Fetch members once if needed
+            if (STATE.members.length === 0) {
+                try {
+                    const mSnap = await getDocs(collection(db, "members"));
+                    // 'order' フィールド（スプレッドシートの行順）でソート
+                    STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                    const fmSnap = await getDocs(collection(db, "feeMembers"));
+                    STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                } catch (e) {
+                    console.error("Member fetch error:", e);
+                }
+            }
 
-                // Results Table
+            // Names Dropdown
+            const sel = el('field-name');
+            sel.innerHTML = '<option value="">選択してください</option>' +
+                STATE.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+
+            unsubscribeAttendance = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
                 const body = el('result-body');
                 body.innerHTML = '';
                 let counts = { "参加": 0, "不参加": 0 };
-                const mData = {}; data.members.forEach(m => mData[m.name] = m.displayName);
+                const mData = {}; STATE.members.forEach(m => mData[m.name] = m.displayName);
 
-                // --- Sort by Status (Participating > Absent > Others) ---
-                // Mapping: "参加"(0), "出席"(0) -> Top priority
-                //          "不参加"(1), "欠席"(1) -> Second priority
-                //          Others -> Last
+                const attendance = [];
+                snapshot.forEach(doc => attendance.push(doc.data()));
+
                 const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
-                data.attendance.sort((a, b) => {
+                attendance.sort((a, b) => {
                     const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
                     const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
-                    return sA - sB;
+                    if (sA !== sB) return sA - sB;
+                    // --- Within same status, use Spreadsheet order (Batting average order) ---
+                    const mA = STATE.members.find(m => m.name === a.name) || { order: 999 };
+                    const mB = STATE.members.find(m => m.name === b.name) || { order: 999 };
+                    return (mA.order || 0) - (mB.order || 0);
                 });
 
-                data.attendance.forEach(row => {
+                attendance.forEach(row => {
                     const tr = document.createElement('tr');
                     const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
                     let badge = st;
@@ -1140,22 +1232,29 @@
                         badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
                     }
                     tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
-                                <td class="cell-status">${badge}</td>
-                                <td class="cell-comment">${row.comment}</td>`;
+                                    <td class="cell-status">${badge}</td>
+                                    <td class="cell-comment">${row.comment}</td>`;
                     body.appendChild(tr);
                 });
 
                 el('stats-area').innerHTML = `<span style="color:#2ecc71">参加: ${counts["参加"]}</span>
-                                         <span style="color:#e74c3c">不参加: ${counts["不参加"]}</span>
-                                         <span style="color:#666">未回答: ${data.members.length - data.attendance.length}</span>`;
+                                             <span style="color:#e74c3c">不参加: ${counts["不参加"]}</span>
+                                             <span style="color:#666">未回答: ${STATE.members.length - attendance.length}</span>`;
 
                 el('form-section').style.display = 'block';
                 el('result-section').style.display = 'block';
-                // Only scroll if initiated by user click, not automatic refresh
-                if (btn) el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                loading(false);
 
-            } catch (e) { console.error(e); }
-            finally { loading(false); }
+                // --- Scroll fix: Wait for DOM to be rendered and visible ---
+                if (btn) {
+                    setTimeout(() => {
+                        el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 150);
+                }
+            }, (err) => {
+                console.error(err);
+                loading(false);
+            });
         }
 
         function buildCalendar() {
@@ -1214,19 +1313,40 @@
             requestAnimationFrame(() => updateIndicator());
             window.addEventListener('resize', updateIndicator);
             el('attendanceForm').onsubmit = async (e) => {
-                e.preventDefault(); // STOP FORM SUBMISSION/RELOAD
+                e.preventDefault();
                 el('btn-submit').disabled = true;
                 loading(true);
-                const data = Object.fromEntries(new FormData(e.target));
+                const formData = Object.fromEntries(new FormData(e.target));
+                const date = formData.date;
+                const name = formData.name;
+                const status = formData.status;
+                const comment = formData.comment || '';
+
                 try {
-                    await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-                    toast(data.status === '削除' ? '削除しました' : '完了しました');
-                    // Refresh current date view WITHOUT scrolling or clearing state
-                    if (STATE.selectedDate) {
-                        selectDate(STATE.selectedDate, null);
+                    // 1. Firestore Write
+                    const q = query(collection(db, "attendance"), where("date", "==", date), where("name", "==", name));
+                    const snap = await getDocs(q);
+                    if (status === '削除') {
+                        const delPromises = snap.docs.map(d => deleteDoc(doc(db, "attendance", d.id)));
+                        await Promise.all(delPromises);
+                    } else if (!snap.empty) {
+                        await setDoc(doc(db, "attendance", snap.docs[0].id), { status, comment, updatedAt: serverTimestamp() }, { merge: true });
+                    } else {
+                        await addDoc(collection(db, "attendance"), { date, name, status, comment, updatedAt: serverTimestamp() });
                     }
-                } catch (e) { alert("エラーが発生しました"); }
-                finally { el('btn-submit').disabled = false; loading(false); }
+
+                    // 2. Dual Write to GAS (Async Sync)
+                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) })
+                        .catch(e => console.error("GAS Sync Error:", e));
+
+                    toast(status === '削除' ? '削除しました' : '完了しました');
+                } catch (e) {
+                    console.error(e);
+                    alert("エラーが発生しました");
+                } finally {
+                    el('btn-submit').disabled = false;
+                    loading(false);
+                }
             };
             window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
             el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
