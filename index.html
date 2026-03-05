@@ -979,11 +979,8 @@
         <!-- FEE VIEW -->
         <div id="view-fee" class="tab-content" style="display: none;">
             <div id="fee-main-area" class="card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-header">
                     <span>会費支払い状況</span>
-                    <button id="admin-btn" class="submit-btn"
-                        style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.9rem; background-color: #e74c3c;"
-                        onclick="unlockFees()">管理者</button>
                 </div>
 
                 <!-- Batch Control Panel -->
@@ -1115,10 +1112,6 @@
             if (pw === '2026') {
                 el('password-modal').classList.remove('show');
                 STATE.unlocked = true;
-                // 会費タブのボタンも更新
-                el('admin-btn').textContent = '管理者モード中';
-                el('admin-btn').style.background = '#2ecc71';
-                el('admin-btn').disabled = true;
                 // グローバルボタンも更新
                 const globalBtn = el('global-admin-btn');
                 globalBtn.textContent = '管理者モード';
