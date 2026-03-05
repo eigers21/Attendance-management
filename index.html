@@ -908,7 +908,7 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h2 style="margin: 0;">2026年<br>参加登録・会費管理</h2>
-            <button id="global-admin-btn" class="global-admin-btn" onclick="unlockFees()">🔒 管理者</button>
+            <button id="global-admin-btn" class="global-admin-btn" onclick="unlockFees()">管理者</button>
         </div>
 
         <!-- お知らせエリア -->
@@ -992,7 +992,6 @@
                     <button class="btn-small btn-save" onclick="saveFeeChanges()">一括登録</button>
                 </div>
 
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 10px;">※現在は閲覧モードです。</p>
                 <div class="fee-table-wrapper">
                     <table class="fee-table">
                         <thead id="fee-head"></thead>
@@ -1122,7 +1121,7 @@
                 el('admin-btn').disabled = true;
                 // グローバルボタンも更新
                 const globalBtn = el('global-admin-btn');
-                globalBtn.textContent = '🔓 管理者モード';
+                globalBtn.textContent = '管理者モード';
                 globalBtn.classList.add('unlocked');
                 globalBtn.onclick = null;
                 // お知らせの編集ボタンを表示
