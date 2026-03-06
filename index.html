@@ -4,971 +4,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 15.1)</title>
-    <style>
-        :root {
-            --primary: #4a90e2;
-            --secondary: #2ecc71;
-            --bg: #f5f7fa;
-            --text: #333;
-            --border: #ddd;
-            --header-bg: #fff;
-            --pending: #f39c12;
-            /* Orange for pending changes */
-        }
+    <title>Attendance Web v4</title>
 
-        /* Ver 8.7 Sparkling Animation Restoration */
-        @keyframes sparkle-sweep {
-            0% {
-                transform: translateX(-100%) skewX(-15deg);
-            }
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+        rel="stylesheet" />
 
-            100% {
-                transform: translateX(200%) skewX(-15deg);
-            }
-        }
-
-        .status-badge {
-            position: relative;
-            display: flex;
-            width: 100%;
-            height: 39px;
-            /* 10% Shorter than before (43px -> 39px) */
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-            font-size: 0.95rem;
-            /* 5% smaller */
-        }
-
-        .status-badge::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: translateX(-100%) skewX(-15deg);
-            animation: sparkle-sweep 2s linear infinite;
-        }
-
-        .status-attend {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            border: 1px solid #27ae60;
-        }
-
-        .status-absent {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: 1px solid #c0392b;
-        }
-
-        /* Results Table Layout */
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .result-table th {
-            background: #f8f9fa;
-            padding: 10px;
-            border: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .result-table td {
-            border: 1px solid var(--border);
-            padding: 0 !important;
-            height: 39px;
-            text-align: center;
-        }
-
-        .cell-name {
-            width: 15%;
-            font-weight: bold;
-            padding: 4px 8px !important;
-        }
-
-        .cell-status {
-            width: 15%;
-        }
-
-        .cell-comment {
-            width: 70%;
-            padding: 4px 8px !important;
-            text-align: left !important;
-            font-size: 0.85rem;
-        }
-
-        /* Layout & Containers */
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 12px;
-            margin: 0;
-            padding-bottom: 100px;
-            /* Fix for mobile scrolling in Google Sites iframe */
-            -webkit-overflow-scrolling: touch;
-            /* Smooth scrolling on iOS */
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 1.4rem;
-            color: #2c3e50;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 15px;
-            position: relative;
-            border-bottom: 2px solid #dce3ea;
-        }
-
-        /* スライドインジケーターバー */
-        .tab-indicator {
-            position: absolute;
-            bottom: -2px;
-            height: 3px;
-            background: var(--primary);
-            border-radius: 3px 3px 0 0;
-            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            color: #7f8c8d;
-            font-size: 1.3rem;
-            transition: color 0.3s ease, background 0.3s ease, transform 0.15s ease;
-            position: relative;
-        }
-
-        .tab-btn:hover:not(.active) {
-            background: rgba(74, 144, 226, 0.08);
-            color: #5a9de6;
-        }
-
-        .tab-btn:active {
-            transform: scale(0.97);
-        }
-
-        .tab-btn.active {
-            background: rgba(74, 144, 226, 0.12);
-            color: var(--primary);
-        }
-
-        /* タブコンテンツのトランジション */
-        .tab-content {
-            transition: opacity 0.35s ease, transform 0.35s ease;
-        }
-
-        .tab-content.slide-out-left {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-
-        .tab-content.slide-out-right {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-
-        .tab-content.slide-in {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* Warning & Message */
-        .warning-box {
-            border: 2px solid #e74c3c;
-            color: #e74c3c;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            background: #fdf2f2;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.0rem;
-            /* Reduced by 10% from 1.1rem */
-        }
-
-        #toast {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
-            z-index: 10000;
-            font-weight: bold;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        #loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        /* Calendar Grid */
-        .month-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            /* スタッガードスライドインアニメーション */
-            opacity: 0;
-            transform: translateY(25px);
-            animation: slideUp 0.5s ease forwards;
-        }
-
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
+    <!-- Tailwind CSS & Configuration -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        peach: "#E0F2FE",      /* sky-100に近いさわやかな薄い青 */
+                        cream: "#F0F9FF",      /* sky-50に近いさらに薄い青背景 */
+                        terracotta: "#0284C7", /* sky-600に近いメインの青 */
+                        warmOrange: "#0369A1", /* sky-700に近い濃い青 */
+                        softBlue: "#BAE6FD",
+                        warmGray: "#334155",   /* slate-700で文字色もクールに */
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans JP', 'sans-serif'],
+                    },
+                }
             }
         }
+    </script>
 
-        /* ヘッダーのフェードイン+スライドダウン */
-        h2 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            white-space: pre-line;
-            animation: fadeSlideDown 0.6s ease both;
-        }
-
-        @keyframes fadeSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .month-name {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-            border-left: 4px solid var(--primary);
-            padding-left: 10px;
-        }
-
-        .date-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-            gap: 8px;
-        }
-
-        .date-btn {
-            background: white;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            padding: 10px 5px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* ホバー時：浮き上がり（scale + shadow） */
-        .date-btn:not(.date-off):hover {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.25);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* リップルエフェクト */
-        .date-btn .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(74, 144, 226, 0.35);
-            transform: scale(0);
-            animation: rippleAnim 0.5s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(3);
-                opacity: 0;
-            }
-        }
-
-        /* 選択中ボタンのパルスアニメーション */
-        .date-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 4px 18px rgba(74, 144, 226, 0.55);
-            }
-        }
-
-        .date-off {
-            background: #f1f3f5;
-            color: #adb5bd;
-            cursor: default;
-        }
-
-        /* Form Card */
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #dee2e6;
-        }
-
-        .card-header {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            margin: 12px 0 6px;
-            font-size: 0.9rem;
-        }
-
-        select,
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .radio-set {
-            display: flex;
-            gap: 15px;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-
-        .radio-set label {
-            display: inline-flex;
-            align-items: center;
-            margin: 0;
-            font-weight: normal;
-            cursor: pointer;
-        }
-
-        .radio-set input {
-            margin-right: 6px;
-            width: 18px;
-            height: 18px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-        }
-
-        /* Stats & Fees */
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            background: #e8f4fd;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .fee-table-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .fee-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            min-width: 500px;
-            font-size: 0.85rem;
-            table-layout: fixed;
-            /* Unified column widths */
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .fee-table th,
-        .fee-table td {
-            border: 1px solid var(--border);
-            padding: 10px 4px;
-            text-align: center;
-            padding: 10px 4px;
-            text-align: center;
-        }
-
-        /* Specific widths for unified look */
-        .fee-table th:first-child,
-        .fee-table td:first-child {
-            width: 20%;
-            /* Name column reduced to 20% */
-            font-size: 1.1rem;
-            /* 20% larger font */
-            font-weight: bold;
-        }
-
-        /* Count Column (Last Child) */
-        /* Count Column (Last Child) */
-        .fee-table th:last-child,
-        .fee-table td:last-child {
-            width: 15%;
-            font-weight: bold;
-        }
-
-        .fee-table th:not(:first-child):not(:last-child),
-        .fee-table td:not(:first-child):not(:last-child) {
-            width: 13%;
-            /* Session columns (5 sessions) increased to fill space */
-            font-size: 1.1rem;
-            /* Match Name column font size */
-            font-weight: bold;
-        }
-
-        .fee-table th {
-            background: #34495e;
-            /* Dark cool gray header */
-            color: white;
-            font-weight: bold;
-            border-color: #34495e;
-        }
-
-        .fee-table tr:nth-child(even) {
-            background: #f8f9fa;
-            /* Zebra striping */
-        }
-
-        .fee-table tr:hover {
-            background-color: #eaeff5;
-            /* Row hover effect */
-        }
-
-        .fee-cell {
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .fee-cell.paid {
-            background-color: #2ecc71 !important;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            /* Increased size for Paid mark */
-        }
-
-        .fee-cell.paid::after {
-            content: '済';
-        }
-
-        /* Pending State Styles */
-        .fee-cell.pending-paid {
-            background-color: var(--pending) !important;
-            color: white !important;
-        }
-
-        .fee-cell.pending-remove {
-            background-color: #e74c3c !important;
-            opacity: 0.7;
-            color: white !important;
-        }
-
-        .fee-cell.pending-paid::after,
-        .fee-cell.pending-remove::after {
-            content: '...';
-        }
-
-        /* Fee Control Panel */
-        #fee-controls {
-            display: none;
-            /* Hidden by default */
-            gap: 10px;
-            margin-bottom: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .btn-save {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .btn-reset {
-            background: #95a5a6;
-            color: white;
-        }
-
-        /* カスタムパスワードモーダル */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            width: 300px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            animation: modalIn 0.25s ease;
-        }
-
-        @keyframes modalIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal-box h3 {
-            margin: 0 0 16px;
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-
-        .modal-box input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 16px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .modal-box input:focus {
-            border-color: var(--primary);
-        }
-
-        .modal-box .modal-error {
-            color: #e74c3c;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: none;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .modal-buttons button:active {
-            opacity: 0.8;
-        }
-
-        .modal-btn-cancel {
-            background: #e0e6ed;
-            color: #555;
-        }
-
-        .modal-btn-ok {
-            background: var(--primary);
-            color: white;
-        }
-
-        #back-top {
-            display: none;
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 100;
-            font-size: 1.2rem;
-        }
-
-        /* お知らせバナー */
-        .announcement-banner {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border-left: 4px solid #f39c12;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            box-shadow: 0 2px 6px rgba(243, 156, 18, 0.15);
-            animation: fadeIn 0.4s ease;
-        }
-
-        .announcement-banner .ann-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-
-        .announcement-banner .ann-text {
-            flex: 1;
-            font-size: 0.95rem;
-            color: #856404;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .announcement-banner .ann-edit-btn {
-            flex-shrink: 0;
-            background: #f39c12;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 4px 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .announcement-banner .ann-edit-btn:hover {
-            background: #e67e22;
-        }
-
-        .announcement-empty {
-            display: none;
-        }
-
-        .announcement-empty.admin-visible {
-            display: flex;
-            background: #f8f9fa;
-            border-left: 4px solid #ccc;
-        }
-
-        .announcement-empty .ann-text {
-            color: #999;
-            font-style: italic;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* お知らせ編集モーダル */
-        .ann-modal-textarea {
-            width: 100%;
-            min-height: 100px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.95rem;
-            resize: vertical;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-
-        .ann-modal-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
-        }
-
-        /* 削除ボタン */
-        .btn-delete-row {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-delete-row:hover {
-            background: #c0392b;
-        }
-
-        .btn-delete-row:active {
-            transform: scale(0.95);
-        }
-
-        .cell-action {
-            width: 50px;
-            padding: 4px !important;
-        }
-
-        /* グローバル管理者ボタン */
-        .global-admin-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        .global-admin-btn:hover {
-            background: #c0392b;
-        }
-
-        .global-admin-btn:active {
-            transform: scale(0.95);
-        }
-
-        .global-admin-btn.unlocked {
-            background: #2ecc71;
-            cursor: default;
-        }
-    </style>
+    <!-- Custom Styles -->
+    <link href="css/style.css" rel="stylesheet" />
 </head>
 
-<body>
+<body class="pb-32">
+    <!-- 背景装飾 -->
+    <div class="organic-shape w-64 h-64 bg-sky-200 -top-20 -left-20 rounded-full"></div>
+    <div class="organic-shape w-96 h-96 bg-blue-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;">
+    </div>
+    <div class="organic-shape w-48 h-48 bg-cyan-100 top-1/2 left-1/3 rounded-full" style="animation-delay:-3s;"></div>
 
-    <div id="loading">ちょっとまってね</div>
+    <!-- ローディング -->
+    <div id="loading">
+        <div class="ld-spinner"></div>
+        <div class="font-bold text-warmGray" id="loading-text">読み込み中…</div>
+    </div>
+
+    <!-- トースト -->
     <div id="toast"></div>
-    <button id="back-top">▲</button>
 
-    <!-- パスワード入力モーダル -->
-    <div id="password-modal" class="modal-overlay" onclick="closePasswordModal(event)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3>🔐 管理者パスワードを入力</h3>
+    <!-- パスワードモーダル -->
+    <div id="password-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        onclick="closePasswordModal(event)">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <div class="text-4xl text-center mb-4">🔐</div>
+            <h3 class="text-center font-extrabold text-xl mb-6 text-warmGray">管理者パスワード</h3>
             <input type="password" id="modal-password" placeholder="パスワード" autocomplete="off"
+                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl px-4 py-4 text-center text-lg tracking-widest outline-none transition-all mb-2"
                 onkeydown="if(event.key==='Enter')submitPassword()">
-            <div id="modal-error" class="modal-error">パスワードが違います</div>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closePasswordModal()">キャンセル</button>
-                <button class="modal-btn-ok" onclick="submitPassword()">ログイン</button>
+            <p id="modal-error" class="text-red-500 text-xs font-bold text-center mb-4 hidden">パスワードが正しくありません</p>
+            <div class="flex gap-2 mt-4">
+                <button onclick="closePasswordModal(event)"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl transition-colors">キャンセル</button>
+                <button onclick="submitPassword()"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">ログイン</button>
             </div>
         </div>
     </div>
 
-    <!-- 確認モーダル（confirm代替） -->
-    <div id="confirm-modal" class="modal-overlay" onclick="closeConfirmModal(false)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3 id="confirm-message"></h3>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closeConfirmModal(false)">キャンセル</button>
-                <button class="modal-btn-ok" onclick="closeConfirmModal(true)">はい</button>
+    <!-- 確認モーダル -->
+    <div id="confirm-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        onclick="closeConfirmModal(false)">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <h3 id="confirm-message" class="text-center font-extrabold text-lg mb-6 text-warmGray"></h3>
+            <div class="flex gap-2">
+                <button onclick="closeConfirmModal(false)"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                <button onclick="closeConfirmModal(true)"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">はい</button>
             </div>
         </div>
     </div>
 
     <!-- お知らせ編集モーダル -->
-    <div id="announcement-modal" class="modal-overlay" onclick="closeAnnouncementModal()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3>📢 お知らせを編集</h3>
-            <textarea id="ann-edit-textarea" class="ann-modal-textarea" placeholder="お知らせメッセージを入力..."></textarea>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closeAnnouncementModal()">キャンセル</button>
-                <button class="modal-btn-ok" onclick="saveAnnouncement()">保存</button>
+    <div id="announcement-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        onclick="closeAnnouncementModal()">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <h3 class="text-center font-extrabold text-lg mb-4 text-warmGray">📢 お知らせを編集</h3>
+            <textarea id="ann-edit-textarea"
+                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl p-4 min-h-[100px] outline-none resize-vertical font-sans text-sm mb-4"
+                placeholder="お知らせメッセージを入力…"></textarea>
+            <div class="flex gap-2">
+                <button onclick="closeAnnouncementModal()"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                <button onclick="saveAnnouncement()"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">保存</button>
             </div>
         </div>
     </div>
 
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h2 style="margin: 0;">2026年<br>参加登録・会費管理</h2>
-            <button id="global-admin-btn" class="global-admin-btn" onclick="unlockFees()">管理者</button>
+    <div class="mx-auto max-w-lg px-5 pt-10">
+        <!-- ヘッダー -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <span class="text-terracotta font-bold text-lg tracking-wide">2026</span>
+                <h1 class="text-3xl font-extrabold text-warmGray tracking-tight leading-tight"><span
+                        class="text-red-600">ESN</span> 参加登録・会費管理</h1>
+            </div>
+            <button onclick="unlockFees()" id="admin-icon-btn"
+                class="w-12 h-12 bg-white/70 border border-white/50 shadow-lg rounded-full flex items-center justify-center tactile-btn text-terracotta text-xl">
+                👤
+            </button>
+        </header>
+
+        <!-- タブ -->
+        <nav class="bg-white/70 backdrop-blur-md border border-white/50 shadow-lg rounded-2xl p-1.5 flex gap-1 mb-6">
+            <button onclick="switchView('reg')" id="tab-reg"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-base">
+                📅 参加登録
+            </button>
+            <button onclick="switchView('fee')" id="tab-fee"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-base">
+                📋 会費管理
+            </button>
+        </nav>
+
+        <!-- お知らせ -->
+        <div id="announcement-area"
+            class="bg-peach/40 border border-peach/60 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1"></p>
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-terracotta text-sm font-bold"
+                style="display:none;">✏️</button>
+        </div>
+        <div id="announcement-empty"
+            class="bg-gray-100 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p class="text-sm text-warmGray/40 italic flex-1">お知らせはまだありません</p>
+            <button id="ann-edit-btn-empty" onclick="openAnnouncementEditor()"
+                class="text-terracotta text-sm font-bold">✏️</button>
         </div>
 
-        <!-- お知らせエリア -->
-        <div id="announcement-area" class="announcement-banner" style="display: none;">
-            <span class="ann-icon">📢</span>
-            <span id="announcement-text" class="ann-text"></span>
-            <button id="ann-edit-btn" class="ann-edit-btn" style="display: none;" onclick="openAnnouncementEditor()">✏️
-                編集</button>
-        </div>
-        <div id="announcement-empty" class="announcement-banner announcement-empty">
-            <span class="ann-icon">📢</span>
-            <span class="ann-text">お知らせはまだありません。「✏️ 編集」で追加しましょう。</span>
-            <button id="ann-edit-btn-empty" class="ann-edit-btn" onclick="openAnnouncementEditor()">✏️ 編集</button>
+        <!-- エラーバナー -->
+        <div id="error-banner"
+            class="bg-red-50 border border-red-300 rounded-2xl p-4 mb-6 text-red-600 text-sm font-bold items-center gap-3"
+            style="display:none;">
+            <span id="error-msg" class="flex-1"></span>
+            <button id="error-retry"
+                class="bg-red-500 text-white px-3 py-1 rounded-xl text-xs font-bold ml-2">リトライ</button>
         </div>
 
-        <!-- TABS -->
+        <!-- 参加登録ビュー -->
+        <div id="view-reg">
+            <div id="calendar-container" class="space-y-5"></div>
 
-        <div class="tabs" id="tabs-container">
-            <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
-            <button id="tab-fee" class="tab-btn" onclick="switchView('fee')">会費管理</button>
-            <div class="tab-indicator" id="tab-indicator"></div>
-        </div>
-
-        <!-- REGISTER VIEW -->
-        <div id="view-reg" class="tab-content slide-in">
-            <div class="warning-box">同名での登録は最新の内容に上書きされます。</div>
-            <div id="calendar-container"></div>
-
-            <div id="form-section" class="card" style="display: none;">
-                <div id="form-date-title" class="card-header"></div>
-                <form id="attendanceForm">
+            <div id="form-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+                style="display:none;">
+                <h3 id="form-date-title" class="font-extrabold text-xl text-terracotta mb-5"></h3>
+                <form id="attendanceForm" class="space-y-5">
                     <input type="hidden" id="field-date" name="date">
-                    <label>名前</label>
-                    <select id="field-name" name="name" required>
-                        <option value="">読込中...</option>
-                    </select>
-
-                    <label>参加状況</label>
-                    <div class="radio-set">
-                        <label><input type="radio" name="status" value="参加" checked> 参加</label>
-                        <label><input type="radio" name="status" value="不参加"> 不参加</label>
-
+                    <div>
+                        <label class="block text-sm font-bold text-warmGray mb-2">名前</label>
+                        <select id="field-name" name="name" required
+                            class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center text-warmGray">
+                            <option value="">読込中…</option>
+                        </select>
                     </div>
-
-                    <label>備考</label>
-                    <input type="text" name="comment" placeholder="ひとことメッセージ">
-                    <button type="submit" id="btn-submit" class="submit-btn">送信する</button>
+                    <div>
+                        <label class="block text-sm font-bold text-warmGray mb-2">参加状況</label>
+                        <div class="flex gap-2">
+                            <label class="flex-1 cursor-pointer radio-card">
+                                <input type="radio" name="status" value="参加" checked class="hidden">
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">参加
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer radio-card">
+                                <input type="radio" name="status" value="不参加" class="hidden">
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">
+                                    不参加</div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-warmGray mb-2">備考</label>
+                        <input type="text" name="comment" placeholder="ひとことメッセージ"
+                            class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center">
+                    </div>
+                    <button type="submit" id="btn-submit"
+                        class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn">送信する</button>
                 </form>
             </div>
 
-            <div id="result-section" class="card" style="display: none;">
-                <div id="result-header" class="card-header">参加状況一覧</div>
-                <div id="stats-area" class="stats"></div>
-                <table class="result-table">
+            <div id="result-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+                style="display:none;">
+                <h3 id="result-header" class="font-extrabold text-lg text-terracotta mb-4">参加状況一覧</h3>
+                <div id="stats-area" class="flex justify-around bg-peach/30 p-3 rounded-2xl mb-4 text-sm font-bold">
+                </div>
+                <table class="w-full text-sm table-fixed">
                     <thead>
-                        <tr>
-                            <th>名前</th>
-                            <th>状況</th>
-                            <th>備考</th>
-                            <th class="th-action" style="display: none;">操作</th>
+                        <tr class="text-sm text-warmGray font-bold border-b-2 border-peach/40 bg-peach/10">
+                            <th class="py-3 text-center" style="width: 30%;">名前</th>
+                            <th class="py-3 text-center" style="width: 35%;">状況</th>
+                            <th class="py-3 text-center" style="width: 65%;">備考</th>
+                            <th class="py-3 th-action hidden" style="width: 15%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="result-body"></tbody>
@@ -976,22 +223,21 @@
             </div>
         </div>
 
-        <!-- FEE VIEW -->
-        <div id="view-fee" class="tab-content" style="display: none;">
-            <div id="fee-main-area" class="card">
-                <div class="card-header">
-                    <span>会費支払い状況</span>
+        <!-- 会費管理ビュー -->
+        <div id="view-fee" style="display:none;">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-extrabold text-xl text-terracotta">支払い状況</h3>
+                    <div id="fee-controls" style="display:none;" class="flex gap-2">
+                        <button onclick="resetFeeChanges()"
+                            class="text-xs font-bold text-warmGray px-3 py-1.5 rounded-full bg-peach/50 tactile-btn">元に戻す</button>
+                        <button onclick="saveFeeChanges()"
+                            class="text-xs font-bold text-white px-3 py-1.5 rounded-full bg-terracotta tactile-btn">一括登録</button>
+                    </div>
                 </div>
-
-                <!-- Batch Control Panel -->
-                <div id="fee-controls">
-                    <button class="btn-small btn-reset" onclick="resetFeeChanges()">元に戻す</button>
-                    <button class="btn-small btn-save" onclick="saveFeeChanges()">一括登録</button>
-                </div>
-
-                <div class="fee-table-wrapper">
-                    <table class="fee-table">
-                        <thead id="fee-head"></thead>
+                <div class="overflow-x-auto -mx-2" style="-webkit-overflow-scrolling:touch;">
+                    <table class="w-full min-w-[440px] text-sm border-collapse border border-peach/40">
+                        <thead id="fee-head" class="bg-peach/10"></thead>
                         <tbody id="fee-body"></tbody>
                     </table>
                 </div>
@@ -999,617 +245,16 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBMyqYZMC4ytIOPNIBXKe8th-mE-rmM27o",
-            authDomain: "sunday-attendance.firebaseapp.com",
-            projectId: "sunday-attendance",
-            storageBucket: "sunday-attendance.firebasestorage.app",
-            messagingSenderId: "292299944623",
-            appId: "1:292299944623:web:5c982cc8a700e57d51da5a"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
-        let STATE = { members: [], feeMembers: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
-
-        const el = (id) => document.getElementById(id);
-        const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
-        const loading = (v) => el('loading').style.display = v ? 'flex' : 'none';
-
-        // インジケーターバーの位置を更新
-        function updateIndicator() {
-            const activeBtn = document.querySelector('.tab-btn.active');
-            const indicator = el('tab-indicator');
-            if (activeBtn && indicator) {
-                indicator.style.left = activeBtn.offsetLeft + 'px';
-                indicator.style.width = activeBtn.offsetWidth + 'px';
-            }
-        }
-
-        // グローバルに公開する関数 (Moduleのスコープから onclick 等でも呼べるようにする)
-        window.switchView = switchView;
-        window.unlockFees = unlockFees;
-        window.closePasswordModal = closePasswordModal;
-        window.submitPassword = submitPassword;
-        window.closeConfirmModal = closeConfirmModal;
-        window.loadFees = loadFees;
-        window.resetFeeChanges = resetFeeChanges;
-        window.saveFeeChanges = saveFeeChanges;
-        window.selectDate = selectDate;
-        window.toggleFeeLocal = toggleFeeLocal;
-        window.openAnnouncementEditor = openAnnouncementEditor;
-        window.closeAnnouncementModal = closeAnnouncementModal;
-        window.saveAnnouncement = saveAnnouncement;
-        window.deleteAttendanceRow = deleteAttendanceRow;
-
-        function switchView(v) {
-            if (STATE.currentView === v) return; // 同じビューならスキップ
-
-            const oldView = STATE.currentView;
-            const outgoing = el('view-' + oldView);
-            const incoming = el('view-' + v);
-
-            // タブのアクティブ状態を即座に更新
-            el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
-            el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
-            updateIndicator();
-
-            // スライド方向を決定（regが左、feeが右）
-            const goingRight = (v === 'fee');
-
-            // 現在のビューをスライドアウト
-            outgoing.classList.remove('slide-in');
-            outgoing.classList.add(goingRight ? 'slide-out-left' : 'slide-out-right');
-
-            // アニメーション完了後に新しいビューをスライドイン
-            setTimeout(() => {
-                outgoing.style.display = 'none';
-                outgoing.classList.remove('slide-out-left', 'slide-out-right');
-
-                // 新しいビューを反対側から準備
-                incoming.classList.add(goingRight ? 'slide-out-right' : 'slide-out-left');
-                incoming.style.display = 'block';
-
-                // 次フレームでスライドインを開始
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        incoming.classList.remove('slide-out-left', 'slide-out-right');
-                        incoming.classList.add('slide-in');
-                    });
-                });
-
-                STATE.currentView = v;
-                if (v === 'fee') loadFees();
-                window.scrollTo(0, 0);
-            }, 250); // CSSトランジション時間と合わせる
-        }
-
-        // カスタムパスワードモーダル
-        function unlockFees() {
-            if (STATE.unlocked) return;
-            const modal = el('password-modal');
-            const input = el('modal-password');
-            el('modal-error').style.display = 'none';
-            input.value = '';
-            modal.classList.add('show');
-            setTimeout(() => input.focus(), 100);
-        }
-
-        function closePasswordModal(event) {
-            if (event && event.target !== el('password-modal')) return;
-            el('password-modal').classList.remove('show');
-        }
-
-        function submitPassword() {
-            const pw = el('modal-password').value;
-            if (pw === '2026') {
-                el('password-modal').classList.remove('show');
-                STATE.unlocked = true;
-                // グローバルボタンも更新
-                const globalBtn = el('global-admin-btn');
-                globalBtn.textContent = '管理者モード';
-                globalBtn.classList.add('unlocked');
-                globalBtn.onclick = null;
-                // お知らせの編集ボタンを表示
-                el('ann-edit-btn').style.display = 'inline-block';
-                // お知らせが空の場合、空バナーを表示
-                if (el('announcement-area').style.display === 'none') {
-                    el('announcement-empty').classList.add('admin-visible');
-                }
-                // 削除ボタンを表示
-                document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
-                document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
-                document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
-                toast('管理者モードになりました');
-                if (STATE.currentView === 'fee') loadFees();
-            } else {
-                el('modal-error').style.display = 'block';
-                el('modal-password').value = '';
-                el('modal-password').focus();
-            }
-        }
-
-        // --- お知らせ機能 ---
-        function loadAnnouncement() {
-            onSnapshot(doc(db, "announcements", "main"), (docSnap) => {
-                const area = el('announcement-area');
-                const empty = el('announcement-empty');
-                if (docSnap.exists() && docSnap.data().message && docSnap.data().message.trim() !== '') {
-                    el('announcement-text').textContent = docSnap.data().message;
-                    area.style.display = 'flex';
-                    empty.classList.remove('admin-visible');
-                    if (STATE.unlocked) {
-                        el('ann-edit-btn').style.display = 'inline-block';
-                    }
-                } else {
-                    area.style.display = 'none';
-                    if (STATE.unlocked) {
-                        empty.classList.add('admin-visible');
-                    }
-                }
-            });
-        }
-
-        function openAnnouncementEditor() {
-            const currentText = el('announcement-text').textContent || '';
-            el('ann-edit-textarea').value = currentText;
-            el('announcement-modal').classList.add('show');
-            setTimeout(() => el('ann-edit-textarea').focus(), 100);
-        }
-
-        function closeAnnouncementModal() {
-            el('announcement-modal').classList.remove('show');
-        }
-
-        async function saveAnnouncement() {
-            const msg = el('ann-edit-textarea').value.trim();
-            try {
-                await setDoc(doc(db, "announcements", "main"), {
-                    message: msg,
-                    updatedAt: serverTimestamp()
-                });
-                closeAnnouncementModal();
-                toast('お知らせを保存しました');
-            } catch (e) {
-                console.error(e);
-                toast('保存に失敗しました');
-            }
-        }
-
-        // --- 出欠削除機能 ---
-        async function deleteAttendanceRow(docId, name, date) {
-            const ok = await customConfirm(`${name} の出欠データを削除しますか？`);
-            if (!ok) return;
-            loading(true);
-            try {
-                await deleteDoc(doc(db, "attendance", docId));
-                // GAS へも削除を非同期送信
-                fetch(API, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ type: 'delete_attendance', date: date, name: name })
-                }).catch(e => console.error("GAS Sync Error:", e));
-                toast(`${name} のデータを削除しました`);
-            } catch (e) {
-                console.error(e);
-                toast('削除に失敗しました');
-            } finally {
-                loading(false);
-            }
-        }
-
-        // カスタム確認ダイアログ（confirm代替）
-        let _confirmResolve = null;
-        function customConfirm(message) {
-            return new Promise(resolve => {
-                _confirmResolve = resolve;
-                el('confirm-message').textContent = message;
-                el('confirm-modal').classList.add('show');
-            });
-        }
-
-        function closeConfirmModal(result) {
-            el('confirm-modal').classList.remove('show');
-            if (_confirmResolve) {
-                _confirmResolve(result);
-                _confirmResolve = null;
-            }
-        }
-
-        let unsubscribeFees = null;
-        async function loadFees() {
-            if (unsubscribeFees) unsubscribeFees();
-            loading(true);
-            STATE.pendingChanges = {}; // Clear pending
-            updateFeeControls();
-
-            const monthHeaders = ["1回", "2回", "3回", "4回", "5回"];
-            const h = el('fee-head'); h.innerHTML = '';
-            const trHead = document.createElement('tr');
-            ['名前', ...monthHeaders, '回数'].forEach(t => {
-                const th = document.createElement('th'); th.textContent = t; trHead.appendChild(th);
-            });
-            h.appendChild(trHead);
-
-            // Real-time listener for fees
-            unsubscribeFees = onSnapshot(collection(db, "fees"), (snapshot) => {
-                const b = el('fee-body');
-                b.innerHTML = '';
-                const feesData = {};
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    feesData[d.name] = d;
-                });
-
-                let memberList = (STATE.feeMembers && STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
-
-                // --- If members not yet loaded, try fetching both once ---
-                if (memberList.length === 0) {
-                    Promise.all([
-                        getDocs(collection(db, "members")),
-                        getDocs(collection(db, "feeMembers"))
-                    ]).then(([mSnap, fmSnap]) => {
-                        STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-                        STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-                        loadFees(); // Refresh
-                    }).catch(err => console.error("Member fetch error in loadFees:", err));
-                    return;
-                }
-
-                // --- Sort by Count descending (as requested) ---
-                memberList = memberList.map(m => {
-                    let count = 0;
-                    monthHeaders.forEach((_, i) => {
-                        if (feesData[m.name] && feesData[m.name][`session${i + 1}`] === 1) count++;
-                    });
-                    return { ...m, _count: count };
-                }).sort((a, b) => b._count - a._count || (a.order || 0) - (b.order || 0));
-
-                memberList.forEach(m => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${m.displayName}</td>`;
-
-                    monthHeaders.forEach((month, i) => {
-                        const sessionKey = `session${i + 1}`;
-                        const td = document.createElement('td'); td.className = 'fee-cell';
-                        const isPaid = feesData[m.name] && feesData[m.name][sessionKey] === 1;
-                        if (isPaid) td.classList.add('paid');
-
-                        td.dataset.id = `${m.name}|${sessionKey}`; // session1, session2...
-                        td.dataset.displayName = m.name; // Keep internal name
-                        td.dataset.monthLabel = month; // 1回, 2回...
-                        td.dataset.current = isPaid ? "1" : "0";
-
-                        td.onclick = () => {
-                            if (STATE.unlocked) toggleFeeLocal(td);
-                            else toast("編集には管理者ログインが必要です");
-                        };
-                        tr.appendChild(td);
-                    });
-
-                    const tdCount = document.createElement('td');
-                    tdCount.className = 'fee-cell';
-                    tdCount.style.fontWeight = 'bold';
-                    tdCount.textContent = m._count;
-                    tr.appendChild(tdCount);
-                    b.appendChild(tr);
-                });
-                loading(false);
-                updateFeeControls(); // Keep pending highlights if any
-            }, (err) => {
-                console.error(err);
-                toast("データの受信に失敗しました");
-                loading(false);
-            });
-        }
-
-        function toggleFeeLocal(td) {
-            const id = td.dataset.id;
-            const currentVal = parseInt(td.dataset.current);
-            let pendingVal = STATE.pendingChanges[id];
-
-            // If no pending change, invert current
-            if (pendingVal === undefined) {
-                pendingVal = currentVal === 1 ? 0 : 1;
-            } else {
-                // If pending change exists, toggle it (0->1, 1->0)
-                // If toggled back to original, remove pending
-                pendingVal = pendingVal === 1 ? 0 : 1;
-                if (pendingVal === currentVal) pendingVal = undefined; // Back to original
-            }
-
-            // Update State
-            if (pendingVal !== undefined) {
-                STATE.pendingChanges[id] = pendingVal;
-            } else {
-                delete STATE.pendingChanges[id];
-            }
-
-            // Update UI
-            td.classList.remove('paid', 'pending-paid', 'pending-remove');
-            if (pendingVal !== undefined) {
-                if (pendingVal === 1) td.classList.add('pending-paid');
-                else td.classList.add('pending-remove');
-            } else {
-                // Restore original look
-                if (currentVal === 1) td.classList.add('paid');
-            }
-
-            updateFeeControls();
-        }
-
-        function updateFeeControls() {
-            const hasChanges = Object.keys(STATE.pendingChanges).length > 0;
-            el('fee-controls').style.display = hasChanges ? 'flex' : 'none';
-        }
-
-        function resetFeeChanges() {
-            STATE.pendingChanges = {};
-            document.querySelectorAll('.fee-cell').forEach(td => {
-                if (!td.dataset.current) return;
-                td.classList.remove('pending-paid', 'pending-remove', 'paid');
-                if (td.dataset.current === "1") td.classList.add('paid');
-            });
-            updateFeeControls();
-        }
-
-        async function saveFeeChanges() {
-            const confirmed = await customConfirm("変更を保存しますか？");
-            if (!confirmed) return;
-            loading(true);
-
-            // Group updates by name to avoid race conditions and duplicates
-            const groupedUpdates = {};
-            Object.keys(STATE.pendingChanges).forEach(key => {
-                const [name, sessionKey] = key.split('|');
-                if (!groupedUpdates[name]) groupedUpdates[name] = {};
-                groupedUpdates[name][sessionKey] = STATE.pendingChanges[key];
-            });
-
-            try {
-                const names = Object.keys(groupedUpdates);
-                const batchPromises = names.map(async name => {
-                    const q = query(collection(db, "fees"), where("name", "==", name));
-                    const snap = await getDocs(q);
-                    const updateData = groupedUpdates[name];
-
-                    if (!snap.empty) {
-                        // Existing doc found, update it
-                        return setDoc(doc(db, "fees", snap.docs[0].id), updateData, { merge: true });
-                    } else {
-                        // New doc
-                        return addDoc(collection(db, "fees"), { name, ...updateData });
-                    }
-                });
-
-                await Promise.all(batchPromises);
-
-                // Duel Write to GAS (Async, don't block UI)
-                const monthHeaders = ["1回", "2回", "3回", "4回", "5回"];
-                const gasUpdates = [];
-                names.forEach(name => {
-                    Object.keys(groupedUpdates[name]).forEach(sessionKey => {
-                        gasUpdates.push({
-                            name: name,
-                            month: monthHeaders[parseInt(sessionKey.replace('session', '')) - 1],
-                            newVal: groupedUpdates[name][sessionKey]
-                        });
-                    });
-                });
-
-                fetch(API, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ type: 'batch_fee', updates: gasUpdates })
-                }).catch(e => console.error("GAS Sync Error:", e));
-
-                toast("保存しました");
-                STATE.pendingChanges = {}; // Clear after success
-            } catch (e) {
-                toast("保存に失敗しました");
-                console.error(e);
-            } finally {
-                loading(false);
-            }
-        }
-
-        let unsubscribeAttendance = null;
-        async function selectDate(date, btn) {
-            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
-            else {
-                const existingBtn = Array.from(document.querySelectorAll('.date-btn'))
-                    .find(b => b.textContent.includes(parseInt(date.split('-')[2]) + '日'));
-                if (existingBtn) existingBtn.classList.add('active');
-            }
-
-            STATE.selectedDate = date;
-            el('field-date').value = date;
-            const [y, m, d] = date.split('-');
-            el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
-            el('result-header').textContent = `参加状況一覧 (${parseInt(m)}月${parseInt(d)}日)`;
-
-            if (unsubscribeAttendance) unsubscribeAttendance();
-            loading(true);
-
-            // Fetch members once if needed
-            if (STATE.members.length === 0) {
-                try {
-                    const mSnap = await getDocs(collection(db, "members"));
-                    // 'order' フィールド（スプレッドシートの行順）でソート
-                    STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-                    const fmSnap = await getDocs(collection(db, "feeMembers"));
-                    STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-                } catch (e) {
-                    console.error("Member fetch error:", e);
-                }
-            }
-
-            // Names Dropdown
-            const sel = el('field-name');
-            sel.innerHTML = '<option value="">選択してください</option>' +
-                STATE.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
-
-            unsubscribeAttendance = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
-                const body = el('result-body');
-                body.innerHTML = '';
-                let counts = { "参加": 0, "不参加": 0 };
-                const mData = {}; STATE.members.forEach(m => mData[m.name] = m.displayName);
-
-                const attendance = [];
-                snapshot.forEach(d => attendance.push({ ...d.data(), _docId: d.id }));
-
-                const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
-                attendance.sort((a, b) => {
-                    const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
-                    const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
-                    if (sA !== sB) return sA - sB;
-                    // --- Within same status, use Spreadsheet order (Batting average order) ---
-                    const mA = STATE.members.find(m => m.name === a.name) || { order: 999 };
-                    const mB = STATE.members.find(m => m.name === b.name) || { order: 999 };
-                    return (mA.order || 0) - (mB.order || 0);
-                });
-
-                attendance.forEach(row => {
-                    const tr = document.createElement('tr');
-                    const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
-                    let badge = st;
-                    if (st === '参加' || st === '不参加') {
-                        counts[st]++;
-                        badge = `<div class="status-badge ${st === '参加' ? 'status-attend' : 'status-absent'}">${st}</div>`;
-                    }
-                    const deleteBtn = `<td class="cell-action" style="display: ${STATE.unlocked ? 'table-cell' : 'none'}"><button class="btn-delete-row" style="display: ${STATE.unlocked ? 'inline-block' : 'none'}" onclick="deleteAttendanceRow('${row._docId}', '${row.name}', '${date}')">🗑</button></td>`;
-                    tr.innerHTML = `<td class="cell-name">${mData[row.name] || row.name}</td>
-                                    <td class="cell-status">${badge}</td>
-                                    <td class="cell-comment">${row.comment || ''}</td>
-                                    ${deleteBtn}`;
-                    body.appendChild(tr);
-                });
-                el('stats-area').innerHTML = `<span style="color:#2ecc71">参加: ${counts["参加"]}</span>
-                                             <span style="color:#e74c3c">不参加: ${counts["不参加"]}</span>
-                                             <span style="color:#666">未回答: ${STATE.members.length - attendance.length}</span>`;
-
-                el('form-section').style.display = 'block';
-                el('result-section').style.display = 'block';
-                loading(false);
-
-                // --- Scroll fix: Wait for DOM to be rendered and visible ---
-                if (btn) {
-                    setTimeout(() => {
-                        el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 150);
-                }
-            }, (err) => {
-                console.error(err);
-                loading(false);
-            });
-        }
-
-        function buildCalendar() {
-            const container = el('calendar-container');
-            const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            let cardIndex = 0;
-
-            for (let m = 3; m <= 12; m++) {
-                const card = document.createElement('div'); card.className = 'month-card';
-                // スタッガード遅延: 各カードが順番にスライドイン
-                card.style.animationDelay = (cardIndex * 0.08) + 's';
-                cardIndex++;
-                card.innerHTML = `<div class="month-name">${m === 12 ? '12月 (納会予定)' : m + '月'}</div>`;
-                const grid = document.createElement('div'); grid.className = 'date-grid';
-
-                let d = new Date(2026, m - 1, 1, 12, 0, 0);
-                while (d.getMonth() === m - 1) {
-                    const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                    if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
-                        const btn = document.createElement('div');
-                        btn.className = 'date-btn' + (d < today ? ' date-off' : '');
-                        btn.textContent = d.getDate() + '日' + (d < today ? '(終)' : '');
-                        if (d >= today) {
-                            btn.onclick = (e) => {
-                                // リップルエフェクト
-                                createRipple(e, btn);
-                                selectDate(dateStr, btn);
-                            };
-                        }
-                        grid.appendChild(btn);
-                    }
-                    d.setDate(d.getDate() + 1);
-                }
-                card.appendChild(grid);
-                container.appendChild(card);
-            }
-        }
-
-        // リップルエフェクト生成
-        function createRipple(event, element) {
-            const ripple = document.createElement('span');
-            ripple.className = 'ripple';
-            const rect = element.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = size + 'px';
-            ripple.style.left = (event.clientX - rect.left - size / 2) + 'px';
-            ripple.style.top = (event.clientY - rect.top - size / 2) + 'px';
-            element.appendChild(ripple);
-            ripple.addEventListener('animationend', () => ripple.remove());
-        }
-
-        window.onload = () => {
-            buildCalendar();
-            loadAnnouncement();
-            // 初期インジケーター位置を設定
-            requestAnimationFrame(() => updateIndicator());
-            window.addEventListener('resize', updateIndicator);
-            el('attendanceForm').onsubmit = async (e) => {
-                e.preventDefault();
-                el('btn-submit').disabled = true;
-                loading(true);
-                const formData = Object.fromEntries(new FormData(e.target));
-                const date = formData.date;
-                const name = formData.name;
-                const status = formData.status;
-                const comment = formData.comment || '';
-
-                try {
-                    // 1. Firestore Write
-                    const q = query(collection(db, "attendance"), where("date", "==", date), where("name", "==", name));
-                    const snap = await getDocs(q);
-                    if (status === '削除') {
-                        const delPromises = snap.docs.map(d => deleteDoc(doc(db, "attendance", d.id)));
-                        await Promise.all(delPromises);
-                    } else if (!snap.empty) {
-                        await setDoc(doc(db, "attendance", snap.docs[0].id), { status, comment, updatedAt: serverTimestamp() }, { merge: true });
-                    } else {
-                        await addDoc(collection(db, "attendance"), { date, name, status, comment, updatedAt: serverTimestamp() });
-                    }
-
-                    // 2. Dual Write to GAS (Async Sync)
-                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(formData) })
-                        .catch(e => console.error("GAS Sync Error:", e));
-
-                    toast(status === '削除' ? '削除しました' : '完了しました');
-                } catch (e) {
-                    console.error(e);
-                    alert("エラーが発生しました");
-                } finally {
-                    el('btn-submit').disabled = false;
-                    loading(false);
-                }
-            };
-            window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'block' : 'none';
-            el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-
-    </script>
+    <!-- FAB（画面下部固定ボタン） -->
+    <div id="fab-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+            class="w-14 h-14 bg-white/90 backdrop-blur-md border border-peach/50 shadow-xl rounded-full flex items-center justify-center tactile-btn text-terracotta font-extrabold text-2xl">
+            ↑
+        </button>
+    </div>
+
+    <!-- ES Modules Entry Plot -->
+    <script type="module" src="js/main.js"></script>
 </body>
 
 </html>
