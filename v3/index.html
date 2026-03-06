@@ -681,7 +681,7 @@
                     const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
                         const btn = document.createElement('button');
-                        btn.className = 'w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold tactile-btn text-sm transition-all';
+                        btn.className = 'w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold tactile-btn text-lg transition-all';
                         if (d < today) {
                             btn.className += ' bg-warmGray/5 border-transparent text-warmGray/25 cursor-default';
                         } else {
@@ -730,6 +730,7 @@
             const sel = el('field-name');
             sel.innerHTML = '<option value="">選択してください</option>' + STATE.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
 
+            let isFirstLoad = true;
             unsubAtt = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
                 const body = el('result-body'); body.innerHTML = '';
                 let counts = { "参加": 0, "不参加": 0 };
@@ -752,7 +753,7 @@
                     const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-base text-center'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
                     const tdS = document.createElement('td'); tdS.className = 'py-3 text-center text-sm';
                     if (st === '参加' || st === '不参加') {
-                        const badge = document.createElement('span'); badge.className = `text-xs font-bold px-3 py-1.5 rounded-full ${st === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`; badge.textContent = st; tdS.appendChild(badge);
+                        const badge = document.createElement('span'); badge.className = `inline-block w-[68px] text-center text-xs font-bold py-1.5 rounded-full ${st === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`; badge.textContent = st; tdS.appendChild(badge);
                     } else tdS.textContent = st;
                     tr.appendChild(tdS);
                     const tdC = document.createElement('td'); tdC.className = 'py-3 text-center text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
@@ -771,7 +772,10 @@
 
                 el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
                 loading(false);
-                if (btn) setTimeout(() => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+                if (isFirstLoad && btn) {
+                    setTimeout(() => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+                    isFirstLoad = false;
+                }
             }, (err) => { console.error(err); showError('出欠データ受信失敗', () => selectDate(date, btn)); loading(false); });
         }
 
