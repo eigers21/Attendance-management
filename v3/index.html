@@ -418,13 +418,8 @@
     <!-- FAB（画面下部固定ボタン） -->
     <div id="fab-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
         <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
-            class="w-12 h-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-lg rounded-full flex items-center justify-center tactile-btn text-warmGray text-lg">
-            ⚙️
-        </button>
-        <button id="fab-register"
-            class="bg-terracotta text-white px-7 py-4 rounded-full font-extrabold flex items-center gap-2 shadow-xl shadow-terracotta/30 tactile-btn text-sm"
-            style="display:none;">
-            ＋ 登録する
+            class="w-14 h-14 bg-white/90 backdrop-blur-md border border-peach/50 shadow-xl rounded-full flex items-center justify-center tactile-btn text-terracotta font-extrabold text-2xl">
+            ↑
         </button>
     </div>
 
@@ -583,7 +578,7 @@
             loading(true, '会費データを読み込み中…'); hideError(); STATE.pendingChanges = {}; updateFeeControls();
             const monthH = ["1回", "2回", "3回", "4回", "5回"];
             const h = el('fee-head'); h.innerHTML = '';
-            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray/40 border-b border-peach/30';
+            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray/80 border-b border-peach/30';
             ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 px-1 text-center text-sm md:text-base whitespace-nowrap'; th.textContent = t; trH.appendChild(th); });
             h.appendChild(trH);
 
@@ -603,9 +598,9 @@
 
                 list.forEach(m => {
                     const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
-                    const tdN = document.createElement('td'); tdN.className = 'py-3 px-1 font-bold text-base text-center break-all'; tdN.textContent = m.displayName; tr.appendChild(tdN);
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 px-1 font-bold text-base text-center break-all text-warmGray'; tdN.textContent = m.displayName; tr.appendChild(tdN);
                     monthH.forEach((_, i) => {
-                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base';
+                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base text-warmGray font-medium';
                         const isPaid = feesData[m.name] && feesData[m.name][sk] === 1;
                         if (isPaid) td.classList.add('paid');
                         td.dataset.id = `${m.name}|${sk}`; td.dataset.current = isPaid ? "1" : "0";
@@ -713,8 +708,6 @@
             const [y, mo, da] = date.split('-');
             el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
             el('result-header').innerHTML = `参加状況一覧 <br><span class="text-base font-normal text-warmGray/60 mt-1 inline-block">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
-            el('fab-register').style.display = 'flex';
-            el('fab-register').onclick = () => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             if (unsubAtt) unsubAtt();
             loading(true, '出欠データを取得中…'); hideError();
@@ -799,6 +792,7 @@
                     else { await addDoc(collection(db, "attendance"), { ...fd, updatedAt: serverTimestamp() }); }
                     fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(fd) }).catch(e => console.error("GAS:", e));
                     toast(fd.status === '削除' ? '削除しました' : '完了しました');
+                    el('result-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 } catch (e) { console.error(e); showError(`送信失敗：${e.message || ''}`, () => el('attendanceForm').requestSubmit()); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
