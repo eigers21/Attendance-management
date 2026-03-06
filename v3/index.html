@@ -5,14 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Web v3</title>
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -33,101 +29,389 @@
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer base {
-            body { @apply bg-cream text-warmGray antialiased overflow-x-hidden; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background: #FFFBF2;
+            color: #78716C;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
         }
-        @layer components {
-            .organic-shape {
-                @apply fixed pointer-events-none opacity-30 mix-blend-multiply blur-3xl animate-pulse;
-                z-index: -10;
-            }
-            .glass-card { @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-xl; }
-            .active-dot { @apply w-3 h-3 bg-warmOrange rounded-full shadow-[0_0_10px_#F97316]; }
-            .tactile-btn {
-                @apply relative overflow-hidden transition-all duration-200 active:scale-95;
-                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            }
-            .tactile-btn:active { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.06); }
+
+        /* 有機的な背景装飾 */
+        .organic-shape {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.25;
+            filter: blur(60px);
+            z-index: -10;
+            animation: drift 12s ease-in-out infinite;
         }
+
         @keyframes drift {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(20px, -20px); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(15px, -25px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-10px, 15px) scale(0.95);
+            }
         }
-        .animate-drift { animation: drift 10s ease-in-out infinite; }
+
+        /* 触覚ボタン */
+        .tactile-btn {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .tactile-btn:active {
+            transform: translateY(2px);
+            box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.06);
+        }
+
+        /* 選択中の日付 */
+        .date-active {
+            background: #F97316 !important;
+            color: white !important;
+            border-color: #F97316 !important;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        /* カードのスタッガードアニメ */
+        .month-card {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* モーダル */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-box-anim {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* トースト */
+        #toast {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            z-index: 10001;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        /* ローディング */
+        #loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 251, 242, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ld-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #FFEDD5;
+            border-top-color: #E2725B;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 会費テーブル */
+        .fee-cell {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fee-cell.paid {
+            background: #E2725B !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        .fee-cell.paid::after {
+            content: '済';
+        }
+
+        .fee-cell.pending-paid {
+            background: #F97316 !important;
+            color: white !important;
+        }
+
+        .fee-cell.pending-remove {
+            background: #ef4444 !important;
+            opacity: 0.7;
+            color: white !important;
+        }
+
+        .fee-cell.pending-paid::after,
+        .fee-cell.pending-remove::after {
+            content: '...';
+        }
+
+        /* リップル */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(249, 115, 22, 0.25);
+            transform: scale(0);
+            animation: rippleAnim 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* ラジオカスタム */
+        .radio-card input:checked+div {
+            background: #E2725B;
+            color: white;
+        }
     </style>
 </head>
 
 <body class="pb-32">
-    <!-- Background Decoration -->
-    <div class="organic-shape w-64 h-64 bg-peach -top-20 -left-20 animate-drift"></div>
-    <div class="organic-shape w-96 h-96 bg-softBlue -bottom-32 -right-32 animate-drift" style="animation-delay: -5s;">
+    <!-- 背景装飾 -->
+    <div class="organic-shape w-64 h-64 bg-orange-200 -top-20 -left-20 rounded-full"></div>
+    <div class="organic-shape w-96 h-96 bg-sky-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;">
     </div>
-    <div class="organic-shape w-48 h-48 bg-terracotta/20 top-1/2 left-1/2 -translate-x-1/2 animate-drift"
-        style="animation-delay: -3s;"></div>
+    <div class="organic-shape w-48 h-48 bg-orange-100 top-1/2 left-1/3 rounded-full" style="animation-delay:-3s;"></div>
 
-    <div class="container mx-auto max-w-lg px-6 pt-12">
-        <!-- Header -->
+    <!-- ローディング -->
+    <div id="loading">
+        <div class="ld-spinner"></div>
+        <div class="font-bold text-warmGray" id="loading-text">読み込み中…</div>
+    </div>
+    <div id="toast"></div>
+
+    <!-- パスワードモーダル -->
+    <div id="password-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <div class="text-4xl text-center mb-4">🔐</div>
+            <h3 class="text-center font-extrabold text-xl mb-6 text-warmGray">管理者パスワード</h3>
+            <input type="password" id="modal-password" placeholder="パスワード" autocomplete="off"
+                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl px-4 py-4 text-center text-lg tracking-widest outline-none transition-all mb-2"
+                onkeydown="if(event.key==='Enter')submitPassword()">
+            <p id="modal-error" class="text-red-500 text-xs font-bold text-center mb-4 hidden">パスワードが正しくありません</p>
+            <div class="flex gap-2 mt-4">
+                <button onclick="closePasswordModal()"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl transition-colors">キャンセル</button>
+                <button onclick="submitPassword()"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">ログイン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認モーダル -->
+    <div id="confirm-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        onclick="closeConfirmModal(false)">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <h3 id="confirm-message" class="text-center font-extrabold text-lg mb-6 text-warmGray"></h3>
+            <div class="flex gap-2">
+                <button onclick="closeConfirmModal(false)"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                <button onclick="closeConfirmModal(true)"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">はい</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- お知らせ編集モーダル -->
+    <div id="announcement-modal"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        onclick="closeAnnouncementModal()">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+            onclick="event.stopPropagation()">
+            <h3 class="text-center font-extrabold text-lg mb-4 text-warmGray">📢 お知らせを編集</h3>
+            <textarea id="ann-edit-textarea"
+                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl p-4 min-h-[100px] outline-none resize-vertical font-sans text-sm mb-4"
+                placeholder="お知らせメッセージを入力…"></textarea>
+            <div class="flex gap-2">
+                <button onclick="closeAnnouncementModal()"
+                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                <button onclick="saveAnnouncement()"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mx-auto max-w-lg px-5 pt-10">
+        <!-- ヘッダー -->
         <header class="flex justify-between items-center mb-8">
             <div>
-                <span class="text-terracotta font-bold text-lg">2026</span>
-                <h1 class="text-3xl font-extrabold text-warmGray tracking-tight">参加登録・会費</h1>
+                <span class="text-terracotta font-bold text-lg tracking-wide">2026</span>
+                <h1 class="text-3xl font-extrabold text-warmGray tracking-tight leading-tight">参加登録・会費</h1>
             </div>
-            <button onclick="unlockFees()"
-                class="w-12 h-12 glass-card rounded-full flex items-center justify-center tactile-btn text-terracotta"
-                id="admin-icon-btn">
-                <span class="material-symbols-outlined">person</span>
+            <button onclick="unlockFees()" id="admin-icon-btn"
+                class="w-12 h-12 bg-white/70 border border-white/50 shadow-lg rounded-full flex items-center justify-center tactile-btn text-terracotta text-xl">
+                👤
             </button>
         </header>
 
-        <!-- Main Navigation Tabs -->
-        <nav class="glass-card rounded-2xl p-1.5 flex gap-1 mb-6 relative">
+        <!-- タブ -->
+        <nav class="bg-white/70 backdrop-blur-md border border-white/50 shadow-lg rounded-2xl p-1.5 flex gap-1 mb-6">
             <button onclick="switchView('reg')" id="tab-reg"
-                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10">
-                <span class="material-symbols-outlined text-lg">calendar_month</span> 参加登録
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm">
+                📅 参加登録
             </button>
             <button onclick="switchView('fee')" id="tab-fee"
-                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10">
-                <span class="material-symbols-outlined text-lg">payments</span> 会費管理
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm">
+                📋 会費管理
             </button>
         </nav>
 
-        <!-- Notification Banner -->
+        <!-- お知らせ -->
         <div id="announcement-area"
-            class="bg-peach/50 border border-peach rounded-2xl p-4 flex items-start gap-3 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-            <span class="material-symbols-outlined text-terracotta">campaign</span>
-            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1">
-                最新の内容が自動的に上書き保存されます。</p>
-            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="hidden text-terracotta"><span
-                    class="material-symbols-outlined text-base">edit</span></button>
+            class="bg-peach/40 border border-peach/60 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1"></p>
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-terracotta text-sm font-bold"
+                style="display:none;">✏️</button>
+        </div>
+        <div id="announcement-empty"
+            class="bg-gray-100 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p class="text-sm text-warmGray/40 italic flex-1">お知らせはまだありません</p>
+            <button id="ann-edit-btn-empty" onclick="openAnnouncementEditor()"
+                class="text-terracotta text-sm font-bold">✏️</button>
         </div>
 
-        <!-- Dynamic Content Area -->
-        <div id="calendar-skeleton" class="space-y-6">
-            <!-- Loading Skeleton -->
-            <div class="bg-white rounded-3xl p-6 h-40 animate-pulse bg-gray-200/50"></div>
-            <div class="bg-white rounded-3xl p-6 h-40 animate-pulse bg-gray-200/50"></div>
+        <!-- 注意書き -->
+        <div class="bg-peach/30 border border-peach/40 rounded-2xl p-4 flex items-center gap-3 mb-6">
+            <span class="text-lg">💡</span>
+            <p class="text-xs font-medium text-warmGray/60">最新の内容が自動的に上書き保存されます。</p>
         </div>
 
-        <div id="view-reg" class="space-y-6 hidden">
-            <!-- Calendar Container -->
-            <div id="calendar-container" class="space-y-6"></div>
+        <!-- エラーバナー -->
+        <div id="error-banner"
+            class="bg-red-50 border border-red-300 rounded-2xl p-4 mb-6 text-red-600 text-sm font-bold items-center gap-3"
+            style="display:none;">
+            <span id="error-msg" class="flex-1"></span>
+            <button id="error-retry"
+                class="bg-red-500 text-white px-3 py-1 rounded-xl text-xs font-bold ml-2">リトライ</button>
         </div>
 
-        <div id="view-fee" class="hidden space-y-6">
-            <div class="glass-card rounded-3xl p-6">
-                <div class="flex justify-between items-center mb-6">
+        <!-- 参加登録ビュー -->
+        <div id="view-reg">
+            <div id="calendar-container" class="space-y-5"></div>
+
+            <div id="form-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+                style="display:none;">
+                <h3 id="form-date-title" class="font-extrabold text-xl text-terracotta mb-5"></h3>
+                <form id="attendanceForm" class="space-y-5">
+                    <input type="hidden" id="field-date" name="date">
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/50 mb-2">名前</label>
+                        <select id="field-name" name="name" required
+                            class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all">
+                            <option value="">読込中…</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/50 mb-2">参加状況</label>
+                        <div class="flex gap-2">
+                            <label class="flex-1 cursor-pointer radio-card">
+                                <input type="radio" name="status" value="参加" checked class="hidden">
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all">参加</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer radio-card">
+                                <input type="radio" name="status" value="不参加" class="hidden">
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all">不参加</div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/50 mb-2">備考</label>
+                        <input type="text" name="comment" placeholder="ひとことメッセージ"
+                            class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-sm">
+                    </div>
+                    <button type="submit" id="btn-submit"
+                        class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn">送信する</button>
+                </form>
+            </div>
+
+            <div id="result-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+                style="display:none;">
+                <h3 id="result-header" class="font-extrabold text-lg text-terracotta mb-4">参加状況一覧</h3>
+                <div id="stats-area" class="flex justify-around bg-peach/30 p-3 rounded-2xl mb-4 text-sm font-bold">
+                </div>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-xs text-warmGray/40 border-b border-peach/20">
+                            <th class="py-2 text-left">名前</th>
+                            <th class="py-2">状況</th>
+                            <th class="py-2 text-left">備考</th>
+                            <th class="py-2 th-action" style="display:none;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 会費管理ビュー -->
+        <div id="view-fee" style="display:none;">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20">
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="font-extrabold text-xl text-terracotta">支払い状況</h3>
-                    <div id="fee-controls" class="hidden flex gap-2">
+                    <div id="fee-controls" style="display:none;" class="flex gap-2">
                         <button onclick="resetFeeChanges()"
                             class="text-xs font-bold text-warmGray px-3 py-1.5 rounded-full bg-peach/50 tactile-btn">元に戻す</button>
                         <button onclick="saveFeeChanges()"
                             class="text-xs font-bold text-white px-3 py-1.5 rounded-full bg-terracotta tactile-btn">一括登録</button>
                     </div>
                 </div>
-                <div class="overflow-x-auto -mx-2">
-                    <table class="w-full min-w-[400px]">
-                        <thead id="fee-head" class="text-xs text-warmGray/50 border-b border-peach/30"></thead>
+                <div class="overflow-x-auto -mx-2" style="-webkit-overflow-scrolling:touch;">
+                    <table class="w-full min-w-[440px] text-sm">
+                        <thead id="fee-head"></thead>
                         <tbody id="fee-body"></tbody>
                     </table>
                 </div>
@@ -135,85 +419,26 @@
         </div>
     </div>
 
-    <!-- Floating Action Bar -->
-    <div id="floating-bar"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-50 transition-all duration-500 scale-0 opacity-0 translate-y-10">
-        <button onclick="openSettings()"
-            class="w-14 h-14 glass-card rounded-full flex items-center justify-center tactile-btn text-warmGray">
-            <span class="material-symbols-outlined">settings</span>
+    <!-- FAB（画面下部固定ボタン） -->
+    <div id="fab-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
+        <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+            class="w-12 h-12 bg-white/80 backdrop-blur-md border border-white/50 shadow-lg rounded-full flex items-center justify-center tactile-btn text-warmGray text-lg">
+            ⚙️
         </button>
-        <button onclick="scrollToTop()"
-            class="bg-terracotta text-white px-8 py-4 rounded-full font-extrabold flex items-center gap-2 shadow-xl shadow-terracotta/30 tactile-btn">
-            <span class="material-symbols-outlined">add</span> 登録する
+        <button id="fab-register"
+            class="bg-terracotta text-white px-7 py-4 rounded-full font-extrabold flex items-center gap-2 shadow-xl shadow-terracotta/30 tactile-btn text-sm"
+            style="display:none;">
+            ＋ 登録する
         </button>
     </div>
 
-    <!-- Modals -->
-    <!-- Password Modal -->
-    <div id="password-modal"
-        class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-warmGray/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl scale-90 transition-transform duration-300">
-            <div class="w-16 h-16 bg-peach/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span class="material-symbols-outlined text-terracotta text-3xl">key</span>
-            </div>
-            <h3 class="text-center font-extrabold text-xl mb-4 text-warmGray">管理者ログイン</h3>
-            <input type="password" id="modal-password" placeholder="パスワード"
-                class="w-full bg-cream border-2 border-transparent focus:border-terracotta rounded-2xl px-4 py-4 text-center text-xl tracking-widest outline-none transition-all mb-4">
-            <p id="modal-error" class="text-terracotta text-xs font-bold text-center mb-6 hidden">パスワードが正しくありません</p>
-            <div class="flex gap-2">
-                <button onclick="closePasswordModal()"
-                    class="flex-1 py-4 font-bold text-warmGray hover:bg-peach/30 rounded-2xl transition-colors">キャンセル</button>
-                <button onclick="submitPassword()"
-                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">ログイン</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Attendance Form Modal -->
-    <div id="form-modal"
-        class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-warmGray/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl scale-90 transition-transform duration-300">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="form-date-title" class="font-extrabold text-2xl text-terracotta"></h3>
-                <button onclick="closeFormModal()" class="text-warmGray/40"><span
-                        class="material-symbols-outlined">close</span></button>
-            </div>
-            <form id="attendanceForm" class="space-y-6 text-left">
-                <input type="hidden" id="field-date" name="date">
-                <div>
-                    <label class="block text-xs font-bold text-warmGray/50 mb-2 ml-1">名前を選択</label>
-                    <select id="field-name" name="name" required
-                        class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-transparent focus:border-terracotta transition-all appearance-none cursor-pointer"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-warmGray/50 mb-2 ml-1">参加状況</label>
-                    <div class="flex gap-2">
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="status" value="参加" checked class="hidden peer">
-                            <div
-                                class="py-4 rounded-2xl text-center font-bold bg-cream peer-checked:bg-terracotta peer-checked:text-white transition-all">
-                                参加</div>
-                        </label>
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="status" value="不参加" class="hidden peer">
-                            <div
-                                class="py-4 rounded-2xl text-center font-bold bg-cream peer-checked:bg-terracotta peer-checked:text-white transition-all">
-                                不参加</div>
-                        </label>
-                    </div>
-                </div>
-                <div id="result-list-container" class="space-y-2 max-h-40 overflow-y-auto mb-2 custom-scrollbar"></div>
-                <button type="submit" id="btn-submit"
-                    class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn mt-4">送信する</button>
-            </form>
-        </div>
-    </div>
+    <button id="back-top" style="display:none;"
+        class="fixed bottom-24 right-5 w-12 h-12 bg-terracotta text-white rounded-full shadow-lg z-50 flex items-center justify-center font-bold">▲</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBMyqYZMC4ytIOPNIBXKe8th-mE-rmM27o",
             authDomain: "sunday-attendance.firebaseapp.com",
@@ -222,207 +447,249 @@
             messagingSenderId: "292299944623",
             appId: "1:292299944623:web:5c982cc8a700e57d51da5a"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
 
         let STATE = { members: [], feeMembers: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
-
         const el = (id) => document.getElementById(id);
+        const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
+        const loading = (v, msg) => { el('loading').style.display = v ? 'flex' : 'none'; if (msg) el('loading-text').textContent = msg; };
 
-        // Security: Hash password locally before sending (Improved from v2)
+        // SHA-256ハッシュ
         async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const buf = new TextEncoder().encode(message);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
         const ADMIN_HASH = '158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab';
 
-        // Global functions
+        // グローバル公開
         window.switchView = switchView;
         window.unlockFees = unlockFees;
         window.closePasswordModal = closePasswordModal;
         window.submitPassword = submitPassword;
-        window.openFormModal = openFormModal;
-        window.closeFormModal = closeFormModal;
-        window.selectDate = selectDate;
-        window.saveFeeChanges = saveFeeChanges;
+        window.closeConfirmModal = closeConfirmModal;
+        window.loadFees = loadFees;
         window.resetFeeChanges = resetFeeChanges;
-        window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.saveFeeChanges = saveFeeChanges;
+        window.selectDate = selectDate;
+        window.toggleFeeLocal = toggleFeeLocal;
+        window.openAnnouncementEditor = openAnnouncementEditor;
+        window.closeAnnouncementModal = closeAnnouncementModal;
+        window.saveAnnouncement = saveAnnouncement;
+        window.deleteAttendanceRow = deleteAttendanceRow;
 
-        function switchView(view) {
-            if (STATE.currentView === view) return;
-            el('view-reg').classList.toggle('hidden', view !== 'reg');
-            el('view-fee').classList.toggle('hidden', view !== 'fee');
-
-            const btnReg = el('tab-reg');
-            const btnFee = el('tab-fee');
-
-            if (view === 'reg') {
-                btnReg.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10";
-                btnFee.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10";
-            } else {
-                btnFee.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10";
-                btnReg.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10";
-                loadFees();
-            }
-            STATE.currentView = view;
+        // モーダル汎用
+        function openModal(id) {
+            const m = el(id); m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => { m.classList.replace('opacity-0', 'opacity-100'); m.querySelector('.modal-box-anim').classList.replace('scale-90', 'scale-100'); }, 10);
+        }
+        function closeModal(id) {
+            const m = el(id); m.classList.replace('opacity-100', 'opacity-0');
+            m.querySelector('.modal-box-anim').classList.replace('scale-100', 'scale-90');
+            setTimeout(() => { m.classList.replace('flex', 'hidden'); }, 300);
         }
 
-        async function unlockFees() {
-            if (STATE.unlocked) return;
-            const modal = el('password-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.replace('opacity-0', 'opacity-100');
-                modal.querySelector('div').classList.replace('scale-90', 'scale-100');
-                el('modal-password').focus();
-            }, 10);
+        // エラー
+        function showError(msg, retryFn) {
+            el('error-msg').textContent = msg; el('error-banner').style.display = 'flex';
+            el('error-retry').onclick = () => { el('error-banner').style.display = 'none'; if (retryFn) retryFn(); };
+        }
+        function hideError() { el('error-banner').style.display = 'none'; }
+        window.showError = showError;
+
+        // ── タブ切替 ──
+        function switchView(v) {
+            if (STATE.currentView === v) return;
+            el('view-reg').style.display = v === 'reg' ? 'block' : 'none';
+            el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
+            el('tab-reg').className = v === 'reg'
+                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm'
+                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm';
+            el('tab-fee').className = v === 'fee'
+                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm'
+                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm';
+            STATE.currentView = v;
+            if (v === 'fee') loadFees();
+            window.scrollTo(0, 0);
         }
 
-        function closePasswordModal() {
-            const modal = el('password-modal');
-            modal.classList.replace('opacity-100', 'opacity-0');
-            modal.querySelector('div').classList.replace('scale-100', 'scale-90');
-            setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
-        }
+        // ── 管理者 ──
+        function unlockFees() { if (STATE.unlocked) return; el('modal-error').classList.add('hidden'); el('modal-password').value = ''; openModal('password-modal'); setTimeout(() => el('modal-password').focus(), 200); }
+        function closePasswordModal(e) { if (e && e.target !== el('password-modal')) return; closeModal('password-modal'); }
 
         async function submitPassword() {
-            const pw = el('modal-password').value;
-            const hash = await sha256(pw);
+            const hash = await sha256(el('modal-password').value);
             if (hash === ADMIN_HASH) {
                 STATE.unlocked = true;
-                el('admin-icon-btn').innerHTML = '<span class="material-symbols-outlined">how_to_reg</span>';
-                el('admin-icon-btn').classList.add('bg-terracotta', 'text-white');
-                el('ann-edit-btn').classList.remove('hidden');
-                closePasswordModal();
+                el('admin-icon-btn').textContent = '✅';
+                el('admin-icon-btn').classList.add('bg-terracotta', 'text-white', 'border-terracotta');
+                el('ann-edit-btn').style.display = 'inline-block';
+                if (el('announcement-area').style.display === 'none') el('announcement-empty').style.display = 'flex';
+                document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
+                document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
+                document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
+                closeModal('password-modal');
+                toast('管理者モードになりました');
                 if (STATE.currentView === 'fee') loadFees();
             } else {
                 el('modal-error').classList.remove('hidden');
-                el('modal-password').value = '';
+                el('modal-password').value = ''; el('modal-password').focus();
             }
         }
 
-        function openFormModal(date, btn) {
-            STATE.selectedDate = date;
-            el('field-date').value = date;
-            const [y, m, d] = date.split('-');
-            el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
-
-            const modal = el('form-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
-            loadAttendanceForDate(date);
-
-            setTimeout(() => {
-                modal.classList.replace('opacity-0', 'opacity-100');
-                modal.querySelector('div').classList.replace('scale-90', 'scale-100');
-            }, 10);
-        }
-
-        function closeFormModal() {
-            const modal = el('form-modal');
-            modal.classList.replace('opacity-100', 'opacity-0');
-            modal.querySelector('div').classList.replace('scale-100', 'scale-90');
-            setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
-        }
-
-        let attendanceUnsubscribe = null;
-        function loadAttendanceForDate(date) {
-            if (attendanceUnsubscribe) attendanceUnsubscribe();
-            const container = el('result-list-container');
-            container.innerHTML = '<div class="text-center py-4 text-xs font-bold text-warmGray/30 animate-pulse">出欠状況を読み込み中...</div>';
-
-            attendanceUnsubscribe = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
-                container.innerHTML = '';
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="text-center py-4 text-xs font-bold text-warmGray/20">まだ登録がありません</div>';
-                    return;
+        // ── お知らせ ──
+        function loadAnnouncement() {
+            onSnapshot(doc(db, "announcements", "main"), (docSnap) => {
+                const area = el('announcement-area'), empty = el('announcement-empty');
+                if (docSnap.exists() && docSnap.data().message && docSnap.data().message.trim() !== '') {
+                    el('announcement-text').textContent = docSnap.data().message;
+                    area.style.display = 'flex'; empty.style.display = 'none';
+                    if (STATE.unlocked) el('ann-edit-btn').style.display = 'inline-block';
+                } else {
+                    area.style.display = 'none';
+                    if (STATE.unlocked) empty.style.display = 'flex'; else empty.style.display = 'none';
                 }
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center justify-between p-3 bg-cream rounded-xl';
-
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'font-bold text-sm';
-                    nameSpan.textContent = data.name;
-
-                    const statusSpan = document.createElement('span');
-                    statusSpan.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${data.status === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`;
-                    statusSpan.textContent = data.status;
-
-                    const left = document.createElement('div');
-                    left.className = 'flex items-center gap-2';
-                    left.appendChild(nameSpan);
-                    left.appendChild(statusSpan);
-
-                    div.appendChild(left);
-                    if (data.comment) {
-                        const comm = document.createElement('p');
-                        comm.className = 'text-[10px] text-warmGray/40 italic ml-1';
-                        comm.textContent = data.comment;
-                        // For simplicity, just appending below. Designing for compact view.
-                    }
-                    container.appendChild(div);
-                });
             });
         }
+        function openAnnouncementEditor() { el('ann-edit-textarea').value = el('announcement-text').textContent || ''; openModal('announcement-modal'); setTimeout(() => el('ann-edit-textarea').focus(), 200); }
+        function closeAnnouncementModal() { closeModal('announcement-modal'); }
+        async function saveAnnouncement() {
+            try { await setDoc(doc(db, "announcements", "main"), { message: el('ann-edit-textarea').value.trim(), updatedAt: serverTimestamp() }); closeAnnouncementModal(); toast('お知らせを保存しました'); }
+            catch (e) { console.error(e); toast('保存に失敗しました'); }
+        }
 
+        // ── 確認モーダル ──
+        let _confirmResolve = null;
+        function customConfirm(msg) { return new Promise(r => { _confirmResolve = r; el('confirm-message').textContent = msg; openModal('confirm-modal'); }); }
+        function closeConfirmModal(result) { closeModal('confirm-modal'); if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; } }
+
+        // ── 出欠削除 ──
+        async function deleteAttendanceRow(docId, name, date) {
+            if (!await customConfirm(`${name} の出欠データを削除しますか？`)) return;
+            loading(true, '削除中…');
+            try {
+                await deleteDoc(doc(db, "attendance", docId));
+                fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'delete_attendance', date, name }) }).catch(e => console.error("GAS:", e));
+                toast(`${name} のデータを削除しました`);
+            } catch (e) { console.error(e); showError(`削除失敗：${e.message || ''}`, () => deleteAttendanceRow(docId, name, date)); }
+            finally { loading(false); }
+        }
+
+        // ── 会費 ──
+        let unsubFees = null;
+        function loadFees() {
+            if (unsubFees) unsubFees();
+            loading(true, '会費データを読み込み中…'); hideError(); STATE.pendingChanges = {}; updateFeeControls();
+            const monthH = ["1回", "2回", "3回", "4回", "5回"];
+            const h = el('fee-head'); h.innerHTML = '';
+            const trH = document.createElement('tr'); trH.className = 'text-xs text-warmGray/40 border-b border-peach/30';
+            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 text-center'; th.textContent = t; trH.appendChild(th); });
+            h.appendChild(trH);
+
+            unsubFees = onSnapshot(collection(db, "fees"), (snap) => {
+                const b = el('fee-body'); b.innerHTML = '';
+                const feesData = {}; snap.forEach(d => { const dd = d.data(); feesData[dd.name] = dd; });
+                let list = (STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
+                if (list.length === 0) {
+                    Promise.all([getDocs(collection(db, "members")), getDocs(collection(db, "feeMembers"))]).then(([ms, fm]) => {
+                        STATE.members = ms.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                        STATE.feeMembers = fm.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0)); loadFees();
+                    }).catch(e => { console.error(e); showError('メンバー読み込み失敗', loadFees); loading(false); }); return;
+                }
+
+                list = list.map(m => { let c = 0; monthH.forEach((_, i) => { if (feesData[m.name] && feesData[m.name][`session${i + 1}`] === 1) c++; }); return { ...m, _count: c }; })
+                    .sort((a, b) => b._count - a._count || (a.order || 0) - (b.order || 0));
+
+                list.forEach(m => {
+                    const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-sm'; tdN.textContent = m.displayName; tr.appendChild(tdN);
+                    monthH.forEach((_, i) => {
+                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center';
+                        const isPaid = feesData[m.name] && feesData[m.name][sk] === 1;
+                        if (isPaid) td.classList.add('paid');
+                        td.dataset.id = `${m.name}|${sk}`; td.dataset.current = isPaid ? "1" : "0";
+                        td.onclick = () => { if (STATE.unlocked) toggleFeeLocal(td); else toast("管理者ログインが必要です"); };
+                        tr.appendChild(td);
+                    });
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center font-bold text-terracotta'; tdC.textContent = m._count; tr.appendChild(tdC);
+                    b.appendChild(tr);
+                });
+                loading(false); updateFeeControls();
+            }, (e) => { console.error(e); showError('会費データ受信失敗', loadFees); loading(false); });
+        }
+
+        function toggleFeeLocal(td) {
+            const id = td.dataset.id, cur = parseInt(td.dataset.current);
+            let pv = STATE.pendingChanges[id];
+            if (pv === undefined) pv = cur === 1 ? 0 : 1; else { pv = pv === 1 ? 0 : 1; if (pv === cur) pv = undefined; }
+            if (pv !== undefined) STATE.pendingChanges[id] = pv; else delete STATE.pendingChanges[id];
+            td.classList.remove('paid', 'pending-paid', 'pending-remove');
+            if (pv !== undefined) { if (pv === 1) td.classList.add('pending-paid'); else td.classList.add('pending-remove'); }
+            else { if (cur === 1) td.classList.add('paid'); }
+            updateFeeControls();
+        }
+        function updateFeeControls() { el('fee-controls').style.display = Object.keys(STATE.pendingChanges).length > 0 ? 'flex' : 'none'; }
+        function resetFeeChanges() { STATE.pendingChanges = {}; document.querySelectorAll('.fee-cell').forEach(td => { if (!td.dataset.current) return; td.classList.remove('pending-paid', 'pending-remove', 'paid'); if (td.dataset.current === "1") td.classList.add('paid'); }); updateFeeControls(); }
+
+        async function saveFeeChanges() {
+            if (!await customConfirm("変更を保存しますか？")) return; loading(true);
+            const grouped = {}; Object.keys(STATE.pendingChanges).forEach(k => { const [n, sk] = k.split('|'); if (!grouped[n]) grouped[n] = {}; grouped[n][sk] = STATE.pendingChanges[k]; });
+            try {
+                const names = Object.keys(grouped);
+                await Promise.all(names.map(async n => {
+                    const q = query(collection(db, "fees"), where("name", "==", n)); const s = await getDocs(q);
+                    if (!s.empty) return setDoc(doc(db, "fees", s.docs[0].id), grouped[n], { merge: true }); else return addDoc(collection(db, "fees"), { name: n, ...grouped[n] });
+                }));
+                const monthH = ["1回", "2回", "3回", "4回", "5回"], gu = [];
+                names.forEach(n => Object.keys(grouped[n]).forEach(sk => gu.push({ name: n, month: monthH[parseInt(sk.replace('session', '')) - 1], newVal: grouped[n][sk] })));
+                fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'batch_fee', updates: gu }) }).catch(e => console.error("GAS:", e));
+                toast("保存しました"); STATE.pendingChanges = {};
+            } catch (e) { showError(`保存失敗：${e.message || ''}`, saveFeeChanges); console.error(e); } finally { loading(false); }
+        }
+
+        // ── カレンダー ──
         function buildCalendar() {
             const container = el('calendar-container');
             const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
             const today = new Date(); today.setHours(0, 0, 0, 0);
+            let idx = 0;
 
             for (let m = 3; m <= 12; m++) {
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-3xl p-6 shadow-sm border border-peach/20 relative overflow-hidden";
+                card.className = 'month-card bg-white rounded-3xl p-6 shadow-sm border border-peach/20 relative overflow-hidden';
+                card.style.animationDelay = (idx * 0.08) + 's';
+                idx++;
 
-                // Header of card
-                const header = document.createElement('div');
-                header.className = 'flex items-center justify-between mb-6';
-                const title = document.createElement('h3');
-                title.className = 'text-xl font-black text-terracotta flex items-center gap-2';
-                title.innerHTML = `<span class="w-1.5 h-6 bg-terracotta rounded-full"></span> ${m}月`;
-                header.appendChild(title);
+                // ヘッダー
+                const hdr = document.createElement('div'); hdr.className = 'flex items-center justify-between mb-5';
+                const title = document.createElement('h3'); title.className = 'text-xl font-extrabold text-terracotta flex items-center gap-2';
+                const bar = document.createElement('span'); bar.className = 'inline-block w-1.5 h-6 bg-terracotta rounded-full'; title.appendChild(bar);
+                title.appendChild(document.createTextNode(` ${m}月`));
+                hdr.appendChild(title);
 
                 if (m === 3) {
-                    const tag = document.createElement('span');
-                    tag.className = 'text-[10px] font-bold bg-peach text-terracotta px-2.5 py-1 rounded-full uppercase tracking-widest';
-                    tag.textContent = 'Spring';
-                    header.appendChild(tag);
+                    const tag = document.createElement('span'); tag.className = 'text-[10px] font-bold bg-peach text-terracotta px-2.5 py-1 rounded-full uppercase tracking-widest'; tag.textContent = 'Spring'; hdr.appendChild(tag);
                 } else if (m === 12) {
-                    const tag = document.createElement('span');
-                    tag.className = 'text-[10px] font-bold text-warmGray/30';
-                    tag.textContent = '納会予定';
-                    header.appendChild(tag);
-                    const blueShape = document.createElement('div');
-                    blueShape.className = 'absolute -top-6 -right-6 w-24 h-24 bg-softBlue/30 rounded-full blur-xl';
-                    card.appendChild(blueShape);
+                    const tag = document.createElement('span'); tag.className = 'text-[10px] font-bold text-warmGray/30'; tag.textContent = '納会予定'; hdr.appendChild(tag);
+                    const deco = document.createElement('div'); deco.className = 'absolute -top-6 -right-6 w-24 h-24 bg-sky-200/30 rounded-full blur-xl'; card.appendChild(deco);
                 }
-                card.appendChild(header);
+                card.appendChild(hdr);
 
-                const grid = document.createElement('div');
-                grid.className = 'flex flex-wrap gap-4';
-
+                const grid = document.createElement('div'); grid.className = 'flex flex-wrap gap-4';
                 let d = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (d.getMonth() === m - 1) {
                     const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
                         const btn = document.createElement('button');
-                        btn.className = 'w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold tactile-btn text-sm';
-
+                        btn.className = 'w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold tactile-btn text-sm transition-all';
                         if (d < today) {
-                            btn.className += ' bg-warmGray/5 border-transparent text-warmGray/20 cursor-default';
+                            btn.className += ' bg-warmGray/5 border-transparent text-warmGray/25 cursor-default';
                         } else {
-                            btn.className += ' bg-cream border-peach/50 text-warmGray';
-                            btn.onclick = () => openFormModal(dateStr, btn);
+                            btn.className += ' bg-cream border-peach/50 text-warmGray hover:border-terracotta hover:bg-peach/30';
+                            btn.onclick = (e) => { createRipple(e, btn); selectDate(dateStr, btn); };
                         }
-
                         btn.textContent = d.getDate();
                         grid.appendChild(btn);
                     }
@@ -431,132 +698,116 @@
                 card.appendChild(grid);
                 container.appendChild(card);
             }
-
-            el('calendar-skeleton').classList.add('hidden');
-            el('view-reg').classList.remove('hidden');
-            el('floating-bar').classList.remove('scale-0', 'opacity-0', 'translate-y-10');
         }
 
-        async function loadMembers() {
-            try {
-                const mSnap = await getDocs(collection(db, "members"));
-                STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-
-                const fmSnap = await getDocs(collection(db, "feeMembers"));
-                STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-
-                const sel = el('field-name');
-                sel.innerHTML = '<option value="">選択してください</option>' +
-                    STATE.members.map(m => `<option value="${m.name}">${m.displayName || m.name}</option>`).join('');
-            } catch (e) {
-                console.error("Member load error", e);
+        // ── 日付選択 ──
+        let unsubAtt = null;
+        async function selectDate(date, btn) {
+            document.querySelectorAll('.date-active').forEach(b => b.classList.remove('date-active'));
+            if (btn) btn.classList.add('date-active');
+            else {
+                const dp = parseInt(date.split('-')[2]);
+                const found = Array.from(document.querySelectorAll('#calendar-container button')).find(b => b.textContent.trim() === String(dp));
+                if (found) found.classList.add('date-active');
             }
-        }
 
-        // --- Fee Logic ---
-        function loadFees() {
-            const body = el('fee-body');
-            body.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-xs font-bold text-warmGray/20 animate-pulse">データを読み込み中...</td></tr>';
+            STATE.selectedDate = date;
+            el('field-date').value = date;
+            const [y, mo, da] = date.split('-');
+            el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
+            el('result-header').textContent = `参加状況一覧 (${parseInt(mo)}月${parseInt(da)}日)`;
+            el('fab-register').style.display = 'flex';
+            el('fab-register').onclick = () => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-            onSnapshot(collection(db, "fees"), (snapshot) => {
-                body.innerHTML = '';
-                const feesData = {};
-                snapshot.forEach(d => feesData[d.data().name] = d.data());
+            if (unsubAtt) unsubAtt();
+            loading(true, '出欠データを取得中…'); hideError();
 
-                const list = (STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
-                list.forEach(m => {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-peach/10 last:border-0";
+            if (STATE.members.length === 0) {
+                try {
+                    const mSnap = await getDocs(collection(db, "members"));
+                    STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                    const fmSnap = await getDocs(collection(db, "feeMembers"));
+                    STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                } catch (e) { console.error(e); showError('メンバー読み込み失敗', () => selectDate(date, btn)); loading(false); return; }
+            }
 
-                    const tdName = document.createElement('td');
-                    tdName.className = "py-4 font-bold text-sm";
-                    tdName.textContent = m.displayName || m.name;
-                    tr.appendChild(tdName);
+            const sel = el('field-name');
+            sel.innerHTML = '<option value="">選択してください</option>' + STATE.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
 
-                    for (let i = 1; i <= 5; i++) {
-                        const sessionKey = `session${i}`;
-                        const td = document.createElement('td');
-                        td.className = "py-4 text-center cursor-pointer";
-                        const isPaid = feesData[m.name] && feesData[m.name][sessionKey] === 1;
+            unsubAtt = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
+                const body = el('result-body'); body.innerHTML = '';
+                let counts = { "参加": 0, "不参加": 0 };
+                const mData = {}; STATE.members.forEach(m => mData[m.name] = m.displayName);
+                const attendance = []; snapshot.forEach(d => attendance.push({ ...d.data(), _docId: d.id }));
+                const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
+                attendance.sort((a, b) => {
+                    const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
+                    const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
+                    if (sA !== sB) return sA - sB;
+                    const mA = STATE.members.find(m => m.name === a.name) || { order: 999 };
+                    const mB = STATE.members.find(m => m.name === b.name) || { order: 999 };
+                    return (mA.order || 0) - (mB.order || 0);
+                });
 
-                        const dot = document.createElement('div');
-                        dot.className = `w-4 h-4 rounded-full mx-auto transition-all ${isPaid ? 'bg-terracotta ring-4 ring-terracotta/20 shadow-lg' : 'bg-peach/30'}`;
-
-                        td.onclick = () => {
-                            if (!STATE.unlocked) return;
-                            toggleFee(m.name, sessionKey, isPaid);
-                        };
-
-                        td.appendChild(dot);
-                        tr.appendChild(td);
-                    }
+                attendance.forEach(row => {
+                    const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
+                    if (st === '参加' || st === '不参加') counts[st]++;
+                    const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-sm'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
+                    const tdS = document.createElement('td'); tdS.className = 'py-3 text-center';
+                    if (st === '参加' || st === '不参加') {
+                        const badge = document.createElement('span'); badge.className = `text-[10px] font-bold px-2.5 py-1 rounded-full ${st === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`; badge.textContent = st; tdS.appendChild(badge);
+                    } else tdS.textContent = st;
+                    tr.appendChild(tdS);
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-xs text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
+                    const tdA = document.createElement('td'); tdA.className = 'cell-action py-3 text-center'; tdA.style.display = STATE.unlocked ? 'table-cell' : 'none';
+                    const del = document.createElement('button'); del.className = 'btn-delete-row bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-bold';
+                    del.style.display = STATE.unlocked ? 'inline-block' : 'none'; del.textContent = '🗑';
+                    del.onclick = () => deleteAttendanceRow(row._docId, row.name, date); tdA.appendChild(del); tr.appendChild(tdA);
                     body.appendChild(tr);
                 });
-            });
+
+                const sa = el('stats-area'); sa.innerHTML = '';
+                const s1 = document.createElement('span'); s1.className = 'text-terracotta'; s1.textContent = `参加: ${counts["参加"]}`;
+                const s2 = document.createElement('span'); s2.className = 'text-warmGray'; s2.textContent = `不参加: ${counts["不参加"]}`;
+                const s3 = document.createElement('span'); s3.className = 'text-warmGray/40'; s3.textContent = `未回答: ${STATE.members.length - attendance.length}`;
+                sa.appendChild(s1); sa.appendChild(s2); sa.appendChild(s3);
+
+                el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
+                loading(false);
+                if (btn) setTimeout(() => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+            }, (err) => { console.error(err); showError('出欠データ受信失敗', () => selectDate(date, btn)); loading(false); });
         }
 
-        // Multi-replace placeholders with real implementations during build
-        window.onload = async () => {
-            await loadMembers();
+        // ── リップル ──
+        function createRipple(e, elem) {
+            const r = document.createElement('span'); r.className = 'ripple';
+            const rect = elem.getBoundingClientRect(), sz = Math.max(rect.width, rect.height);
+            r.style.width = r.style.height = sz + 'px';
+            r.style.left = (e.clientX - rect.left - sz / 2) + 'px'; r.style.top = (e.clientY - rect.top - sz / 2) + 'px';
+            elem.appendChild(r); r.addEventListener('animationend', () => r.remove());
+        }
+
+        // ── 起動 ──
+        window.onload = () => {
             buildCalendar();
-
+            loadAnnouncement();
             el('attendanceForm').onsubmit = async (e) => {
-                e.preventDefault();
-                const btn = el('btn-submit');
-                btn.disabled = true;
-                btn.textContent = '送信中...';
-
-                const data = Object.fromEntries(new FormData(e.target));
+                e.preventDefault(); el('btn-submit').disabled = true; loading(true, '送信中…');
+                const fd = Object.fromEntries(new FormData(e.target));
                 try {
-                    const q = query(collection(db, "attendance"), where("date", "==", data.date), where("name", "==", data.name));
-                    const snap = await getDocs(q);
-                    if (!snap.empty) {
-                        await setDoc(doc(db, "attendance", snap.docs[0].id), { ...data, updatedAt: serverTimestamp() }, { merge: true });
-                    } else {
-                        await addDoc(collection(db, "attendance"), { ...data, updatedAt: serverTimestamp() });
-                    }
-
-                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-
-                    btn.textContent = '完了！';
-                    setTimeout(() => {
-                        closeFormModal();
-                        btn.disabled = false;
-                        btn.textContent = '送信する';
-                    }, 1000);
-                } catch (e) {
-                    console.error(e);
-                    btn.textContent = 'エラー';
-                    setTimeout(() => { btn.disabled = false; btn.textContent = '送信する'; }, 2000);
-                }
+                    const q = query(collection(db, "attendance"), where("date", "==", fd.date), where("name", "==", fd.name)); const snap = await getDocs(q);
+                    if (fd.status === '削除') { await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "attendance", d.id)))); }
+                    else if (!snap.empty) { await setDoc(doc(db, "attendance", snap.docs[0].id), { status: fd.status, comment: fd.comment || '', updatedAt: serverTimestamp() }, { merge: true }); }
+                    else { await addDoc(collection(db, "attendance"), { ...fd, updatedAt: serverTimestamp() }); }
+                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(fd) }).catch(e => console.error("GAS:", e));
+                    toast(fd.status === '削除' ? '削除しました' : '完了しました');
+                } catch (e) { console.error(e); showError(`送信失敗：${e.message || ''}`, () => el('attendanceForm').requestSubmit()); }
+                finally { el('btn-submit').disabled = false; loading(false); }
             };
+            window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'flex' : 'none';
+            el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         };
-
-        function toggleFee(name, key, current) {
-            // Simplified for V3 - just immediate write for better UX in this version
-            const targetVal = current ? 0 : 1;
-            const q = query(collection(db, "fees"), where("name", "==", name));
-            getDocs(q).then(snap => {
-                if (!snap.empty) {
-                    setDoc(doc(db, "fees", snap.docs[0].id), { [key]: targetVal }, { merge: true });
-                } else {
-                    addDoc(collection(db, "fees"), { name, [key]: targetVal });
-                }
-            });
-        }
-
-        function createRipple(e, el) {
-            const ripple = document.createElement('span');
-            ripple.className = 'absolute bg-white/40 rounded-full animate-ping pointer-events-none';
-            const rect = el.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = `${size}px`;
-            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
-            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-            el.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 1000);
-        }
-
     </script>
 </body>
 
