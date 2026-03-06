@@ -324,12 +324,6 @@
                 class="text-terracotta text-sm font-bold">✏️</button>
         </div>
 
-        <!-- 注意書き -->
-        <div class="bg-peach/30 border border-peach/40 rounded-2xl p-4 flex items-center gap-3 mb-6">
-            <span class="text-lg">💡</span>
-            <p class="text-xs font-medium text-warmGray/60">最新の内容が自動的に上書き保存されます。</p>
-        </div>
-
         <!-- エラーバナー -->
         <div id="error-banner"
             class="bg-red-50 border border-red-300 rounded-2xl p-4 mb-6 text-red-600 text-sm font-bold items-center gap-3"
@@ -349,29 +343,31 @@
                 <form id="attendanceForm" class="space-y-5">
                     <input type="hidden" id="field-date" name="date">
                     <div>
-                        <label class="block text-xs font-bold text-warmGray/50 mb-2">名前</label>
+                        <label class="block text-sm font-bold text-warmGray/50 mb-2">名前</label>
                         <select id="field-name" name="name" required
-                            class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all">
+                            class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center text-warmGray">
                             <option value="">読込中…</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-warmGray/50 mb-2">参加状況</label>
+                        <label class="block text-sm font-bold text-warmGray/50 mb-2">参加状況</label>
                         <div class="flex gap-2">
                             <label class="flex-1 cursor-pointer radio-card">
                                 <input type="radio" name="status" value="参加" checked class="hidden">
-                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all">参加</div>
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">参加
+                                </div>
                             </label>
                             <label class="flex-1 cursor-pointer radio-card">
                                 <input type="radio" name="status" value="不参加" class="hidden">
-                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all">不参加</div>
+                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">
+                                    不参加</div>
                             </label>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-warmGray/50 mb-2">備考</label>
+                        <label class="block text-sm font-bold text-warmGray/50 mb-2">備考</label>
                         <input type="text" name="comment" placeholder="ひとことメッセージ"
-                            class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-sm">
+                            class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center">
                     </div>
                     <button type="submit" id="btn-submit"
                         class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn">送信する</button>
@@ -383,13 +379,13 @@
                 <h3 id="result-header" class="font-extrabold text-lg text-terracotta mb-4">参加状況一覧</h3>
                 <div id="stats-area" class="flex justify-around bg-peach/30 p-3 rounded-2xl mb-4 text-sm font-bold">
                 </div>
-                <table class="w-full text-sm">
+                <table class="w-full text-sm table-fixed">
                     <thead>
-                        <tr class="text-xs text-warmGray/40 border-b border-peach/20">
-                            <th class="py-2 text-left">名前</th>
-                            <th class="py-2">状況</th>
-                            <th class="py-2 text-left">備考</th>
-                            <th class="py-2 th-action" style="display:none;">操作</th>
+                        <tr class="text-sm text-warmGray/40 border-b border-peach/20">
+                            <th class="py-3 text-center" style="width: 30%;">名前</th>
+                            <th class="py-3 text-center" style="width: 35%;">状況</th>
+                            <th class="py-3 text-center" style="width: 65%;">備考</th>
+                            <th class="py-3 th-action hidden" style="width: 15%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="result-body"></tbody>
@@ -431,9 +427,6 @@
             ＋ 登録する
         </button>
     </div>
-
-    <button id="back-top" style="display:none;"
-        class="fixed bottom-24 right-5 w-12 h-12 bg-terracotta text-white rounded-full shadow-lg z-50 flex items-center justify-center font-bold">▲</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -483,12 +476,18 @@
         // モーダル汎用
         function openModal(id) {
             const m = el(id); m.classList.remove('hidden'); m.classList.add('flex');
-            setTimeout(() => { m.classList.replace('opacity-0', 'opacity-100'); m.querySelector('.modal-box-anim').classList.replace('scale-90', 'scale-100'); }, 10);
+            setTimeout(() => {
+                m.classList.remove('opacity-0'); m.classList.add('opacity-100');
+                const box = m.querySelector('.modal-box-anim');
+                if (box) { box.classList.remove('scale-90'); box.classList.add('scale-100'); }
+            }, 10);
         }
         function closeModal(id) {
-            const m = el(id); m.classList.replace('opacity-100', 'opacity-0');
-            m.querySelector('.modal-box-anim').classList.replace('scale-100', 'scale-90');
-            setTimeout(() => { m.classList.replace('flex', 'hidden'); }, 300);
+            const m = el(id);
+            m.classList.remove('opacity-100'); m.classList.add('opacity-0');
+            const box = m.querySelector('.modal-box-anim');
+            if (box) { box.classList.remove('scale-100'); box.classList.add('scale-90'); }
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
         }
 
         // エラー
@@ -505,11 +504,11 @@
             el('view-reg').style.display = v === 'reg' ? 'block' : 'none';
             el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
             el('tab-reg').className = v === 'reg'
-                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm'
-                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm';
+                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-base'
+                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-base';
             el('tab-fee').className = v === 'fee'
-                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm'
-                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm';
+                ? 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-base'
+                : 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-base';
             STATE.currentView = v;
             if (v === 'fee') loadFees();
             window.scrollTo(0, 0);
@@ -584,8 +583,8 @@
             loading(true, '会費データを読み込み中…'); hideError(); STATE.pendingChanges = {}; updateFeeControls();
             const monthH = ["1回", "2回", "3回", "4回", "5回"];
             const h = el('fee-head'); h.innerHTML = '';
-            const trH = document.createElement('tr'); trH.className = 'text-xs text-warmGray/40 border-b border-peach/30';
-            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 text-center'; th.textContent = t; trH.appendChild(th); });
+            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray/40 border-b border-peach/30';
+            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 px-1 text-center text-sm md:text-base whitespace-nowrap'; th.textContent = t; trH.appendChild(th); });
             h.appendChild(trH);
 
             unsubFees = onSnapshot(collection(db, "fees"), (snap) => {
@@ -604,9 +603,9 @@
 
                 list.forEach(m => {
                     const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
-                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-sm'; tdN.textContent = m.displayName; tr.appendChild(tdN);
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 px-1 font-bold text-base text-center break-all'; tdN.textContent = m.displayName; tr.appendChild(tdN);
                     monthH.forEach((_, i) => {
-                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center';
+                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base';
                         const isPaid = feesData[m.name] && feesData[m.name][sk] === 1;
                         if (isPaid) td.classList.add('paid');
                         td.dataset.id = `${m.name}|${sk}`; td.dataset.current = isPaid ? "1" : "0";
@@ -669,9 +668,7 @@
                 title.appendChild(document.createTextNode(` ${m}月`));
                 hdr.appendChild(title);
 
-                if (m === 3) {
-                    const tag = document.createElement('span'); tag.className = 'text-[10px] font-bold bg-peach text-terracotta px-2.5 py-1 rounded-full uppercase tracking-widest'; tag.textContent = 'Spring'; hdr.appendChild(tag);
-                } else if (m === 12) {
+                if (m === 12) {
                     const tag = document.createElement('span'); tag.className = 'text-[10px] font-bold text-warmGray/30'; tag.textContent = '納会予定'; hdr.appendChild(tag);
                     const deco = document.createElement('div'); deco.className = 'absolute -top-6 -right-6 w-24 h-24 bg-sky-200/30 rounded-full blur-xl'; card.appendChild(deco);
                 }
@@ -715,7 +712,7 @@
             el('field-date').value = date;
             const [y, mo, da] = date.split('-');
             el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
-            el('result-header').textContent = `参加状況一覧 (${parseInt(mo)}月${parseInt(da)}日)`;
+            el('result-header').innerHTML = `参加状況一覧 <br><span class="text-base font-normal text-warmGray/60 mt-1 inline-block">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
             el('fab-register').style.display = 'flex';
             el('fab-register').onclick = () => el('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -753,13 +750,13 @@
                     const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
                     if (st === '参加' || st === '不参加') counts[st]++;
                     const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
-                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-sm'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
-                    const tdS = document.createElement('td'); tdS.className = 'py-3 text-center';
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-base text-center'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
+                    const tdS = document.createElement('td'); tdS.className = 'py-3 text-center text-sm';
                     if (st === '参加' || st === '不参加') {
-                        const badge = document.createElement('span'); badge.className = `text-[10px] font-bold px-2.5 py-1 rounded-full ${st === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`; badge.textContent = st; tdS.appendChild(badge);
+                        const badge = document.createElement('span'); badge.className = `text-xs font-bold px-3 py-1.5 rounded-full ${st === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`; badge.textContent = st; tdS.appendChild(badge);
                     } else tdS.textContent = st;
                     tr.appendChild(tdS);
-                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-xs text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
                     const tdA = document.createElement('td'); tdA.className = 'cell-action py-3 text-center'; tdA.style.display = STATE.unlocked ? 'table-cell' : 'none';
                     const del = document.createElement('button'); del.className = 'btn-delete-row bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-bold';
                     del.style.display = STATE.unlocked ? 'inline-block' : 'none'; del.textContent = '🗑';
@@ -805,8 +802,6 @@
                 } catch (e) { console.error(e); showError(`送信失敗：${e.message || ''}`, () => el('attendanceForm').requestSubmit()); }
                 finally { el('btn-submit').disabled = false; loading(false); }
             };
-            window.onscroll = () => el('back-top').style.display = window.scrollY > 300 ? 'flex' : 'none';
-            el('back-top').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
         };
     </script>
 </body>
