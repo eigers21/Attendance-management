@@ -5,47 +5,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2026年 参加登録・会費管理 (Ver 2.0)</title>
-    <style>
-        :root {
-            --primary: #4a90e2;
-            --secondary: #2ecc71;
-            --danger: #e74c3c;
-            --danger-dark: #c0392b;
-            --warning: #f39c12;
-            --warning-dark: #e67e22;
-            --bg: #f5f7fa;
-            --text: #333;
-            --text-muted: #666;
-            --text-light: #999;
-            --border: #ddd;
-            --border-light: #eee;
-            --header-bg: #fff;
-            --card-bg: #fff;
-            --success: #2ecc71;
-            --success-dark: #27ae60;
-            --table-header: #34495e;
-            --zebra-bg: #f8f9fa;
-            --hover-bg: #eaeff5;
-            --pending: var(--warning);
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Warm Attendance List (Ver 2.0)</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        peach: "#FFEDD5",
+                        cream: "#FFFBF2",
+                        terracotta: "#E2725B",
+                        warmOrange: "#F97316",
+                        softBlue: "#BAE6FD",
+                        warmGray: "#78716C",
+                    },
+                    fontFamily: {
+                        rounded: ["'M PLUS Rounded 1c'", "sans-serif"],
+                    },
+                    borderRadius: {
+                        'xl': '1.5rem',
+                        '2xl': '2rem',
+                    }
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-rounded bg-cream text-warmGray min-h-screen relative overflow-x-hidden;
+            }
         }
-
-        /* Ver 8.7 Sparkling Animation Restoration */
+        .organic-shape {
+            position: fixed;
+            z-index: -1;
+            filter: blur(40px);
+            opacity: 0.4;
+        }
+        .tactile-btn {
+            box-shadow: 0 4px 0 rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        .tactile-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.05);
+        }
+        .active-date {
+            @apply bg-warmOrange text-white border-warmOrange scale-110;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+        /* Existing functional animations */
         @keyframes sparkle-sweep {
-            0% {
-                transform: translateX(-100%) skewX(-15deg);
-            }
-
-            100% {
-                transform: translateX(200%) skewX(-15deg);
-            }
+            0% { transform: translateX(-100%) skewX(-15deg); }
+            100% { transform: translateX(200%) skewX(-15deg); }
         }
-
         .status-badge {
             position: relative;
             display: flex;
             width: 100%;
             height: 39px;
-            /* 10% Shorter than before (43px -> 39px) */
             align-items: center;
             justify-content: center;
             color: white;
@@ -55,9 +82,7 @@
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
             font-size: 0.95rem;
-            /* 5% smaller */
         }
-
         .status-badge::after {
             content: "";
             position: absolute;
@@ -69,1016 +94,308 @@
             transform: translateX(-100%) skewX(-15deg);
             animation: sparkle-sweep 2s linear infinite;
         }
+        .status-attend { background: linear-gradient(135deg, #2ecc71, #27ae60); border: 1px solid #27ae60; }
+        .status-absent { background: linear-gradient(135deg, #e74c3c, #c0392b); border: 1px solid #c0392b; }
 
-        .status-attend {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            border: 1px solid #27ae60;
-        }
-
-        .status-absent {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: 1px solid #c0392b;
-        }
-
-        /* Results Table Layout */
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .result-table th {
-            background: #f8f9fa;
-            padding: 10px;
-            border: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .result-table td {
-            border: 1px solid var(--border);
-            padding: 0 !important;
-            height: 39px;
-            text-align: center;
-        }
-
-        .cell-name {
-            width: 15%;
-            font-weight: bold;
-            padding: 4px 8px !important;
-        }
-
-        .cell-status {
-            width: 15%;
-        }
-
-        .cell-comment {
-            width: 70%;
-            padding: 4px 8px !important;
-            text-align: left !important;
-            font-size: 0.85rem;
-        }
-
-        /* Layout & Containers */
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 12px;
-            margin: 0;
-            padding-bottom: 100px;
-            /* Fix for mobile scrolling in Google Sites iframe */
-            -webkit-overflow-scrolling: touch;
-            /* Smooth scrolling on iOS */
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 1.4rem;
-            color: #2c3e50;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 15px;
-            position: relative;
-            border-bottom: 2px solid #dce3ea;
-        }
-
-        /* スライドインジケーターバー */
-        .tab-indicator {
-            position: absolute;
-            bottom: -2px;
-            height: 3px;
-            background: var(--primary);
-            border-radius: 3px 3px 0 0;
-            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            color: #7f8c8d;
-            font-size: 1.3rem;
-            transition: color 0.3s ease, background 0.3s ease, transform 0.15s ease;
-            position: relative;
-        }
-
-        .tab-btn:hover:not(.active) {
-            background: rgba(74, 144, 226, 0.08);
-            color: #5a9de6;
-        }
-
-        .tab-btn:active {
-            transform: scale(0.97);
-        }
-
-        .tab-btn.active {
-            background: rgba(74, 144, 226, 0.12);
-            color: var(--primary);
-        }
-
-        /* タブコンテンツのトランジション */
-        .tab-content {
-            transition: opacity 0.35s ease, transform 0.35s ease;
-        }
-
-        .tab-content.slide-out-left {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-
-        .tab-content.slide-out-right {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-
-        .tab-content.slide-in {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* Warning & Message */
-        .warning-box {
-            border: 2px solid #e74c3c;
-            color: #e74c3c;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            background: #fdf2f2;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.0rem;
-            /* Reduced by 10% from 1.1rem */
-        }
-
-        #toast {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 16px 32px;
-            border-radius: 12px;
-            z-index: 10000;
-            font-weight: bold;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            font-size: 1.1rem;
-        }
-
-        /* ローディングオーバーレイ */
-        #loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 16px;
-        }
-
+        /* Loading Spinner */
         .loading-spinner {
             width: 44px;
             height: 44px;
-            border: 4px solid var(--border);
-            border-top: 4px solid var(--primary);
+            border: 4px solid #FFEDD5;
+            border-top: 4px solid #E2725B;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .loading-text {
-            font-weight: bold;
-            font-size: 1rem;
-            color: var(--text);
-        }
-
-        /* エラーリトライバナー */
-        .error-banner {
-            display: none;
-            background: #fdf2f2;
-            border: 1px solid var(--danger);
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            color: var(--danger);
-            font-size: 0.9rem;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .error-banner.show {
-            display: flex;
-        }
-
-        .error-banner .error-msg {
-            flex: 1;
-        }
-
-        .error-banner .btn-retry {
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .error-banner .btn-retry:hover {
-            background: var(--danger-dark);
-        }
-
-        /* Calendar Grid */
-        .month-card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            /* スタッガードスライドインアニメーション */
-            opacity: 0;
-            transform: translateY(25px);
-            animation: slideUp 0.5s ease forwards;
-        }
-
-        @keyframes slideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ヘッダーのフェードイン+スライドダウン */
-        h2 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            white-space: pre-line;
-            animation: fadeSlideDown 0.6s ease both;
-        }
-
-        @keyframes fadeSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .month-name {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 12px;
-            font-size: 1.1rem;
-            border-left: 4px solid var(--primary);
-            padding-left: 10px;
-        }
-
-        .date-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-            gap: 8px;
-        }
-
-        .date-btn {
-            background: white;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            padding: 10px 5px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* ホバー時：浮き上がり（scale + shadow） */
-        .date-btn:not(.date-off):hover {
-            transform: scale(1.08);
-            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.25);
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* リップルエフェクト */
-        .date-btn .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(74, 144, 226, 0.35);
-            transform: scale(0);
-            animation: rippleAnim 0.5s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(3);
-                opacity: 0;
-            }
-        }
-
-        /* 選択中ボタンのパルスアニメーション */
-        .date-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 4px 18px rgba(74, 144, 226, 0.55);
-            }
-        }
-
-        .date-off {
-            background: #f1f3f5;
-            color: #adb5bd;
-            cursor: default;
-        }
-
-        /* Form Card */
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid #dee2e6;
-        }
-
-        .card-header {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        label {
-            display: block;
-            font-weight: bold;
-            margin: 12px 0 6px;
-            font-size: 0.9rem;
-        }
-
-        select,
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .radio-set {
-            display: flex;
-            gap: 15px;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-
-        .radio-set label {
-            display: inline-flex;
-            align-items: center;
-            margin: 0;
-            font-weight: normal;
-            cursor: pointer;
-        }
-
-        .radio-set input {
-            margin-right: 6px;
-            width: 18px;
-            height: 18px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-        }
-
-        /* Stats & Fees */
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            background: #e8f4fd;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .fee-table-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .fee-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            min-width: 500px;
-            font-size: 0.85rem;
-            table-layout: fixed;
-            /* Unified column widths */
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        /* 会費テーブルのセル共通スタイル */
-        .fee-table th,
-        .fee-table td {
-            border: 1px solid var(--border);
-            padding: 10px 4px;
-            text-align: center;
-        }
-
-        /* Specific widths for unified look */
-        .fee-table th:first-child,
-        .fee-table td:first-child {
-            width: 20%;
-            /* Name column reduced to 20% */
-            font-size: 1.1rem;
-            /* 20% larger font */
-            font-weight: bold;
-        }
-
-        /* 回数カラム */
-        .fee-table th:last-child,
-        .fee-table td:last-child {
-            width: 15%;
-            font-weight: bold;
-        }
-
-        .fee-table th:not(:first-child):not(:last-child),
-        .fee-table td:not(:first-child):not(:last-child) {
-            width: 13%;
-            /* Session columns (5 sessions) increased to fill space */
-            font-size: 1.1rem;
-            /* Match Name column font size */
-            font-weight: bold;
-        }
-
-        /* テーブルヘッダー */
-        .fee-table th {
-            background: var(--table-header);
-            color: white;
-            font-weight: bold;
-            border-color: var(--table-header);
-        }
-
-        /* ゼブラストライプ */
-        .fee-table tr:nth-child(even) {
-            background: var(--zebra-bg);
-        }
-
-        /* 行ホバー効果 */
-        .fee-table tr:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .fee-cell {
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        /* 支払い済みセル */
-        .fee-cell.paid {
-            background-color: var(--success) !important;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .fee-cell.paid::after {
-            content: '済';
-        }
-
-        /* Pending State Styles */
-        .fee-cell.pending-paid {
-            background-color: var(--pending) !important;
-            color: white !important;
-        }
-
-        .fee-cell.pending-remove {
-            background-color: var(--danger) !important;
-            opacity: 0.7;
-            color: white !important;
-        }
-
-        .fee-cell.pending-paid::after,
-        .fee-cell.pending-remove::after {
-            content: '...';
-        }
-
-        /* Fee Control Panel */
-        #fee-controls {
-            display: none;
-            /* Hidden by default */
-            gap: 10px;
-            margin-bottom: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .btn-save {
-            background: #2ecc71;
-            color: white;
-        }
-
-        .btn-reset {
-            background: #95a5a6;
-            color: white;
-        }
-
-        /* カスタムパスワードモーダル */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            width: 300px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            animation: modalIn 0.25s ease;
-        }
-
-        @keyframes modalIn {
-            from {
-                transform: scale(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal-box h3 {
-            margin: 0 0 16px;
-            font-size: 1.1rem;
-            color: #2c3e50;
-        }
-
-        .modal-box input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 16px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .modal-box input:focus {
-            border-color: var(--primary);
-        }
-
-        .modal-box .modal-error {
-            color: #e74c3c;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 12px;
-            display: none;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .modal-buttons button:active {
-            opacity: 0.8;
-        }
-
-        .modal-btn-cancel {
-            background: #e0e6ed;
-            color: #555;
-        }
-
-        .modal-btn-ok {
-            background: var(--primary);
-            color: white;
-        }
-
-        #back-top {
-            display: none;
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 100;
-            font-size: 1.2rem;
-        }
-
-        /* お知らせバナー */
-        .announcement-banner {
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-            border-left: 4px solid #f39c12;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            box-shadow: 0 2px 6px rgba(243, 156, 18, 0.15);
-            animation: fadeIn 0.4s ease;
-        }
-
-        .announcement-banner .ann-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-
-        .announcement-banner .ann-text {
-            flex: 1;
-            font-size: 0.95rem;
-            color: #856404;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .announcement-banner .ann-edit-btn {
-            flex-shrink: 0;
-            background: #f39c12;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 4px 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .announcement-banner .ann-edit-btn:hover {
-            background: #e67e22;
-        }
-
-        .announcement-empty {
-            display: none;
-        }
-
-        .announcement-empty.admin-visible {
-            display: flex;
-            background: #f8f9fa;
-            border-left: 4px solid #ccc;
-        }
-
-        .announcement-empty .ann-text {
-            color: #999;
-            font-style: italic;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* お知らせ編集モーダル */
-        .ann-modal-textarea {
-            width: 100%;
-            min-height: 100px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.95rem;
-            resize: vertical;
-            font-family: inherit;
-            margin-bottom: 10px;
-        }
-
-        .ann-modal-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
-        }
-
-        /* 削除ボタン */
-        .btn-delete-row {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .btn-delete-row:hover {
-            background: #c0392b;
-        }
-
-        .btn-delete-row:active {
-            transform: scale(0.95);
-        }
-
-        .cell-action {
-            width: 50px;
-            padding: 4px !important;
-        }
-
-        /* グローバル管理者ボタン */
-        .global-admin-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        .global-admin-btn:hover {
-            background: #c0392b;
-        }
-
-        .global-admin-btn:active {
-            transform: scale(0.95);
-        }
-
-        .global-admin-btn.unlocked {
-            background: #2ecc71;
-            cursor: default;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Tab Transitions */
+        .tab-content { transition: opacity 0.35s ease, transform 0.35s ease; }
+        .tab-content.slide-out-left { opacity: 0; transform: translateX(-30px); }
+        .tab-content.slide-out-right { opacity: 0; transform: translateX(30px); }
+        .tab-content.slide-in { opacity: 1; transform: translateX(0); }
+
+        /* Fee Table specific */
+        .fee-cell.paid { background-color: #2ecc71 !important; color: white; font-weight: bold; font-size: 1.1rem; }
+        .fee-cell.paid::after { content: '済'; }
+        .fee-cell.pending-paid { background-color: #F97316 !important; color: white !important; }
+        .fee-cell.pending-remove { background-color: #E2725B !important; opacity: 0.7; color: white !important; }
+        .fee-cell.pending-paid::after, .fee-cell.pending-remove::after { content: '...'; }
     </style>
 </head>
 
-<body>
+<body class="pb-20">
+    <div class="organic-shape bg-peach w-64 h-64 rounded-full -top-20 -left-20"></div>
+    <div class="organic-shape bg-softBlue w-48 h-48 rounded-full top-1/2 -right-10"></div>
+    <div class="organic-shape bg-terracotta w-32 h-32 rounded-full bottom-10 left-10 opacity-20"></div>
 
-    <div id="loading">
+    <div id="loading"
+        class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[9999] flex flex-col items-center justify-center gap-4"
+        style="display: none;">
         <div class="loading-spinner"></div>
-        <div class="loading-text" id="loading-text">データを読み込み中...</div>
+        <div class="loading-text font-bold text-warmGray" id="loading-text">データを読み込み中...</div>
     </div>
-    <div id="toast"></div>
-    <button id="back-top">▲</button>
+    <div id="toast"
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-8 py-4 rounded-xl z-[10000] font-bold shadow-xl text-center"
+        style="display: none;"></div>
+    <button id="back-top"
+        class="fixed bottom-24 right-6 w-12 h-12 rounded-full bg-terracotta text-white shadow-lg z-[100] transition-transform active:scale-90"
+        style="display: none;">▲</button>
 
     <!-- パスワード入力モーダル -->
-    <div id="password-modal" class="modal-overlay" onclick="closePasswordModal(event)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3>🔐 管理者パスワードを入力</h3>
+    <div id="password-modal"
+        class="modal-overlay fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+        style="display: none;" onclick="closePasswordModal(event)">
+        <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-xs shadow-2xl text-center"
+            onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold text-warmGray mb-6 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-terracotta">lock</span>
+                管理者ログイン
+            </h3>
             <input type="password" id="modal-password" placeholder="パスワード" autocomplete="off"
+                class="w-full p-4 border-2 border-peach rounded-xl text-center mb-4 focus:ring-2 focus:ring-terracotta outline-none"
                 onkeydown="if(event.key==='Enter')submitPassword()">
-            <div id="modal-error" class="modal-error">パスワードが違います</div>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closePasswordModal()">キャンセル</button>
-                <button class="modal-btn-ok" onclick="submitPassword()">ログイン</button>
+            <div id="modal-error" class="text-red-500 text-sm font-bold mb-4" style="display: none;">パスワードが違います</div>
+            <div class="modal-buttons flex gap-3">
+                <button class="flex-1 p-4 bg-cream text-warmGray font-bold rounded-xl"
+                    onclick="closePasswordModal()">取消</button>
+                <button class="flex-1 p-4 bg-terracotta text-white font-bold rounded-xl shadow-md"
+                    onclick="submitPassword()">確定</button>
             </div>
         </div>
     </div>
 
-    <!-- 確認モーダル（confirm代替） -->
-    <div id="confirm-modal" class="modal-overlay" onclick="closeConfirmModal(false)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3 id="confirm-message"></h3>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closeConfirmModal(false)">キャンセル</button>
-                <button class="modal-btn-ok" onclick="closeConfirmModal(true)">はい</button>
+    <!-- 確認モーダル -->
+    <div id="confirm-modal"
+        class="modal-overlay fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+        style="display: none;" onclick="closeConfirmModal(false)">
+        <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-xs shadow-2xl text-center"
+            onclick="event.stopPropagation()">
+            <h3 id="confirm-message" class="text-lg font-bold text-warmGray mb-8"></h3>
+            <div class="modal-buttons flex gap-3">
+                <button class="flex-1 p-4 bg-cream text-warmGray font-bold rounded-xl"
+                    onclick="closeConfirmModal(false)">取消</button>
+                <button class="flex-1 p-4 bg-terracotta text-white font-bold rounded-xl shadow-md"
+                    onclick="closeConfirmModal(true)">はい</button>
             </div>
         </div>
     </div>
 
     <!-- お知らせ編集モーダル -->
-    <div id="announcement-modal" class="modal-overlay" onclick="closeAnnouncementModal()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <h3>📢 お知らせを編集</h3>
-            <textarea id="ann-edit-textarea" class="ann-modal-textarea" placeholder="お知らせメッセージを入力..."></textarea>
-            <div class="modal-buttons">
-                <button class="modal-btn-cancel" onclick="closeAnnouncementModal()">キャンセル</button>
-                <button class="modal-btn-ok" onclick="saveAnnouncement()">保存</button>
+    <div id="announcement-modal"
+        class="modal-overlay fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+        style="display: none;" onclick="closeAnnouncementModal()">
+        <div class="modal-box bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl text-center"
+            onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold text-terracotta mb-6 flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">campaign</span>
+                お知らせ編集
+            </h3>
+            <textarea id="ann-edit-textarea"
+                class="w-full min-h-[120px] p-4 border-2 border-peach rounded-xl mb-6 focus:ring-2 focus:ring-terracotta outline-none text-sm"
+                placeholder="お知らせメッセージを入力..."></textarea>
+            <div class="modal-buttons flex gap-3">
+                <button class="flex-1 p-4 bg-cream text-warmGray font-bold rounded-xl"
+                    onclick="closeAnnouncementModal()">取消</button>
+                <button class="flex-1 p-4 bg-terracotta text-white font-bold rounded-xl shadow-md"
+                    onclick="saveAnnouncement()">保存</button>
             </div>
         </div>
     </div>
 
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="flex: 1;"></div>
-            <h2 style="margin: 0; text-align: center;">2026年<br>参加登録・会費管理</h2>
-            <div style="flex: 1; display: flex; justify-content: flex-end;">
-                <button id="global-admin-btn" class="global-admin-btn" onclick="unlockFees()">管理者</button>
+    <header class="max-w-md mx-auto pt-8 px-5">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex flex-col">
+                <span class="text-terracotta font-bold text-lg">2026</span>
+                <h1 class="text-2xl font-extrabold text-warmGray tracking-tight leading-tight">
+                    参加登録・会費
+                </h1>
             </div>
+            <button id="global-admin-btn" onclick="unlockFees()"
+                class="w-12 h-12 rounded-full bg-white shadow-sm border border-peach flex items-center justify-center text-terracotta transition-all active:scale-95">
+                <span id="admin-icon" class="material-symbols-outlined">person</span>
+            </button>
         </div>
+
+        <nav class="bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl flex shadow-sm border border-peach mb-8 relative"
+            id="tabs-container">
+            <button id="tab-reg" onclick="switchView('reg')"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10 transition-colors">
+                <span class="material-symbols-outlined text-lg">event_available</span>
+                参加登録
+            </button>
+            <button id="tab-fee" onclick="switchView('fee')"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10 transition-colors">
+                <span class="material-symbols-outlined text-lg">receipt_long</span>
+                会費管理
+            </button>
+            <!-- スライドインジケーターはNavの背景として機能するようにJSで調整、またはTailwind classで制御 -->
+            <div class="tab-indicator absolute h-[calc(100%-12px)] top-1.5 rounded-xl bg-terracotta shadow-md transition-all duration-300"
+                id="tab-indicator" style="display:none;"></div>
+        </nav>
 
         <!-- お知らせエリア -->
-        <div id="announcement-area" class="announcement-banner" style="display: none;">
-            <span class="ann-icon">📢</span>
-            <span id="announcement-text" class="ann-text"></span>
-            <button id="ann-edit-btn" class="ann-edit-btn" style="display: none;" onclick="openAnnouncementEditor()">✏️
-                編集</button>
+        <div id="announcement-area" class="bg-peach/40 border border-peach rounded-2xl p-4 mb-8 flex items-start gap-3"
+            style="display: none;">
+            <span class="material-symbols-outlined text-terracotta mt-0.5">campaign</span>
+            <div class="flex-1">
+                <p id="announcement-text" class="text-xs font-bold text-warmGray leading-relaxed"></p>
+            </div>
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()"
+                class="text-terracotta p-1 hover:bg-peach/50 rounded-lg transition-colors" style="display: none;">
+                <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
         </div>
-        <div id="announcement-empty" class="announcement-banner announcement-empty">
-            <span class="ann-icon">📢</span>
-            <span class="ann-text">お知らせはまだありません。「✏️ 編集」で追加しましょう。</span>
-            <button id="ann-edit-btn-empty" class="ann-edit-btn" onclick="openAnnouncementEditor()">✏️ 編集</button>
+        <div id="announcement-empty"
+            class="bg-cream border border-peach/50 border-dashed rounded-2xl p-4 mb-8 items-center justify-center gap-2 hidden admin-visible">
+            <span class="material-symbols-outlined text-warmGray/40">campaign</span>
+            <p class="text-xs font-bold text-warmGray/40 italic">お知らせを書く</p>
+            <button onclick="openAnnouncementEditor()" class="text-terracotta ml-2">
+                <span class="material-symbols-outlined text-lg">add_circle</span>
+            </button>
         </div>
+    </header>
 
-        <!-- TABS -->
-
-        <div class="tabs" id="tabs-container">
-            <button id="tab-reg" class="tab-btn active" onclick="switchView('reg')">参加登録</button>
-            <button id="tab-fee" class="tab-btn" onclick="switchView('fee')">会費管理</button>
-            <div class="tab-indicator" id="tab-indicator"></div>
-        </div>
-
+    <main class="max-w-md mx-auto px-5 pb-24">
         <!-- REGISTER VIEW -->
-        <div id="view-reg" class="tab-content slide-in">
-            <!-- エラーリトライバナー -->
-            <div id="error-banner" class="error-banner">
-                <span class="error-msg" id="error-msg"></span>
-                <button class="btn-retry" id="error-retry">リトライ</button>
+        <div id="view-reg" class="tab-content slide-in space-y-6">
+            <!-- エラーバナー -->
+            <div id="error-banner"
+                class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center justify-between shadow-sm"
+                style="display: none;">
+                <p class="text-xs font-bold" id="error-msg"></p>
+                <button class="bg-red-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold"
+                    id="error-retry">リトライ</button>
             </div>
 
-            <div class="warning-box">同名での登録は最新の内容に上書きされます。</div>
-            <div id="calendar-container"></div>
+            <div
+                class="bg-peach/30 border border-peach/50 rounded-xl p-3 text-[10px] font-bold text-terracotta/80 text-center">
+                ※ 同名での登録は最新の内容に上書きされます。
+            </div>
 
-            <div id="form-section" class="card" style="display: none;">
-                <div id="form-date-title" class="card-header"></div>
-                <form id="attendanceForm">
+            <div id="calendar-container" class="space-y-6"></div>
+
+            <div id="form-section"
+                class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-peach/50"
+                style="display: none;">
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="w-1.5 h-6 bg-terracotta rounded-full"></span>
+                    <h2 id="form-date-title" class="text-xl font-extrabold text-warmGray"></h2>
+                </div>
+                <form id="attendanceForm" class="space-y-5">
                     <input type="hidden" id="field-date" name="date">
-                    <label>名前</label>
-                    <select id="field-name" name="name" required>
-                        <option value="">読込中...</option>
-                    </select>
-
-                    <label>参加状況</label>
-                    <div class="radio-set">
-                        <label><input type="radio" name="status" value="参加" checked> 参加</label>
-                        <label><input type="radio" name="status" value="不参加"> 不参加</label>
-
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/60 mb-2 ml-1">お名前</label>
+                        <select id="field-name" name="name" required
+                            class="w-full p-4 bg-cream border-2 border-peach rounded-xl font-bold focus:border-terracotta focus:ring-0 outline-none transition-colors">
+                            <option value="">読込中...</option>
+                        </select>
                     </div>
 
-                    <label>備考</label>
-                    <input type="text" name="comment" placeholder="ひとことメッセージ">
-                    <button type="submit" id="btn-submit" class="submit-btn">送信する</button>
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/60 mb-2 ml-1">参加状況</label>
+                        <div class="flex gap-3">
+                            <label
+                                class="flex-1 flex items-center justify-center gap-2 p-4 bg-cream border-2 border-peach rounded-xl cursor-pointer transition-all has-[:checked]:bg-terracotta has-[:checked]:text-white has-[:checked]:border-terracotta shadow-sm">
+                                <input type="radio" name="status" value="参加" checked class="hidden">
+                                <span class="material-symbols-outlined text-lg">check_circle</span>
+                                <span class="font-bold">参加</span>
+                            </label>
+                            <label
+                                class="flex-1 flex items-center justify-center gap-2 p-4 bg-cream border-2 border-peach rounded-xl cursor-pointer transition-all has-[:checked]:bg-terracotta has-[:checked]:text-white has-[:checked]:border-terracotta shadow-sm">
+                                <input type="radio" name="status" value="不参加" class="hidden">
+                                <span class="material-symbols-outlined text-lg">cancel</span>
+                                <span class="font-bold">不参加</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-warmGray/60 mb-2 ml-1">備考</label>
+                        <input type="text" name="comment" placeholder="ひとことメッセージ"
+                            class="w-full p-4 bg-cream border-2 border-peach rounded-xl font-bold focus:border-terracotta focus:ring-0 outline-none transition-colors">
+                    </div>
+
+                    <button type="submit" id="btn-submit"
+                        class="w-full bg-terracotta text-white p-5 rounded-2xl shadow-lg font-bold text-lg active:scale-[0.98] transition-all disabled:opacity-50 mt-4 h-16 flex items-center justify-center gap-3">
+                        <span class="material-symbols-outlined">send</span>
+                        送信する
+                    </button>
                 </form>
             </div>
 
-            <div id="result-section" class="card" style="display: none;">
-                <div id="result-header" class="card-header">参加状況一覧</div>
-                <div id="stats-area" class="stats"></div>
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>名前</th>
-                            <th>状況</th>
-                            <th>備考</th>
-                            <th class="th-action" style="display: none;">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="result-body"></tbody>
-                </table>
+            <div id="result-section"
+                class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-peach/50"
+                style="display: none;">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-warmOrange rounded-full"></span>
+                        <h2 id="result-header" class="text-xl font-extrabold text-warmGray">参加状況</h2>
+                    </div>
+                    <div id="stats-area"
+                        class="flex gap-2 text-[10px] font-bold bg-cream px-3 py-1.5 rounded-full border border-peach/50">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr
+                                class="text-[10px] font-extrabold text-warmGray/30 uppercase tracking-widest border-b border-peach/20">
+                                <th class="pb-3 px-1">名前</th>
+                                <th class="pb-3 px-1 text-center">状況</th>
+                                <th class="pb-3 px-1">備考</th>
+                                <th class="pb-3 px-1 text-right th-action" style="display: none;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-body" class="divide-y divide-peach/10"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- FEE VIEW -->
         <div id="view-fee" class="tab-content" style="display: none;">
-            <div id="fee-main-area" class="card">
-                <div class="card-header">
-                    <span>会費支払い状況</span>
+            <div id="fee-main-area"
+                class="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-peach/50">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-softBlue rounded-full"></span>
+                        <h2 class="text-xl font-extrabold text-warmGray">会費支払い状況</h2>
+                    </div>
                 </div>
 
                 <!-- Batch Control Panel -->
-                <div id="fee-controls">
-                    <button class="btn-small btn-reset" onclick="resetFeeChanges()">元に戻す</button>
-                    <button class="btn-small btn-save" onclick="saveFeeChanges()">一括登録</button>
+                <div id="fee-controls" class="flex gap-2 mb-6 justify-end" style="display: none;">
+                    <button
+                        class="bg-warmGray/10 text-warmGray px-4 py-2 rounded-xl text-xs font-bold hover:bg-warmGray/20 transition-colors"
+                        onclick="resetFeeChanges()">元に戻す</button>
+                    <button
+                        class="bg-terracotta text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform"
+                        onclick="saveFeeChanges()">一括保存</button>
                 </div>
 
-                <div class="fee-table-wrapper">
-                    <table class="fee-table">
-                        <thead id="fee-head"></thead>
-                        <tbody id="fee-body"></tbody>
+                <div class="overflow-x-auto -mx-2 px-2 scrollbar-hide">
+                    <table class="w-full min-w-[500px] border-separate border-spacing-y-2">
+                        <thead id="fee-head"
+                            class="text-[10px] font-extrabold text-warmGray/30 uppercase tracking-widest"></thead>
+                        <tbody id="fee-body" class="text-sm"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+    </main>
+
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-4 z-50">
+        <!-- ページ内スクロール等の便利ボタンを想定 -->
+        <button onclick="window.scrollTo({top:0, behavior:'smooth'})"
+            class="bg-white/80 backdrop-blur-md w-14 h-14 rounded-full shadow-lg border border-peach flex items-center justify-center text-terracotta active:scale-95 transition-transform">
+            <span class="material-symbols-outlined text-2xl">arrow_upward</span>
+        </button>
+        <button onclick="unlockFees()"
+            class="bg-terracotta text-white px-8 h-14 rounded-full shadow-lg flex items-center justify-center gap-2 font-bold active:scale-95 transition-transform">
+            <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+            管理者
+        </button>
     </div>
 
     <script type="module">
@@ -1151,34 +468,35 @@
         window.deleteAttendanceRow = deleteAttendanceRow;
 
         function switchView(v) {
-            if (STATE.currentView === v) return; // 同じビューならスキップ
+            if (STATE.currentView === v) return;
 
             const oldView = STATE.currentView;
             const outgoing = el('view-' + oldView);
             const incoming = el('view-' + v);
 
             // タブのアクティブ状態を即座に更新
-            el('tab-reg').className = v === 'reg' ? 'tab-btn active' : 'tab-btn';
-            el('tab-fee').className = v === 'fee' ? 'tab-btn active' : 'tab-btn';
+            const tabReg = el('tab-reg');
+            const tabFee = el('tab-fee');
+
+            if (v === 'reg') {
+                tabReg.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
+                tabFee.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
+            } else {
+                tabReg.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
+                tabFee.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
+            }
             updateIndicator();
 
-            // スライド方向を決定（regが左、feeが右）
             const goingRight = (v === 'fee');
-
-            // 現在のビューをスライドアウト
             outgoing.classList.remove('slide-in');
             outgoing.classList.add(goingRight ? 'slide-out-left' : 'slide-out-right');
 
-            // アニメーション完了後に新しいビューをスライドイン
             setTimeout(() => {
                 outgoing.style.display = 'none';
                 outgoing.classList.remove('slide-out-left', 'slide-out-right');
-
-                // 新しいビューを反対側から準備
                 incoming.classList.add(goingRight ? 'slide-out-right' : 'slide-out-left');
                 incoming.style.display = 'block';
 
-                // 次フレームでスライドインを開始
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         incoming.classList.remove('slide-out-left', 'slide-out-right');
@@ -1189,7 +507,7 @@
                 STATE.currentView = v;
                 if (v === 'fee') loadFees();
                 window.scrollTo(0, 0);
-            }, 250); // CSSトランジション時間と合わせる
+            }, 250);
         }
 
         // カスタムパスワードモーダル
@@ -1223,24 +541,34 @@
             const pw = el('modal-password').value;
             const pwHash = await sha256(pw);
             if (pwHash === ADMIN_HASH) {
-                el('password-modal').classList.remove('show');
+                el('password-modal').style.display = 'none';
                 STATE.unlocked = true;
-                // グローバルボタンも更新
+
+                // アイコン変更
+                const adminIcon = el('admin-icon');
+                if (adminIcon) adminIcon.textContent = 'admin_panel_settings';
+
                 const globalBtn = el('global-admin-btn');
-                globalBtn.textContent = '管理者モード';
-                globalBtn.classList.add('unlocked');
+                globalBtn.className = 'w-12 h-12 rounded-full bg-terracotta shadow-md border border-terracotta flex items-center justify-center text-white';
                 globalBtn.onclick = null;
+
                 // お知らせの編集ボタンを表示
-                el('ann-edit-btn').style.display = 'inline-block';
+                const annEditBtn = el('ann-edit-btn');
+                if (annEditBtn) annEditBtn.style.display = 'flex';
+
                 // お知らせが空の場合、空バナーを表示
                 if (el('announcement-area').style.display === 'none') {
-                    el('announcement-empty').classList.add('admin-visible');
+                    const emptyArea = el('announcement-empty');
+                    emptyArea.classList.remove('hidden');
+                    emptyArea.classList.add('flex');
                 }
-                // 削除ボタンを表示
-                document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
+
+                // 表示更新
+                document.querySelectorAll('.btn-delete-row').forEach(b => b.classList.remove('hidden'));
                 document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
                 document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
-                toast('管理者モードになりました');
+
+                toast('管理者ログイン完了');
                 if (STATE.currentView === 'fee') loadFees();
             } else {
                 el('modal-error').style.display = 'block';
@@ -1364,7 +692,6 @@
 
                 let memberList = (STATE.feeMembers && STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
 
-                // --- If members not yet loaded, try fetching both once ---
                 if (memberList.length === 0) {
                     Promise.all([
                         getDocs(collection(db, "members")),
@@ -1372,16 +699,15 @@
                     ]).then(([mSnap, fmSnap]) => {
                         STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
                         STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
-                        loadFees(); // Refresh
+                        loadFees();
                     }).catch(err => {
                         console.error("Member fetch error in loadFees:", err);
-                        showError('メンバー一覧の読み込みに失敗しました', loadFees);
+                        showError('メンバー一覧の読み出し失敗', loadFees);
                         loading(false);
                     });
                     return;
                 }
 
-                // --- Sort by Count descending (as requested) ---
                 memberList = memberList.map(m => {
                     let count = 0;
                     monthHeaders.forEach((_, i) => {
@@ -1392,41 +718,43 @@
 
                 memberList.forEach(m => {
                     const tr = document.createElement('tr');
-                    // ❵ XSS対策: innerHTML→textContent
+                    tr.className = "bg-cream/40 rounded-xl";
+
                     const tdName = document.createElement('td');
+                    tdName.className = "p-4 font-bold text-warmGray border-b border-peach/20 bg-white first:rounded-l-xl";
                     tdName.textContent = m.displayName;
                     tr.appendChild(tdName);
 
                     monthHeaders.forEach((month, i) => {
                         const sessionKey = `session${i + 1}`;
-                        const td = document.createElement('td'); td.className = 'fee-cell';
+                        const td = document.createElement('td');
+                        td.className = 'fee-cell p-4 text-center border-b border-peach/20 bg-white transition-all cursor-pointer text-xs font-bold text-warmGray/20';
                         const isPaid = feesData[m.name] && feesData[m.name][sessionKey] === 1;
                         if (isPaid) td.classList.add('paid');
 
-                        td.dataset.id = `${m.name}|${sessionKey}`; // session1, session2...
-                        td.dataset.displayName = m.name; // Keep internal name
-                        td.dataset.monthLabel = month; // 1回, 2回...
+                        td.dataset.id = `${m.name}|${sessionKey}`;
+                        td.dataset.displayName = m.name;
+                        td.dataset.monthLabel = month;
                         td.dataset.current = isPaid ? "1" : "0";
 
                         td.onclick = () => {
                             if (STATE.unlocked) toggleFeeLocal(td);
-                            else toast("編集には管理者ログインが必要です");
+                            else toast("管理者ログインが必要です");
                         };
                         tr.appendChild(td);
                     });
 
                     const tdCount = document.createElement('td');
-                    tdCount.className = 'fee-cell';
-                    tdCount.style.fontWeight = 'bold';
+                    tdCount.className = 'p-4 text-center font-extrabold text-terracotta border-b border-peach/20 bg-white last:rounded-r-xl';
                     tdCount.textContent = m._count;
                     tr.appendChild(tdCount);
                     b.appendChild(tr);
                 });
                 loading(false);
-                updateFeeControls(); // Keep pending highlights if any
+                updateFeeControls();
             }, (err) => {
                 console.error(err);
-                showError('会費データの受信に失敗しました', loadFees);
+                showError('データの受信に失敗', loadFees);
                 loading(false);
             });
         }
@@ -1543,12 +871,14 @@
 
         let unsubscribeAttendance = null;
         async function selectDate(date, btn) {
-            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
-            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.tactile-btn').forEach(b => b.classList.remove('active-date'));
+            if (btn) btn.classList.add('active-date');
             else {
-                const existingBtn = Array.from(document.querySelectorAll('.date-btn'))
-                    .find(b => b.textContent.includes(parseInt(date.split('-')[2]) + '日'));
-                if (existingBtn) existingBtn.classList.add('active');
+                // 手動呼び出し（送信後など）の場合の検索ロジックを修正
+                const dPart = parseInt(date.split('-')[2]);
+                const existingBtn = Array.from(document.querySelectorAll('.tactile-btn'))
+                    .find(b => b.textContent.trim() === String(dPart));
+                if (existingBtn) existingBtn.classList.add('active-date');
             }
 
             STATE.selectedDate = date;
@@ -1691,24 +1021,54 @@
             let cardIndex = 0;
 
             for (let m = 3; m <= 12; m++) {
-                const card = document.createElement('div'); card.className = 'month-card';
-                // スタッガード遅延: 各カードが順番にスライドイン
-                card.style.animationDelay = (cardIndex * 0.08) + 's';
+                const card = document.createElement('section');
+                card.className = 'bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-peach/50 relative overflow-hidden opacity-0 translate-y-6';
+                card.style.animation = `slideUp 0.5s ease forwards ${cardIndex * 0.08}s`;
                 cardIndex++;
-                card.innerHTML = `<div class="month-name">${m === 12 ? '12月 (納会予定)' : m + '月'}</div>`;
-                const grid = document.createElement('div'); grid.className = 'date-grid';
+
+                // 月タイトルの構築
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between mb-5';
+                const h2 = document.createElement('h2');
+                h2.className = 'text-xl font-extrabold text-terracotta flex items-center gap-2';
+                h2.innerHTML = `<span class="w-2 h-6 bg-terracotta rounded-full"></span> ${m}月`;
+                header.appendChild(h2);
+
+                if (m === 3) {
+                    const springTag = document.createElement('span');
+                    springTag.className = 'text-[10px] font-bold bg-peach text-terracotta px-2 py-0.5 rounded-full uppercase tracking-wider';
+                    springTag.textContent = 'Spring';
+                    header.appendChild(springTag);
+                } else if (m === 12) {
+                    const tag = document.createElement('span');
+                    tag.className = 'text-xs font-bold text-warmGray/40';
+                    tag.textContent = '納会予定';
+                    header.appendChild(tag);
+                    const decor = document.createElement('div');
+                    decor.className = 'absolute -top-4 -right-4 w-16 h-16 bg-softBlue/20 rounded-full';
+                    card.appendChild(decor);
+                }
+                card.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'flex flex-wrap gap-4';
 
                 let d = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (d.getMonth() === m - 1) {
                     const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
-                        const btn = document.createElement('div');
-                        btn.className = 'date-btn' + (d < today ? ' date-off' : '');
-                        btn.textContent = d.getDate() + '日' + (d < today ? '(終)' : '');
+                        const btn = document.createElement('button');
+                        btn.className = 'tactile-btn w-14 h-14 rounded-full border-2 flex items-center justify-center font-bold text-warmGray transition-colors';
+
+                        if (d < today) {
+                            btn.className += ' bg-warmGray/5 border-warmGray/10 text-warmGray/40 cursor-default';
+                        } else {
+                            btn.className += ' bg-cream border-peach hover:bg-peach';
+                        }
+
+                        btn.textContent = d.getDate();
                         if (d >= today) {
                             btn.onclick = (e) => {
-                                // リップルエフェクト
-                                createRipple(e, btn);
                                 selectDate(dateStr, btn);
                             };
                         }
