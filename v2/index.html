@@ -4,9 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026年 参加登録・会費管理 (Ver 2.0)</title>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
     <title>Warm Attendance List (Ver 2.0)</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -47,13 +44,16 @@
         }
         .organic-shape {
             position: fixed;
-            z-index: -1;
-            filter: blur(40px);
-            opacity: 0.4;
+            z-index: -10;
+            filter: blur(60px);
+            opacity: 0.3;
+            pointer-events: none;
         }
         .tactile-btn {
             box-shadow: 0 4px 0 rgba(0,0,0,0.05);
             transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
         .tactile-btn:active {
             transform: translateY(2px);
@@ -61,7 +61,53 @@
         }
         .active-date {
             @apply bg-warmOrange text-white border-warmOrange scale-110;
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+            z-index: 10;
+        }
+        .modal-overlay {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show {
+            display: flex !important;
+            opacity: 1;
+        }
+        .modal-box {
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.show .modal-box {
+            transform: scale(1);
+            animation: modalIn 0.3s forwards;
+        }
+        
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        @keyframes modalIn { 
+            from { opacity: 0; transform: scale(0.9); } 
+            to { opacity: 1; transform: scale(1); } 
+        }
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-btn.active {
+            @apply bg-terracotta text-white;
+        }
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
         }
         /* Existing functional animations */
         @keyframes sparkle-sweep {
@@ -479,11 +525,15 @@
             const tabFee = el('tab-fee');
 
             if (v === 'reg') {
-                tabReg.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
-                tabFee.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
+                tabReg.classList.add('active');
+                tabFee.classList.remove('active');
+                tabReg.className = 'tab-btn active flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
+                tabFee.className = 'tab-btn flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
             } else {
-                tabReg.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
-                tabFee.className = 'flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
+                tabReg.classList.remove('active');
+                tabFee.classList.add('active');
+                tabReg.className = 'tab-btn flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10';
+                tabFee.className = 'tab-btn active flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10';
             }
             updateIndicator();
 
@@ -587,12 +637,13 @@
                     area.style.display = 'flex';
                     empty.classList.remove('admin-visible');
                     if (STATE.unlocked) {
-                        el('ann-edit-btn').style.display = 'inline-block';
+                        el('ann-edit-btn').style.display = 'flex';
                     }
                 } else {
                     area.style.display = 'none';
                     if (STATE.unlocked) {
-                        empty.classList.add('admin-visible');
+                        empty.classList.remove('hidden');
+                        empty.classList.add('flex');
                     }
                 }
             });
@@ -1069,6 +1120,7 @@
                         btn.textContent = d.getDate();
                         if (d >= today) {
                             btn.onclick = (e) => {
+                                createRipple(e, btn);
                                 selectDate(dateStr, btn);
                             };
                         }
