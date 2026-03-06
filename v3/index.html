@@ -7,7 +7,7 @@
     <title>Attendance Web v3</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
         rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,7 +23,7 @@
                         warmGray: "#78716C",
                     },
                     fontFamily: {
-                        sans: ['M PLUS Rounded 1c', 'sans-serif'],
+                        sans: ['Zen Maru Gothic', 'sans-serif'],
                     },
                 }
             }
@@ -31,7 +31,7 @@
     </script>
     <style>
         body {
-            font-family: 'M PLUS Rounded 1c', sans-serif;
+            font-family: 'Zen Maru Gothic', sans-serif;
             background: #FFFBF2;
             color: #78716C;
             -webkit-tap-highlight-color: transparent;
@@ -343,14 +343,14 @@
                 <form id="attendanceForm" class="space-y-5">
                     <input type="hidden" id="field-date" name="date">
                     <div>
-                        <label class="block text-sm font-bold text-warmGray/50 mb-2">名前</label>
+                        <label class="block text-sm font-bold text-warmGray mb-2">名前</label>
                         <select id="field-name" name="name" required
                             class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center text-warmGray">
                             <option value="">読込中…</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-warmGray/50 mb-2">参加状況</label>
+                        <label class="block text-sm font-bold text-warmGray mb-2">参加状況</label>
                         <div class="flex gap-2">
                             <label class="flex-1 cursor-pointer radio-card">
                                 <input type="radio" name="status" value="参加" checked class="hidden">
@@ -365,7 +365,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-warmGray/50 mb-2">備考</label>
+                        <label class="block text-sm font-bold text-warmGray mb-2">備考</label>
                         <input type="text" name="comment" placeholder="ひとことメッセージ"
                             class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center">
                     </div>
@@ -381,7 +381,7 @@
                 </div>
                 <table class="w-full text-sm table-fixed">
                     <thead>
-                        <tr class="text-sm text-warmGray/40 border-b border-peach/20">
+                        <tr class="text-sm text-warmGray font-bold border-b-2 border-peach/40 bg-peach/10">
                             <th class="py-3 text-center" style="width: 30%;">名前</th>
                             <th class="py-3 text-center" style="width: 35%;">状況</th>
                             <th class="py-3 text-center" style="width: 65%;">備考</th>
@@ -406,8 +406,8 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto -mx-2" style="-webkit-overflow-scrolling:touch;">
-                    <table class="w-full min-w-[440px] text-sm">
-                        <thead id="fee-head"></thead>
+                    <table class="w-full min-w-[440px] text-sm border-collapse border border-peach/40">
+                        <thead id="fee-head" class="bg-peach/10"></thead>
                         <tbody id="fee-body"></tbody>
                     </table>
                 </div>
@@ -578,8 +578,8 @@
             loading(true, '会費データを読み込み中…'); hideError(); STATE.pendingChanges = {}; updateFeeControls();
             const monthH = ["1回", "2回", "3回", "4回", "5回"];
             const h = el('fee-head'); h.innerHTML = '';
-            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray/80 border-b border-peach/30';
-            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 px-1 text-center text-sm md:text-base whitespace-nowrap'; th.textContent = t; trH.appendChild(th); });
+            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray border-b-2 border-peach/40';
+            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 px-1 text-center text-sm md:text-base whitespace-nowrap border-x border-peach/40'; th.textContent = t; trH.appendChild(th); });
             h.appendChild(trH);
 
             unsubFees = onSnapshot(collection(db, "fees"), (snap) => {
@@ -597,17 +597,17 @@
                     .sort((a, b) => b._count - a._count || (a.order || 0) - (b.order || 0));
 
                 list.forEach(m => {
-                    const tr = document.createElement('tr'); tr.className = 'border-b border-peach/10';
-                    const tdN = document.createElement('td'); tdN.className = 'py-3 px-1 font-bold text-base text-center break-all text-warmGray'; tdN.textContent = m.displayName; tr.appendChild(tdN);
+                    const tr = document.createElement('tr'); tr.className = 'border-b border-peach/40 hover:bg-peach/5';
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 px-1 font-bold text-base text-center break-all text-warmGray border-x border-peach/40 bg-white/50'; tdN.textContent = m.displayName; tr.appendChild(tdN);
                     monthH.forEach((_, i) => {
-                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base text-warmGray font-medium';
+                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base text-warmGray font-medium border-x border-peach/40';
                         const isPaid = feesData[m.name] && feesData[m.name][sk] === 1;
                         if (isPaid) td.classList.add('paid');
                         td.dataset.id = `${m.name}|${sk}`; td.dataset.current = isPaid ? "1" : "0";
                         td.onclick = () => { if (STATE.unlocked) toggleFeeLocal(td); else toast("管理者ログインが必要です"); };
                         tr.appendChild(td);
                     });
-                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center font-bold text-terracotta'; tdC.textContent = m._count; tr.appendChild(tdC);
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center font-bold text-terracotta border-x border-peach/40 bg-white/50'; tdC.textContent = m._count; tr.appendChild(tdC);
                     b.appendChild(tr);
                 });
                 loading(false); updateFeeControls();
@@ -707,7 +707,7 @@
             el('field-date').value = date;
             const [y, mo, da] = date.split('-');
             el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
-            el('result-header').innerHTML = `参加状況一覧 <br><span class="text-base font-normal text-warmGray/60 mt-1 inline-block">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
+            el('result-header').innerHTML = `参加状況一覧<span class="text-base font-normal text-warmGray ml-2">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
 
             if (unsubAtt) unsubAtt();
             loading(true, '出欠データを取得中…'); hideError();
@@ -760,7 +760,7 @@
                 const sa = el('stats-area'); sa.innerHTML = '';
                 const s1 = document.createElement('span'); s1.className = 'text-terracotta'; s1.textContent = `参加: ${counts["参加"]}`;
                 const s2 = document.createElement('span'); s2.className = 'text-warmGray'; s2.textContent = `不参加: ${counts["不参加"]}`;
-                const s3 = document.createElement('span'); s3.className = 'text-warmGray/40'; s3.textContent = `未回答: ${STATE.members.length - attendance.length}`;
+                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70'; s3.textContent = `未回答: ${STATE.members.length - attendance.length}`;
                 sa.appendChild(s1); sa.appendChild(s2); sa.appendChild(s3);
 
                 el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
