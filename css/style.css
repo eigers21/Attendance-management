@@ -1,0 +1,178 @@
+/* 有機的な背景装飾 */
+.organic-shape {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.25;
+    filter: blur(60px);
+    z-index: -10;
+    animation: drift 12s ease-in-out infinite;
+}
+
+@keyframes drift {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(15px, -25px) scale(1.05);
+    }
+
+    66% {
+        transform: translate(-10px, 15px) scale(0.95);
+    }
+}
+
+/* 触覚ボタン */
+.tactile-btn {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+    transition: all 0.2s ease;
+}
+
+.tactile-btn:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.06);
+}
+
+/* 選択中の日付 */
+.date-active {
+    background: #F97316 !important;
+    color: white !important;
+    border-color: #F97316 !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+}
+
+/* カードのスタッガードアニメ */
+.month-card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.5s ease forwards;
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* モーダル */
+.modal-overlay {
+    transition: opacity 0.3s ease;
+}
+
+.modal-box-anim {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* トースト */
+#toast {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 16px;
+    z-index: 10001;
+    font-weight: bold;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* ローディング */
+#loading {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(240, 249, 255, 0.9);
+    /* #F0F9FFベースで微透過 */
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ld-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #E0F2FE;
+    /* peach -> sky-100 */
+    border-top-color: #0284C7;
+    /* terracotta -> sky-600 */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 会費テーブル */
+.fee-cell {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.fee-cell.paid {
+    background: #0284C7 !important;
+    /* sky-600 */
+    color: white;
+    font-weight: bold;
+}
+
+.fee-cell.paid::after {
+    content: '済';
+}
+
+.fee-cell.pending-paid {
+    background: #0369A1 !important;
+    /* sky-700 */
+    color: white !important;
+}
+
+.fee-cell.pending-remove {
+    background: #ef4444 !important;
+    opacity: 0.7;
+    color: white !important;
+}
+
+.fee-cell.pending-paid::after,
+.fee-cell.pending-remove::after {
+    content: '...';
+}
+
+/* リップル */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(2, 132, 199, 0.3);
+    /* sky-600 with opacity */
+    transform: scale(0);
+    animation: rippleAnim 0.5s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* ラジオカスタム */
+.radio-card input:checked+div {
+    background: #0284C7;
+    /* sky-600 */
+    color: white;
+}
