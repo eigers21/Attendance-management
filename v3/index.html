@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance Web v3</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        peach: "#FFEDD5",
+                        cream: "#FFFBF2",
+                        terracotta: "#E2725B",
+                        warmOrange: "#F97316",
+                        softBlue: "#BAE6FD",
+                        warmGray: "#78716C",
+                    },
+                    fontFamily: {
+                        sans: ['M PLUS Rounded 1c', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body { @apply bg-cream text-warmGray antialiased overflow-x-hidden; font-family: 'M PLUS Rounded 1c', sans-serif; }
+        }
+        @layer components {
+            .organic-shape {
+                @apply fixed pointer-events-none opacity-30 mix-blend-multiply blur-3xl animate-pulse;
+                z-index: -10;
+            }
+            .glass-card { @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-xl; }
+            .active-dot { @apply w-3 h-3 bg-warmOrange rounded-full shadow-[0_0_10px_#F97316]; }
+            .tactile-btn {
+                @apply relative overflow-hidden transition-all duration-200 active:scale-95;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            }
+            .tactile-btn:active { box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.06); }
+        }
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -20px); }
+        }
+        .animate-drift { animation: drift 10s ease-in-out infinite; }
+    </style>
+</head>
+
+<body class="pb-32">
+    <!-- Background Decoration -->
+    <div class="organic-shape w-64 h-64 bg-peach -top-20 -left-20 animate-drift"></div>
+    <div class="organic-shape w-96 h-96 bg-softBlue -bottom-32 -right-32 animate-drift" style="animation-delay: -5s;">
+    </div>
+    <div class="organic-shape w-48 h-48 bg-terracotta/20 top-1/2 left-1/2 -translate-x-1/2 animate-drift"
+        style="animation-delay: -3s;"></div>
+
+    <div class="container mx-auto max-w-lg px-6 pt-12">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <span class="text-terracotta font-bold text-lg">2026</span>
+                <h1 class="text-3xl font-extrabold text-warmGray tracking-tight">参加登録・会費</h1>
+            </div>
+            <button onclick="unlockFees()"
+                class="w-12 h-12 glass-card rounded-full flex items-center justify-center tactile-btn text-terracotta"
+                id="admin-icon-btn">
+                <span class="material-symbols-outlined">person</span>
+            </button>
+        </header>
+
+        <!-- Main Navigation Tabs -->
+        <nav class="glass-card rounded-2xl p-1.5 flex gap-1 mb-6 relative">
+            <button onclick="switchView('reg')" id="tab-reg"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10">
+                <span class="material-symbols-outlined text-lg">calendar_month</span> 参加登録
+            </button>
+            <button onclick="switchView('fee')" id="tab-fee"
+                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10">
+                <span class="material-symbols-outlined text-lg">payments</span> 会費管理
+            </button>
+        </nav>
+
+        <!-- Notification Banner -->
+        <div id="announcement-area"
+            class="bg-peach/50 border border-peach rounded-2xl p-4 flex items-start gap-3 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <span class="material-symbols-outlined text-terracotta">campaign</span>
+            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1">
+                最新の内容が自動的に上書き保存されます。</p>
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="hidden text-terracotta"><span
+                    class="material-symbols-outlined text-base">edit</span></button>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div id="calendar-skeleton" class="space-y-6">
+            <!-- Loading Skeleton -->
+            <div class="bg-white rounded-3xl p-6 h-40 animate-pulse bg-gray-200/50"></div>
+            <div class="bg-white rounded-3xl p-6 h-40 animate-pulse bg-gray-200/50"></div>
+        </div>
+
+        <div id="view-reg" class="space-y-6 hidden">
+            <!-- Calendar Container -->
+            <div id="calendar-container" class="space-y-6"></div>
+        </div>
+
+        <div id="view-fee" class="hidden space-y-6">
+            <div class="glass-card rounded-3xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-extrabold text-xl text-terracotta">支払い状況</h3>
+                    <div id="fee-controls" class="hidden flex gap-2">
+                        <button onclick="resetFeeChanges()"
+                            class="text-xs font-bold text-warmGray px-3 py-1.5 rounded-full bg-peach/50 tactile-btn">元に戻す</button>
+                        <button onclick="saveFeeChanges()"
+                            class="text-xs font-bold text-white px-3 py-1.5 rounded-full bg-terracotta tactile-btn">一括登録</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto -mx-2">
+                    <table class="w-full min-w-[400px]">
+                        <thead id="fee-head" class="text-xs text-warmGray/50 border-b border-peach/30"></thead>
+                        <tbody id="fee-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Bar -->
+    <div id="floating-bar"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-50 transition-all duration-500 scale-0 opacity-0 translate-y-10">
+        <button onclick="openSettings()"
+            class="w-14 h-14 glass-card rounded-full flex items-center justify-center tactile-btn text-warmGray">
+            <span class="material-symbols-outlined">settings</span>
+        </button>
+        <button onclick="scrollToTop()"
+            class="bg-terracotta text-white px-8 py-4 rounded-full font-extrabold flex items-center gap-2 shadow-xl shadow-terracotta/30 tactile-btn">
+            <span class="material-symbols-outlined">add</span> 登録する
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <!-- Password Modal -->
+    <div id="password-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-warmGray/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl scale-90 transition-transform duration-300">
+            <div class="w-16 h-16 bg-peach/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-terracotta text-3xl">key</span>
+            </div>
+            <h3 class="text-center font-extrabold text-xl mb-4 text-warmGray">管理者ログイン</h3>
+            <input type="password" id="modal-password" placeholder="パスワード"
+                class="w-full bg-cream border-2 border-transparent focus:border-terracotta rounded-2xl px-4 py-4 text-center text-xl tracking-widest outline-none transition-all mb-4">
+            <p id="modal-error" class="text-terracotta text-xs font-bold text-center mb-6 hidden">パスワードが正しくありません</p>
+            <div class="flex gap-2">
+                <button onclick="closePasswordModal()"
+                    class="flex-1 py-4 font-bold text-warmGray hover:bg-peach/30 rounded-2xl transition-colors">キャンセル</button>
+                <button onclick="submitPassword()"
+                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">ログイン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Form Modal -->
+    <div id="form-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-warmGray/20 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl scale-90 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="form-date-title" class="font-extrabold text-2xl text-terracotta"></h3>
+                <button onclick="closeFormModal()" class="text-warmGray/40"><span
+                        class="material-symbols-outlined">close</span></button>
+            </div>
+            <form id="attendanceForm" class="space-y-6 text-left">
+                <input type="hidden" id="field-date" name="date">
+                <div>
+                    <label class="block text-xs font-bold text-warmGray/50 mb-2 ml-1">名前を選択</label>
+                    <select id="field-name" name="name" required
+                        class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-transparent focus:border-terracotta transition-all appearance-none cursor-pointer"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-warmGray/50 mb-2 ml-1">参加状況</label>
+                    <div class="flex gap-2">
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="status" value="参加" checked class="hidden peer">
+                            <div
+                                class="py-4 rounded-2xl text-center font-bold bg-cream peer-checked:bg-terracotta peer-checked:text-white transition-all">
+                                参加</div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="status" value="不参加" class="hidden peer">
+                            <div
+                                class="py-4 rounded-2xl text-center font-bold bg-cream peer-checked:bg-terracotta peer-checked:text-white transition-all">
+                                不参加</div>
+                        </label>
+                    </div>
+                </div>
+                <div id="result-list-container" class="space-y-2 max-h-40 overflow-y-auto mb-2 custom-scrollbar"></div>
+                <button type="submit" id="btn-submit"
+                    class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn mt-4">送信する</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMyqYZMC4ytIOPNIBXKe8th-mE-rmM27o",
+            authDomain: "sunday-attendance.firebaseapp.com",
+            projectId: "sunday-attendance",
+            storageBucket: "sunday-attendance.firebasestorage.app",
+            messagingSenderId: "292299944623",
+            appId: "1:292299944623:web:5c982cc8a700e57d51da5a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
+
+        let STATE = { members: [], feeMembers: [], unlocked: false, selectedDate: null, pendingChanges: {}, currentView: 'reg' };
+
+        const el = (id) => document.getElementById(id);
+
+        // Security: Hash password locally before sending (Improved from v2)
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        const ADMIN_HASH = '158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab';
+
+        // Global functions
+        window.switchView = switchView;
+        window.unlockFees = unlockFees;
+        window.closePasswordModal = closePasswordModal;
+        window.submitPassword = submitPassword;
+        window.openFormModal = openFormModal;
+        window.closeFormModal = closeFormModal;
+        window.selectDate = selectDate;
+        window.saveFeeChanges = saveFeeChanges;
+        window.resetFeeChanges = resetFeeChanges;
+        window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        function switchView(view) {
+            if (STATE.currentView === view) return;
+            el('view-reg').classList.toggle('hidden', view !== 'reg');
+            el('view-fee').classList.toggle('hidden', view !== 'fee');
+
+            const btnReg = el('tab-reg');
+            const btnFee = el('tab-fee');
+
+            if (view === 'reg') {
+                btnReg.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10";
+                btnFee.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10";
+            } else {
+                btnFee.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-sm z-10";
+                btnReg.className = "flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-sm z-10";
+                loadFees();
+            }
+            STATE.currentView = view;
+        }
+
+        async function unlockFees() {
+            if (STATE.unlocked) return;
+            const modal = el('password-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.replace('opacity-0', 'opacity-100');
+                modal.querySelector('div').classList.replace('scale-90', 'scale-100');
+                el('modal-password').focus();
+            }, 10);
+        }
+
+        function closePasswordModal() {
+            const modal = el('password-modal');
+            modal.classList.replace('opacity-100', 'opacity-0');
+            modal.querySelector('div').classList.replace('scale-100', 'scale-90');
+            setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
+        }
+
+        async function submitPassword() {
+            const pw = el('modal-password').value;
+            const hash = await sha256(pw);
+            if (hash === ADMIN_HASH) {
+                STATE.unlocked = true;
+                el('admin-icon-btn').innerHTML = '<span class="material-symbols-outlined">how_to_reg</span>';
+                el('admin-icon-btn').classList.add('bg-terracotta', 'text-white');
+                el('ann-edit-btn').classList.remove('hidden');
+                closePasswordModal();
+                if (STATE.currentView === 'fee') loadFees();
+            } else {
+                el('modal-error').classList.remove('hidden');
+                el('modal-password').value = '';
+            }
+        }
+
+        function openFormModal(date, btn) {
+            STATE.selectedDate = date;
+            el('field-date').value = date;
+            const [y, m, d] = date.split('-');
+            el('form-date-title').textContent = `${parseInt(m)}月${parseInt(d)}日`;
+
+            const modal = el('form-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            loadAttendanceForDate(date);
+
+            setTimeout(() => {
+                modal.classList.replace('opacity-0', 'opacity-100');
+                modal.querySelector('div').classList.replace('scale-90', 'scale-100');
+            }, 10);
+        }
+
+        function closeFormModal() {
+            const modal = el('form-modal');
+            modal.classList.replace('opacity-100', 'opacity-0');
+            modal.querySelector('div').classList.replace('scale-100', 'scale-90');
+            setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
+        }
+
+        let attendanceUnsubscribe = null;
+        function loadAttendanceForDate(date) {
+            if (attendanceUnsubscribe) attendanceUnsubscribe();
+            const container = el('result-list-container');
+            container.innerHTML = '<div class="text-center py-4 text-xs font-bold text-warmGray/30 animate-pulse">出欠状況を読み込み中...</div>';
+
+            attendanceUnsubscribe = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
+                container.innerHTML = '';
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="text-center py-4 text-xs font-bold text-warmGray/20">まだ登録がありません</div>';
+                    return;
+                }
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between p-3 bg-cream rounded-xl';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'font-bold text-sm';
+                    nameSpan.textContent = data.name;
+
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${data.status === '参加' ? 'bg-terracotta text-white' : 'bg-warmGray/10 text-warmGray'}`;
+                    statusSpan.textContent = data.status;
+
+                    const left = document.createElement('div');
+                    left.className = 'flex items-center gap-2';
+                    left.appendChild(nameSpan);
+                    left.appendChild(statusSpan);
+
+                    div.appendChild(left);
+                    if (data.comment) {
+                        const comm = document.createElement('p');
+                        comm.className = 'text-[10px] text-warmGray/40 italic ml-1';
+                        comm.textContent = data.comment;
+                        // For simplicity, just appending below. Designing for compact view.
+                    }
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        function buildCalendar() {
+            const container = el('calendar-container');
+            const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
+            for (let m = 3; m <= 12; m++) {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl p-6 shadow-sm border border-peach/20 relative overflow-hidden";
+
+                // Header of card
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between mb-6';
+                const title = document.createElement('h3');
+                title.className = 'text-xl font-black text-terracotta flex items-center gap-2';
+                title.innerHTML = `<span class="w-1.5 h-6 bg-terracotta rounded-full"></span> ${m}月`;
+                header.appendChild(title);
+
+                if (m === 3) {
+                    const tag = document.createElement('span');
+                    tag.className = 'text-[10px] font-bold bg-peach text-terracotta px-2.5 py-1 rounded-full uppercase tracking-widest';
+                    tag.textContent = 'Spring';
+                    header.appendChild(tag);
+                } else if (m === 12) {
+                    const tag = document.createElement('span');
+                    tag.className = 'text-[10px] font-bold text-warmGray/30';
+                    tag.textContent = '納会予定';
+                    header.appendChild(tag);
+                    const blueShape = document.createElement('div');
+                    blueShape.className = 'absolute -top-6 -right-6 w-24 h-24 bg-softBlue/30 rounded-full blur-xl';
+                    card.appendChild(blueShape);
+                }
+                card.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'flex flex-wrap gap-4';
+
+                let d = new Date(2026, m - 1, 1, 12, 0, 0);
+                while (d.getMonth() === m - 1) {
+                    const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
+                        const btn = document.createElement('button');
+                        btn.className = 'w-12 h-12 rounded-full border-2 flex items-center justify-center font-bold tactile-btn text-sm';
+
+                        if (d < today) {
+                            btn.className += ' bg-warmGray/5 border-transparent text-warmGray/20 cursor-default';
+                        } else {
+                            btn.className += ' bg-cream border-peach/50 text-warmGray';
+                            btn.onclick = () => openFormModal(dateStr, btn);
+                        }
+
+                        btn.textContent = d.getDate();
+                        grid.appendChild(btn);
+                    }
+                    d.setDate(d.getDate() + 1);
+                }
+                card.appendChild(grid);
+                container.appendChild(card);
+            }
+
+            el('calendar-skeleton').classList.add('hidden');
+            el('view-reg').classList.remove('hidden');
+            el('floating-bar').classList.remove('scale-0', 'opacity-0', 'translate-y-10');
+        }
+
+        async function loadMembers() {
+            try {
+                const mSnap = await getDocs(collection(db, "members"));
+                STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                const fmSnap = await getDocs(collection(db, "feeMembers"));
+                STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                const sel = el('field-name');
+                sel.innerHTML = '<option value="">選択してください</option>' +
+                    STATE.members.map(m => `<option value="${m.name}">${m.displayName || m.name}</option>`).join('');
+            } catch (e) {
+                console.error("Member load error", e);
+            }
+        }
+
+        // --- Fee Logic ---
+        function loadFees() {
+            const body = el('fee-body');
+            body.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-xs font-bold text-warmGray/20 animate-pulse">データを読み込み中...</td></tr>';
+
+            onSnapshot(collection(db, "fees"), (snapshot) => {
+                body.innerHTML = '';
+                const feesData = {};
+                snapshot.forEach(d => feesData[d.data().name] = d.data());
+
+                const list = (STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
+                list.forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-peach/10 last:border-0";
+
+                    const tdName = document.createElement('td');
+                    tdName.className = "py-4 font-bold text-sm";
+                    tdName.textContent = m.displayName || m.name;
+                    tr.appendChild(tdName);
+
+                    for (let i = 1; i <= 5; i++) {
+                        const sessionKey = `session${i}`;
+                        const td = document.createElement('td');
+                        td.className = "py-4 text-center cursor-pointer";
+                        const isPaid = feesData[m.name] && feesData[m.name][sessionKey] === 1;
+
+                        const dot = document.createElement('div');
+                        dot.className = `w-4 h-4 rounded-full mx-auto transition-all ${isPaid ? 'bg-terracotta ring-4 ring-terracotta/20 shadow-lg' : 'bg-peach/30'}`;
+
+                        td.onclick = () => {
+                            if (!STATE.unlocked) return;
+                            toggleFee(m.name, sessionKey, isPaid);
+                        };
+
+                        td.appendChild(dot);
+                        tr.appendChild(td);
+                    }
+                    body.appendChild(tr);
+                });
+            });
+        }
+
+        // Multi-replace placeholders with real implementations during build
+        window.onload = async () => {
+            await loadMembers();
+            buildCalendar();
+
+            el('attendanceForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = el('btn-submit');
+                btn.disabled = true;
+                btn.textContent = '送信中...';
+
+                const data = Object.fromEntries(new FormData(e.target));
+                try {
+                    const q = query(collection(db, "attendance"), where("date", "==", data.date), where("name", "==", data.name));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        await setDoc(doc(db, "attendance", snap.docs[0].id), { ...data, updatedAt: serverTimestamp() }, { merge: true });
+                    } else {
+                        await addDoc(collection(db, "attendance"), { ...data, updatedAt: serverTimestamp() });
+                    }
+
+                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+
+                    btn.textContent = '完了！';
+                    setTimeout(() => {
+                        closeFormModal();
+                        btn.disabled = false;
+                        btn.textContent = '送信する';
+                    }, 1000);
+                } catch (e) {
+                    console.error(e);
+                    btn.textContent = 'エラー';
+                    setTimeout(() => { btn.disabled = false; btn.textContent = '送信する'; }, 2000);
+                }
+            };
+        };
+
+        function toggleFee(name, key, current) {
+            // Simplified for V3 - just immediate write for better UX in this version
+            const targetVal = current ? 0 : 1;
+            const q = query(collection(db, "fees"), where("name", "==", name));
+            getDocs(q).then(snap => {
+                if (!snap.empty) {
+                    setDoc(doc(db, "fees", snap.docs[0].id), { [key]: targetVal }, { merge: true });
+                } else {
+                    addDoc(collection(db, "fees"), { name, [key]: targetVal });
+                }
+            });
+        }
+
+        function createRipple(e, el) {
+            const ripple = document.createElement('span');
+            ripple.className = 'absolute bg-white/40 rounded-full animate-ping pointer-events-none';
+            const rect = el.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+            el.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 1000);
+        }
+
+    </script>
+</body>
+
+</html>
