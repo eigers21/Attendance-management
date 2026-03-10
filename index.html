@@ -402,7 +402,8 @@
         #go-top-btn {
             position: fixed;
             bottom: 24px;
-            right: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
             width: 56px;
             height: 56px;
             background: rgba(255, 255, 255, 0.9);
@@ -420,13 +421,12 @@
             transition: all 0.3s ease;
             opacity: 0;
             pointer-events: none;
-            transform: translateY(20px);
         }
 
         #go-top-btn.visible {
             opacity: 1;
             pointer-events: auto;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
         }
 
         #go-top-btn:active {
@@ -646,8 +646,8 @@
                     <thead>
                         <tr class="text-sm text-warmGray font-bold border-b-2 border-warmCoral/20 bg-softPeach/50">
                             <th id="th-name" class="py-3 text-center" style="width: 20%;">名前</th>
-                            <th id="th-status" class="py-3 text-center" style="width: 25%;">状況</th>
-                            <th id="th-comment" class="py-3 text-center" style="width: 55%;">備考</th>
+                            <th id="th-status" class="py-3 text-center" style="width: 10%;">状況</th>
+                            <th id="th-comment" class="py-3 text-center" style="width: 70%;">備考</th>
                             <th id="th-action" class="py-3 th-action hidden" style="width: 0%;"></th>
                         </tr>
                     </thead>
@@ -805,10 +805,10 @@
                     c.style.display = 'table-cell';
                     c.classList.remove('hidden');
                 });
-                // 列幅の調整
+                // 列幅の調整（管理者用: 状況10%に固定し備考62%確保）
                 el('th-name').style.width = '18%';
-                el('th-status').style.width = '22%';
-                el('th-comment').style.width = '50%';
+                el('th-status').style.width = '10%';
+                el('th-comment').style.width = '62%';
                 el('th-action').style.width = '10%';
 
                 closeModal('password-modal');
@@ -1045,7 +1045,11 @@
                     const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-base text-center'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
                     const tdS = document.createElement('td'); tdS.className = 'py-3 text-center text-sm';
                     if (st === '参加' || st === '不参加') {
-                        const badge = document.createElement('span'); badge.className = `inline-block w-[68px] text-center text-xs font-bold py-1.5 rounded-full ${st === '参加' ? 'badge-attend' : 'badge-absent'}`; badge.textContent = st; tdS.appendChild(badge);
+                        const img = document.createElement('img');
+                        img.src = st === '参加' ? './maru.png' : './batsu.png';
+                        img.className = 'w-[27px] h-[27px] mx-auto object-contain';
+                        img.alt = st;
+                        tdS.appendChild(img);
                     } else tdS.textContent = st;
                     tr.appendChild(tdS);
                     const tdC = document.createElement('td'); tdC.className = 'py-3 text-center text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
@@ -1066,7 +1070,7 @@
                 loading(false);
                 if (isFirstLoad && bubble && !preventScroll) {
                     setTimeout(() => {
-                        const yOffset = -120; // ヘッダー被り防止オフセット
+                        const yOffset = -160; // ヘッダー・月ナビ被り防止オフセット
                         const y = el('form-section').getBoundingClientRect().top + window.pageYOffset + yOffset;
                         window.scrollTo({ top: y, behavior: 'smooth' });
                     }, 150);
