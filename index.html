@@ -360,6 +360,22 @@
             color: #94A3B8;
         }
 
+        /* 月ナビボタン */
+        .month-nav-btn.current-month {
+            background: #FFF0E6;
+            box-shadow: inset 0 0 0 2px #F5A623;
+        }
+
+        .month-nav-btn.selected-month {
+            background: linear-gradient(135deg, #E8734A, #D4603B);
+            color: white;
+            box-shadow: 0 2px 8px rgba(232, 115, 74, 0.3);
+        }
+
+        .month-nav-btn.past-month {
+            color: #CBD5E1;
+        }
+
         /* 参加状況バッジ */
         .badge-attend {
             background: linear-gradient(135deg, #E8734A, #D4603B);
@@ -506,7 +522,7 @@
     </div>
 
     <!-- メインコンテンツ -->
-    <div class="mx-auto max-w-lg px-5 pt-10">
+    <div class="mx-auto max-w-lg px-5 pt-10 pb-24">
         <!-- ヘッダー -->
         <header class="flex justify-between items-center mb-6">
             <div>
@@ -519,6 +535,25 @@
                 👤
             </button>
         </header>
+
+        <!-- 天気予報ウィジェット（埼玉県三郷市） -->
+        <div id="weather-widget"
+            class="bg-white/70 backdrop-blur-sm rounded-2xl px-4 py-3 mb-4 flex items-center gap-3 border border-goldenAmber/20 shadow-sm"
+            style="display:none;">
+            <div id="weather-icon-wrap" class="flex-shrink-0">
+                <img id="weather-icon" src="" alt="天気" class="w-10 h-10" style="display:none;">
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-warmGray/60">📍 三郷市</span>
+                    <span id="weather-desc" class="text-sm font-bold text-warmGray"></span>
+                </div>
+                <div class="flex items-center gap-3 mt-0.5">
+                    <span id="weather-temp" class="text-lg font-extrabold text-warmCoral"></span>
+                    <span id="weather-detail" class="text-xs text-warmGray/60"></span>
+                </div>
+            </div>
+        </div>
 
         <!-- タブ（フラットデザイン版） -->
         <div class="flex gap-2 mb-6 p-1 bg-white/60 rounded-full border border-warmCoral/10 backdrop-blur-sm">
@@ -551,28 +586,29 @@
             style="display: block;">
             <div class="overflow-x-auto whitespace-nowrap scroll-smooth custom-scrollbar w-full max-w-full px-4 pb-2"
                 style="-webkit-overflow-scrolling: touch;">
-                <div class="inline-flex gap-2 relative z-10 bg-white/80 py-2 px-3 rounded-2xl"
+                <div id="month-nav-inner"
+                    class="inline-flex gap-1 relative z-10 bg-white/90 backdrop-blur-sm py-2 px-2 rounded-2xl shadow-sm border border-warmCoral/10"
                     style="min-width: max-content;">
-                    <button onclick="scrollToMonth(3)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">3月</button>
-                    <button onclick="scrollToMonth(4)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">4月</button>
-                    <button onclick="scrollToMonth(5)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">5月</button>
-                    <button onclick="scrollToMonth(6)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">6月</button>
-                    <button onclick="scrollToMonth(7)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">7月</button>
-                    <button onclick="scrollToMonth(8)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">8月</button>
-                    <button onclick="scrollToMonth(9)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">9月</button>
-                    <button onclick="scrollToMonth(10)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">10月</button>
-                    <button onclick="scrollToMonth(11)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">11月</button>
-                    <button onclick="scrollToMonth(12)"
-                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">12月</button>
+                    <button onclick="scrollToMonth(3)" data-month="3"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">3月</button>
+                    <button onclick="scrollToMonth(4)" data-month="4"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">4月</button>
+                    <button onclick="scrollToMonth(5)" data-month="5"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">5月</button>
+                    <button onclick="scrollToMonth(6)" data-month="6"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">6月</button>
+                    <button onclick="scrollToMonth(7)" data-month="7"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">7月</button>
+                    <button onclick="scrollToMonth(8)" data-month="8"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">8月</button>
+                    <button onclick="scrollToMonth(9)" data-month="9"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">9月</button>
+                    <button onclick="scrollToMonth(10)" data-month="10"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">10月</button>
+                    <button onclick="scrollToMonth(11)" data-month="11"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">11月</button>
+                    <button onclick="scrollToMonth(12)" data-month="12"
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">12月</button>
                 </div>
             </div>
         </div>
@@ -737,6 +773,7 @@
         window.saveAnnouncement = saveAnnouncement;
         window.deleteAttendanceRow = deleteAttendanceRow;
         window.scrollToMonth = scrollToMonth;
+        window.loadWeather = loadWeather;
 
         // モーダル汎用
         function openModal(id) {
@@ -1007,6 +1044,9 @@
             el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
             el('result-header').innerHTML = `参加状況一覧<span class="text-base font-normal text-warmGray ml-2">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
 
+            // 月ナビのハイライトを更新
+            updateMonthNavHighlight(parseInt(mo));
+
             if (unsubAtt) unsubAtt();
             loading(true, '出欠データを取得中…'); hideError();
 
@@ -1047,12 +1087,12 @@
                     if (st === '参加' || st === '不参加') {
                         const img = document.createElement('img');
                         img.src = st === '参加' ? './maru.png' : './batsu.png';
-                        img.className = 'w-[27px] h-[27px] mx-auto object-contain';
+                        img.className = 'w-[24px] h-[24px] mx-auto object-contain';
                         img.alt = st;
                         tdS.appendChild(img);
                     } else tdS.textContent = st;
                     tr.appendChild(tdS);
-                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-left pl-3 text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
                     const tdA = document.createElement('td'); tdA.className = 'cell-action py-3 text-center'; tdA.style.display = STATE.unlocked ? 'table-cell' : 'none';
                     const del = document.createElement('button'); del.className = 'btn-delete-row bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-bold';
                     del.style.display = STATE.unlocked ? 'inline-block' : 'none'; del.textContent = '🗑';
@@ -1088,6 +1128,38 @@
             elem.appendChild(r); r.addEventListener('animationend', () => r.remove());
         }
 
+        // ── 天気予報取得（埼玉県三郷市） ──
+        const WEATHER_API_KEY = '0ae42804373b900e32077ce0ba8023bf'; // OpenWeatherMap APIキー
+        const MISATO_LAT = 35.8326;
+        const MISATO_LON = 139.8647;
+
+        async function loadWeather() {
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${MISATO_LAT}&lon=${MISATO_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=ja`);
+                if (!res.ok) throw new Error('Weather API error');
+                const data = await res.json();
+
+                const temp = Math.round(data.main.temp);
+                const desc = data.weather[0].description;
+                const icon = data.weather[0].icon;
+                const humidity = data.main.humidity;
+                const feelsLike = Math.round(data.main.feels_like);
+
+                el('weather-temp').textContent = `${temp}°C`;
+                el('weather-desc').textContent = desc;
+                el('weather-detail').textContent = `体感 ${feelsLike}°C ・ 湿度 ${humidity}%`;
+
+                const iconImg = el('weather-icon');
+                iconImg.src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+                iconImg.style.display = 'block';
+
+                el('weather-widget').style.display = 'flex';
+            } catch (e) {
+                console.error('天気予報取得失敗:', e);
+                // エラー時はウィジェットを非表示のまま
+            }
+        }
+
         // ── 月カレンダージャンプ ──
         function scrollToMonth(m) {
             const tgt = el(`month-${m}`);
@@ -1099,10 +1171,36 @@
             }
         }
 
+        // ── 月ナビハイライト更新 ──
+        function updateMonthNavHighlight(selectedMonth) {
+            const now = new Date();
+            const currentMonth = now.getFullYear() === 2026 ? now.getMonth() + 1 : -1;
+            document.querySelectorAll('.month-nav-btn').forEach(btn => {
+                const m = parseInt(btn.dataset.month);
+                btn.classList.remove('current-month', 'selected-month', 'past-month');
+                if (selectedMonth && m === selectedMonth) {
+                    btn.classList.add('selected-month');
+                } else if (m === currentMonth) {
+                    btn.classList.add('current-month');
+                } else if (currentMonth > 0 && m < currentMonth) {
+                    btn.classList.add('past-month');
+                }
+            });
+
+            // 選択された（又は現在月の）ボタンが見えるようにスクロール
+            const activeBtn = document.querySelector('.month-nav-btn.selected-month') || document.querySelector('.month-nav-btn.current-month');
+            if (activeBtn) {
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
         // ── 起動 ──
         window.onload = () => {
             buildCalendar();
             loadAnnouncement();
+            loadWeather(); // 天気予報を取得
+            // 月ナビの初期ハイライト（現在月）
+            updateMonthNavHighlight(null);
 
             // スクロール時の現在月ハイライト（任意）と上へ戻るボタンの表示
             const navContainer = el('month-nav-container');
