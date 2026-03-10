@@ -645,10 +645,10 @@
                 <table class="w-full text-sm table-fixed">
                     <thead>
                         <tr class="text-sm text-warmGray font-bold border-b-2 border-warmCoral/20 bg-softPeach/50">
-                            <th class="py-3 text-center" style="width: 20%;">名前</th>
-                            <th class="py-3 text-center" style="width: 25%;">状況</th>
-                            <th class="py-3 text-center" style="width: 55%;">備考</th>
-                            <th class="py-3 th-action hidden" style="width: 0%;"></th>
+                            <th id="th-name" class="py-3 text-center" style="width: 20%;">名前</th>
+                            <th id="th-status" class="py-3 text-center" style="width: 25%;">状況</th>
+                            <th id="th-comment" class="py-3 text-center" style="width: 55%;">備考</th>
+                            <th id="th-action" class="py-3 th-action hidden" style="width: 0%;"></th>
                         </tr>
                     </thead>
                     <tbody id="result-body"></tbody>
@@ -801,7 +801,16 @@
                 if (el('announcement-area').style.display === 'none') el('announcement-empty').style.display = 'flex';
                 document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
                 document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
-                document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
+                document.querySelectorAll('.th-action').forEach(c => {
+                    c.style.display = 'table-cell';
+                    c.classList.remove('hidden');
+                });
+                // 列幅の調整
+                el('th-name').style.width = '18%';
+                el('th-status').style.width = '22%';
+                el('th-comment').style.width = '50%';
+                el('th-action').style.width = '10%';
+
                 closeModal('password-modal');
                 toast('管理者モードになりました');
                 if (el('view-fee').style.display === 'block') loadFees();
@@ -1105,7 +1114,8 @@
                 }
             });
 
-            // 初回描画時に最初の未来日付へ自動スクロール
+            /* 
+            // 初回描画時に最初の未来日付へ自動スクロール (ユーザー要望により無効化)
             setTimeout(() => {
                 const firstAvailable = document.querySelector('.date-bubble.available');
                 if (firstAvailable) {
@@ -1114,6 +1124,7 @@
                     window.scrollTo({ top: pos, behavior: "smooth" });
                 }
             }, 300);
+            */
 
             el('attendanceForm').onsubmit = async (e) => {
                 e.preventDefault(); el('btn-submit').disabled = true; loading(true, '送信中…');
