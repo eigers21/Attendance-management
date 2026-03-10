@@ -4,27 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Web v4</title>
-
-    <!-- Fonts -->
+    <title>ESN 参加登録・会費管理 v5</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
         rel="stylesheet" />
-
-    <!-- Tailwind CSS & Configuration -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        peach: "#E0F2FE",      /* sky-100に近いさわやかな薄い青 */
-                        cream: "#F0F9FF",      /* sky-50に近いさらに薄い青背景 */
-                        terracotta: "#0284C7", /* sky-600に近いメインの青 */
-                        warmOrange: "#0369A1", /* sky-700に近い濃い青 */
-                        softBlue: "#BAE6FD",
-                        warmGray: "#334155",   /* slate-700で文字色もクールに */
+                        warmCoral: "#E8734A",
+                        softPeach: "#FFF0E6",
+                        goldenAmber: "#F5A623",
+                        deepNavy: "#1E293B",
+                        warmWhite: "#FFF8F2",
+                        warmGray: "#334155",
                     },
                     fontFamily: {
                         sans: ['Noto Sans JP', 'sans-serif'],
@@ -33,125 +29,552 @@
             }
         }
     </script>
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(180deg, #FFF0E6 0%, #FFE4D0 30%, #FFF0E6 70%, #FDDEC0 100%);
+            color: #334155;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+            min-height: 100vh;
+        }
 
-    <!-- Custom Styles -->
-    <link href="css/style.css" rel="stylesheet" />
+        /* 背景の有機的装飾 */
+        .organic-shape {
+            position: fixed;
+            pointer-events: none;
+            opacity: 0.15;
+            filter: blur(80px);
+            z-index: -10;
+            animation: drift 14s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(15px, -25px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-10px, 15px) scale(0.97);
+            }
+        }
+
+        /* タイムライン */
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #F5A623 0%, #E8734A 50%, #F5A623 100%);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-node {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeSlideIn 0.5s ease forwards;
+        }
+
+        .timeline-node.left {
+            justify-content: flex-start;
+            padding-right: 55%;
+        }
+
+        .timeline-node.right {
+            justify-content: flex-end;
+            padding-left: 55%;
+        }
+
+        /* タイムラインの中央コネクタドット */
+        .timeline-node::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background: #F5A623;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #FFF0E6;
+            z-index: 2;
+        }
+
+        .timeline-node.past-node::after {
+            background: #CBD5E1;
+            border-color: #F1F5F9;
+        }
+
+        .timeline-node.selected-node::after {
+            background: #E8734A;
+            border-color: #FFF0E6;
+            box-shadow: 0 0 12px rgba(232, 115, 74, 0.5);
+        }
+
+        /* 日付バブル */
+        .date-bubble {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .date-bubble.available {
+            background: white;
+            border: 3px solid #F5A623;
+        }
+
+        .date-bubble.available:hover {
+            transform: scale(1.12);
+            box-shadow: 0 8px 32px rgba(245, 166, 35, 0.3);
+            border-color: #E8734A;
+        }
+
+        .date-bubble.selected {
+            background: linear-gradient(135deg, #E8734A 0%, #D4603B 100%);
+            border: 3px solid transparent;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 8px 32px rgba(232, 115, 74, 0.4);
+        }
+
+        .date-bubble.past {
+            background: #F1F5F9;
+            border: 3px solid #E2E8F0;
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .date-bubble .date-num {
+            font-size: 1.75rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .date-bubble .date-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .date-bubble.available .date-label {
+            color: #F5A623;
+        }
+
+        .date-bubble.selected .date-label {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .date-bubble.past .date-label {
+            color: #94A3B8;
+        }
+
+        /* 月セクション見出し */
+        .month-divider {
+            text-align: center;
+            position: relative;
+            margin: 32px 0 24px;
+            z-index: 3;
+        }
+
+        .month-divider span {
+            display: inline-block;
+            background: linear-gradient(135deg, #E8734A, #F5A623);
+            color: white;
+            font-weight: 900;
+            font-size: 1rem;
+            padding: 8px 28px;
+            border-radius: 24px;
+            box-shadow: 0 4px 16px rgba(232, 115, 74, 0.25);
+            letter-spacing: 0.1em;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* トースト */
+        .toast-msg {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 41, 59, 0.92);
+            color: white;
+            padding: 16px 36px;
+            border-radius: 20px;
+            z-index: 20000;
+            font-weight: bold;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            font-size: 1rem;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ローディング */
+        #loading {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 240, 230, 0.9);
+            z-index: 15000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ld-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #FFD4B8;
+            border-top-color: #E8734A;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 会費テーブル */
+        .fee-cell {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fee-cell.paid {
+            background: #E8734A !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        .fee-cell.paid::after {
+            content: '済';
+        }
+
+        .fee-cell.pending-paid {
+            background: #F5A623 !important;
+            color: white !important;
+        }
+
+        .fee-cell.pending-remove {
+            background: #ef4444 !important;
+            opacity: 0.7;
+            color: white !important;
+        }
+
+        .fee-cell.pending-paid::after,
+        .fee-cell.pending-remove::after {
+            content: '...';
+        }
+
+        /* モーダル */
+        .modal-overlay {
+            transition: opacity 0.3s;
+        }
+
+        .modal-box-anim {
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        /* ラジオカード */
+        .radio-card input:checked+div {
+            background: linear-gradient(135deg, #E8734A, #D4603B);
+            color: white;
+            box-shadow: 0 4px 16px rgba(232, 115, 74, 0.3);
+        }
+
+        /* リップル */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(232, 115, 74, 0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* CTA ボタン */
+        .cta-btn {
+            background: linear-gradient(135deg, #E8734A 0%, #D4603B 100%);
+            box-shadow: 0 6px 24px rgba(232, 115, 74, 0.35);
+            transition: all 0.3s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(232, 115, 74, 0.45);
+        }
+
+        .cta-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        /* タブボタン */
+        .tab-active {
+            background: #E8734A;
+            color: white;
+        }
+
+        .tab-inactive {
+            background: transparent;
+            color: #94A3B8;
+        }
+
+        /* 参加状況バッジ */
+        .badge-attend {
+            background: linear-gradient(135deg, #E8734A, #D4603B);
+            color: white;
+        }
+
+        .badge-absent {
+            background: #F1F5F9;
+            color: #64748B;
+        }
+
+        /* スクロールバー設定 (モバイルは非表示、PCは控えめに表示) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(245, 166, 35, 0.4);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 166, 35, 0.7);
+        }
+
+        /* 上へ戻るボタン */
+        #go-top-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(245, 166, 35, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #F5A623;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+
+        #go-top-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        #go-top-btn:active {
+            transform: scale(0.95);
+            background: #f9f9f9;
+        }
+    </style>
 </head>
 
-<body class="pb-32">
+<body>
     <!-- 背景装飾 -->
-    <div class="organic-shape w-64 h-64 bg-sky-200 -top-20 -left-20 rounded-full"></div>
-    <div class="organic-shape w-96 h-96 bg-blue-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;">
+    <div class="organic-shape w-72 h-72 bg-orange-200 -top-20 -left-20 rounded-full"></div>
+    <div class="organic-shape w-96 h-96 bg-amber-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;">
     </div>
-    <div class="organic-shape w-48 h-48 bg-cyan-100 top-1/2 left-1/3 rounded-full" style="animation-delay:-3s;"></div>
+    <div class="organic-shape w-56 h-56 bg-rose-100 top-1/2 left-1/4 rounded-full" style="animation-delay:-3s;"></div>
 
     <!-- ローディング -->
     <div id="loading">
         <div class="ld-spinner"></div>
         <div class="font-bold text-warmGray" id="loading-text">読み込み中…</div>
     </div>
-
-    <!-- トースト -->
-    <div id="toast"></div>
+    <div id="toast" class="toast-msg"></div>
 
     <!-- パスワードモーダル -->
     <div id="password-modal"
-        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
-        onclick="closePasswordModal(event)">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/30 backdrop-blur-sm opacity-0">
+        <div class="bg-warmWhite rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
             onclick="event.stopPropagation()">
             <div class="text-4xl text-center mb-4">🔐</div>
-            <h3 class="text-center font-extrabold text-xl mb-6 text-warmGray">管理者パスワード</h3>
+            <h3 class="text-center font-extrabold text-xl mb-6 text-deepNavy">管理者パスワード</h3>
             <input type="password" id="modal-password" placeholder="パスワード" autocomplete="off"
-                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl px-4 py-4 text-center text-lg tracking-widest outline-none transition-all mb-2"
+                class="w-full bg-softPeach border-2 border-goldenAmber/30 focus:border-warmCoral rounded-2xl px-4 py-4 text-center text-lg tracking-widest outline-none transition-all mb-2"
                 onkeydown="if(event.key==='Enter')submitPassword()">
             <p id="modal-error" class="text-red-500 text-xs font-bold text-center mb-4 hidden">パスワードが正しくありません</p>
             <div class="flex gap-2 mt-4">
-                <button onclick="closePasswordModal(event)"
-                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl transition-colors">キャンセル</button>
+                <button onclick="closePasswordModal()"
+                    class="flex-1 py-4 font-bold text-warmGray bg-softPeach rounded-2xl transition-colors">キャンセル</button>
                 <button onclick="submitPassword()"
-                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">ログイン</button>
+                    class="flex-1 py-4 bg-warmCoral text-white font-bold rounded-2xl cta-btn">ログイン</button>
             </div>
         </div>
     </div>
 
     <!-- 確認モーダル -->
     <div id="confirm-modal"
-        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/30 backdrop-blur-sm opacity-0"
         onclick="closeConfirmModal(false)">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+        <div class="bg-warmWhite rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
             onclick="event.stopPropagation()">
-            <h3 id="confirm-message" class="text-center font-extrabold text-lg mb-6 text-warmGray"></h3>
+            <h3 id="confirm-message" class="text-center font-extrabold text-lg mb-6 text-deepNavy"></h3>
             <div class="flex gap-2">
                 <button onclick="closeConfirmModal(false)"
-                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                    class="flex-1 py-4 font-bold text-warmGray bg-softPeach rounded-2xl">キャンセル</button>
                 <button onclick="closeConfirmModal(true)"
-                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">はい</button>
+                    class="flex-1 py-4 bg-warmCoral text-white font-bold rounded-2xl cta-btn">はい</button>
             </div>
         </div>
     </div>
 
     <!-- お知らせ編集モーダル -->
     <div id="announcement-modal"
-        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/20 backdrop-blur-sm opacity-0"
+        class="fixed inset-0 z-[10000] hidden items-center justify-center p-6 modal-overlay bg-black/30 backdrop-blur-sm opacity-0"
         onclick="closeAnnouncementModal()">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
+        <div class="bg-warmWhite rounded-3xl p-8 w-full max-w-sm shadow-2xl modal-box-anim scale-90"
             onclick="event.stopPropagation()">
-            <h3 class="text-center font-extrabold text-lg mb-4 text-warmGray">📢 お知らせを編集</h3>
+            <h3 class="text-center font-extrabold text-lg mb-4 text-deepNavy">📢 お知らせを編集</h3>
             <textarea id="ann-edit-textarea"
-                class="w-full bg-cream border-2 border-peach focus:border-terracotta rounded-2xl p-4 min-h-[100px] outline-none resize-vertical font-sans text-sm mb-4"
+                class="w-full bg-softPeach border-2 border-goldenAmber/30 focus:border-warmCoral rounded-2xl p-4 min-h-[100px] outline-none resize-vertical font-sans text-sm mb-4"
                 placeholder="お知らせメッセージを入力…"></textarea>
             <div class="flex gap-2">
                 <button onclick="closeAnnouncementModal()"
-                    class="flex-1 py-4 font-bold text-warmGray bg-peach/50 rounded-2xl">キャンセル</button>
+                    class="flex-1 py-4 font-bold text-warmGray bg-softPeach rounded-2xl">キャンセル</button>
                 <button onclick="saveAnnouncement()"
-                    class="flex-1 py-4 bg-terracotta text-white font-bold rounded-2xl tactile-btn">保存</button>
+                    class="flex-1 py-4 bg-warmCoral text-white font-bold rounded-2xl cta-btn">保存</button>
             </div>
         </div>
     </div>
 
+    <!-- メインコンテンツ -->
     <div class="mx-auto max-w-lg px-5 pt-10">
         <!-- ヘッダー -->
-        <header class="flex justify-between items-center mb-8">
+        <header class="flex justify-between items-center mb-6">
             <div>
-                <span class="text-terracotta font-bold text-lg tracking-wide">2026</span>
-                <h1 class="text-3xl font-extrabold text-warmGray tracking-tight leading-tight"><span
+                <span class="text-warmCoral font-bold text-lg tracking-wide">2026</span>
+                <h1 class="text-3xl font-extrabold text-deepNavy tracking-tight leading-tight"><span
                         class="text-red-600">ESN</span> 参加登録・会費管理</h1>
             </div>
             <button onclick="unlockFees()" id="admin-icon-btn"
-                class="w-12 h-12 bg-white/70 border border-white/50 shadow-lg rounded-full flex items-center justify-center tactile-btn text-terracotta text-xl">
+                class="w-12 h-12 bg-white border border-warmCoral/20 shadow-lg rounded-full flex items-center justify-center text-warmCoral text-xl transition-all hover:shadow-xl">
                 👤
             </button>
         </header>
 
-        <!-- タブ -->
-        <nav class="bg-white/70 backdrop-blur-md border border-white/50 shadow-lg rounded-2xl p-1.5 flex gap-1 mb-6">
+        <!-- タブ（フラットデザイン版） -->
+        <div class="flex gap-2 mb-6 p-1 bg-white/60 rounded-full border border-warmCoral/10 backdrop-blur-sm">
             <button onclick="switchView('reg')" id="tab-reg"
-                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all bg-terracotta text-white flex items-center justify-center gap-2 text-base">
-                📅 参加登録
-            </button>
+                class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-active">参加登録</button>
             <button onclick="switchView('fee')" id="tab-fee"
-                class="flex-1 py-3 px-2 rounded-xl font-bold transition-all text-warmGray/60 hover:bg-peach/30 flex items-center justify-center gap-2 text-base">
-                📋 会費管理
-            </button>
-        </nav>
+                class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-inactive">会費管理</button>
+        </div>
 
         <!-- お知らせ -->
         <div id="announcement-area"
-            class="bg-peach/40 border border-peach/60 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            class="bg-warmWhite border border-goldenAmber/30 rounded-2xl p-4 flex items-center gap-3 mb-6"
             style="display:none;">
             <span class="text-lg">📢</span>
             <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1"></p>
-            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-terracotta text-sm font-bold"
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-warmCoral text-sm font-bold"
                 style="display:none;">✏️</button>
         </div>
         <div id="announcement-empty"
-            class="bg-gray-100 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-8"
+            class="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-6"
             style="display:none;">
             <span class="text-lg">📢</span>
             <p class="text-sm text-warmGray/40 italic flex-1">お知らせはまだありません</p>
             <button id="ann-edit-btn-empty" onclick="openAnnouncementEditor()"
-                class="text-terracotta text-sm font-bold">✏️</button>
+                class="text-warmCoral text-sm font-bold">✏️</button>
+        </div>
+
+        <!-- 月ジャンプナビ (横スクロール可能・スティッキー固定) -->
+        <div id="month-nav-container" class="mb-6 pb-2 sticky top-2 z-50 transition-all font-bold"
+            style="display: block;">
+            <div class="overflow-x-auto whitespace-nowrap scroll-smooth custom-scrollbar w-full max-w-full px-4 pb-2"
+                style="-webkit-overflow-scrolling: touch;">
+                <div class="inline-flex gap-2 relative z-10 bg-white/80 py-2 px-3 rounded-2xl"
+                    style="min-width: max-content;">
+                    <button onclick="scrollToMonth(3)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">3月</button>
+                    <button onclick="scrollToMonth(4)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">4月</button>
+                    <button onclick="scrollToMonth(5)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">5月</button>
+                    <button onclick="scrollToMonth(6)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">6月</button>
+                    <button onclick="scrollToMonth(7)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">7月</button>
+                    <button onclick="scrollToMonth(8)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">8月</button>
+                    <button onclick="scrollToMonth(9)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">9月</button>
+                    <button onclick="scrollToMonth(10)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">10月</button>
+                    <button onclick="scrollToMonth(11)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">11月</button>
+                    <button onclick="scrollToMonth(12)"
+                        class="px-4 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-white/80 active:scale-95">12月</button>
+                </div>
+            </div>
         </div>
 
         <!-- エラーバナー -->
@@ -165,17 +588,22 @@
 
         <!-- 参加登録ビュー -->
         <div id="view-reg">
-            <div id="calendar-container" class="space-y-5"></div>
+            <div id="calendar-container" class="relative">
+                <!-- タイムラインの中央線 -->
+                <div class="timeline-line"></div>
+                <!-- JS で動的に構築 -->
+            </div>
 
-            <div id="form-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+            <!-- フォームセクション -->
+            <div id="form-section" class="bg-warmWhite rounded-3xl p-6 shadow-lg border border-warmCoral/10 mt-8"
                 style="display:none;">
-                <h3 id="form-date-title" class="font-extrabold text-xl text-terracotta mb-5"></h3>
+                <h3 id="form-date-title" class="font-extrabold text-xl text-warmCoral mb-5"></h3>
                 <form id="attendanceForm" class="space-y-5">
                     <input type="hidden" id="field-date" name="date">
                     <div>
                         <label class="block text-sm font-bold text-warmGray mb-2">名前</label>
                         <select id="field-name" name="name" required
-                            class="w-full bg-cream rounded-2xl px-4 py-4 font-bold outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center text-warmGray">
+                            class="w-full bg-softPeach rounded-2xl px-4 py-4 font-bold outline-none border-2 border-goldenAmber/30 focus:border-warmCoral transition-all text-base text-center text-warmGray">
                             <option value="">読込中…</option>
                         </select>
                     </div>
@@ -184,12 +612,14 @@
                         <div class="flex gap-2">
                             <label class="flex-1 cursor-pointer radio-card">
                                 <input type="radio" name="status" value="参加" checked class="hidden">
-                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">参加
-                                </div>
+                                <div
+                                    class="py-4 rounded-2xl text-center font-bold bg-softPeach transition-all text-base">
+                                    参加</div>
                             </label>
                             <label class="flex-1 cursor-pointer radio-card">
                                 <input type="radio" name="status" value="不参加" class="hidden">
-                                <div class="py-4 rounded-2xl text-center font-bold bg-cream transition-all text-base">
+                                <div
+                                    class="py-4 rounded-2xl text-center font-bold bg-softPeach transition-all text-base">
                                     不参加</div>
                             </label>
                         </div>
@@ -197,25 +627,28 @@
                     <div>
                         <label class="block text-sm font-bold text-warmGray mb-2">備考</label>
                         <input type="text" name="comment" placeholder="ひとことメッセージ"
-                            class="w-full bg-cream rounded-2xl px-4 py-4 outline-none border-2 border-peach/50 focus:border-terracotta transition-all text-base text-center">
+                            class="w-full bg-softPeach rounded-2xl px-4 py-4 outline-none border-2 border-goldenAmber/30 focus:border-warmCoral transition-all text-base text-center">
                     </div>
                     <button type="submit" id="btn-submit"
-                        class="w-full py-5 bg-terracotta text-white font-extrabold text-lg rounded-2xl tactile-btn">送信する</button>
+                        class="w-full py-5 text-white font-extrabold text-lg rounded-2xl cta-btn flex items-center justify-center gap-3">
+                        送信する <span class="text-2xl">›</span>
+                    </button>
                 </form>
             </div>
 
-            <div id="result-section" class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20 mt-6"
+            <!-- 参加状況一覧 -->
+            <div id="result-section" class="bg-warmWhite rounded-3xl p-6 shadow-lg border border-warmCoral/10 mt-6"
                 style="display:none;">
-                <h3 id="result-header" class="font-extrabold text-lg text-terracotta mb-4">参加状況一覧</h3>
-                <div id="stats-area" class="flex justify-around bg-peach/30 p-3 rounded-2xl mb-4 text-sm font-bold">
+                <h3 id="result-header" class="font-extrabold text-lg text-warmCoral mb-4">参加状況一覧</h3>
+                <div id="stats-area" class="flex justify-around bg-softPeach p-3 rounded-2xl mb-4 text-sm font-bold">
                 </div>
                 <table class="w-full text-sm table-fixed">
                     <thead>
-                        <tr class="text-sm text-warmGray font-bold border-b-2 border-peach/40 bg-peach/10">
-                            <th class="py-3 text-center" style="width: 30%;">名前</th>
-                            <th class="py-3 text-center" style="width: 35%;">状況</th>
-                            <th class="py-3 text-center" style="width: 65%;">備考</th>
-                            <th class="py-3 th-action hidden" style="width: 15%;">操作</th>
+                        <tr class="text-sm text-warmGray font-bold border-b-2 border-warmCoral/20 bg-softPeach/50">
+                            <th class="py-3 text-center" style="width: 20%;">名前</th>
+                            <th class="py-3 text-center" style="width: 25%;">状況</th>
+                            <th class="py-3 text-center" style="width: 55%;">備考</th>
+                            <th class="py-3 th-action hidden" style="width: 0%;"></th>
                         </tr>
                     </thead>
                     <tbody id="result-body"></tbody>
@@ -225,19 +658,19 @@
 
         <!-- 会費管理ビュー -->
         <div id="view-fee" style="display:none;">
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-peach/20">
+            <div class="bg-warmWhite rounded-3xl p-6 shadow-lg border border-warmCoral/10">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-extrabold text-xl text-terracotta">支払い状況</h3>
+                    <h3 class="font-extrabold text-xl text-warmCoral">支払い状況</h3>
                     <div id="fee-controls" style="display:none;" class="flex gap-2">
                         <button onclick="resetFeeChanges()"
-                            class="text-xs font-bold text-warmGray px-3 py-1.5 rounded-full bg-peach/50 tactile-btn">元に戻す</button>
+                            class="text-xs font-bold text-warmGray px-3 py-1.5 rounded-full bg-softPeach">元に戻す</button>
                         <button onclick="saveFeeChanges()"
-                            class="text-xs font-bold text-white px-3 py-1.5 rounded-full bg-terracotta tactile-btn">一括登録</button>
+                            class="text-xs font-bold text-white px-3 py-1.5 rounded-full bg-warmCoral cta-btn">一括登録</button>
                     </div>
                 </div>
                 <div class="overflow-x-auto -mx-2" style="-webkit-overflow-scrolling:touch;">
-                    <table class="w-full min-w-[440px] text-sm border-collapse border border-peach/40">
-                        <thead id="fee-head" class="bg-peach/10"></thead>
+                    <table class="w-full min-w-[440px] text-sm border-collapse border border-warmCoral/20">
+                        <thead id="fee-head" class="bg-softPeach/50"></thead>
                         <tbody id="fee-body"></tbody>
                     </table>
                 </div>
@@ -245,16 +678,477 @@
         </div>
     </div>
 
-    <!-- FAB（画面下部固定ボタン） -->
-    <div id="fab-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 z-50">
-        <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
-            class="w-14 h-14 bg-white/90 backdrop-blur-md border border-peach/50 shadow-xl rounded-full flex items-center justify-center tactile-btn text-terracotta font-extrabold text-2xl">
-            ↑
-        </button>
-    </div>
+    <!-- 上へスクロールボタン -->
+    <button id="go-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})" title="一番上へ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
 
-    <!-- ES Modules Entry Plot -->
-    <script type="module" src="js/main.js"></script>
+    <!-- JavaScript -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMyqYZMC4ytIOPNIBXKe8th-mE-rmM27o",
+            authDomain: "sunday-attendance.firebaseapp.com",
+            projectId: "sunday-attendance",
+            storageBucket: "sunday-attendance.firebasestorage.app",
+            messagingSenderId: "292299944623",
+            appId: "1:292299944623:web:5c982cc8a700e57d51da5a"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const API = "https://script.google.com/macros/s/AKfycbwGinDIpNmTDCIBMvPcAamn_rOLZEnDg1pCVa7Jl5AFnPItCaYuQ9yX0503ZMZVgv5-kg/exec";
+
+        let STATE = { members: [], feeMembers: [], unlocked: false, selectedDate: null, pendingChanges: {} };
+        const el = (id) => document.getElementById(id);
+        const toast = (m) => { const t = el('toast'); t.textContent = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); };
+        const loading = (v, msg) => {
+            const ld = el('loading');
+            if (!ld) return;
+            ld.style.display = v ? 'flex' : 'none';
+            if (msg) { const txt = el('loading-text'); if (txt) txt.textContent = msg; }
+        };
+
+        // SHA-256ハッシュ
+        async function sha256(message) {
+            const buf = new TextEncoder().encode(message);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        const ADMIN_HASH = '158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab';
+
+        // グローバル公開
+        window.switchView = switchView;
+        window.unlockFees = unlockFees;
+        window.closePasswordModal = closePasswordModal;
+        window.submitPassword = submitPassword;
+        window.closeConfirmModal = closeConfirmModal;
+        window.loadFees = loadFees;
+        window.resetFeeChanges = resetFeeChanges;
+        window.saveFeeChanges = saveFeeChanges;
+        window.selectDate = selectDate;
+        window.toggleFeeLocal = toggleFeeLocal;
+        window.openAnnouncementEditor = openAnnouncementEditor;
+        window.closeAnnouncementModal = closeAnnouncementModal;
+        window.saveAnnouncement = saveAnnouncement;
+        window.deleteAttendanceRow = deleteAttendanceRow;
+        window.scrollToMonth = scrollToMonth;
+
+        // モーダル汎用
+        function openModal(id) {
+            const m = el(id); m.classList.remove('hidden'); m.classList.add('flex');
+            setTimeout(() => {
+                m.classList.remove('opacity-0'); m.classList.add('opacity-100');
+                const box = m.querySelector('.modal-box-anim');
+                if (box) { box.classList.remove('scale-90'); box.classList.add('scale-100'); }
+            }, 10);
+        }
+        function closeModal(id) {
+            const m = el(id);
+            m.classList.remove('opacity-100'); m.classList.add('opacity-0');
+            const box = m.querySelector('.modal-box-anim');
+            if (box) { box.classList.remove('scale-100'); box.classList.add('scale-90'); }
+            setTimeout(() => { m.classList.remove('flex'); m.classList.add('hidden'); }, 300);
+        }
+
+        // エラー
+        function showError(msg, retryFn) {
+            el('error-msg').textContent = msg; el('error-banner').style.display = 'flex';
+            el('error-retry').onclick = () => { el('error-banner').style.display = 'none'; if (retryFn) retryFn(); };
+        }
+        function hideError() { el('error-banner').style.display = 'none'; }
+        window.showError = showError;
+
+        // ── タブ切替 ──
+        function switchView(v) {
+            el('view-reg').style.display = v === 'reg' ? 'block' : 'none';
+            el('view-fee').style.display = v === 'fee' ? 'block' : 'none';
+            const nav = el('month-nav-container');
+            if (nav) nav.style.display = v === 'reg' ? 'block' : 'none';
+
+            // タブの見た目切替
+            const tabReg = el('tab-reg');
+            const tabFee = el('tab-fee');
+            if (tabReg && tabFee) {
+                if (v === 'reg') {
+                    tabReg.classList.add('tab-active'); tabReg.classList.remove('tab-inactive');
+                    tabFee.classList.add('tab-inactive'); tabFee.classList.remove('tab-active');
+                } else {
+                    tabFee.classList.add('tab-active'); tabFee.classList.remove('tab-inactive');
+                    tabReg.classList.add('tab-inactive'); tabReg.classList.remove('tab-active');
+                }
+            }
+
+            if (v === 'fee') loadFees();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── 管理者 ──
+        function unlockFees() { if (STATE.unlocked) return; el('modal-error').classList.add('hidden'); el('modal-password').value = ''; openModal('password-modal'); setTimeout(() => el('modal-password').focus(), 200); }
+        function closePasswordModal(e) { closeModal('password-modal'); }
+
+        async function submitPassword() {
+            const hash = await sha256(el('modal-password').value);
+            if (hash === ADMIN_HASH) {
+                STATE.unlocked = true;
+                el('admin-icon-btn').textContent = '✅';
+                el('admin-icon-btn').classList.add('bg-warmCoral', 'text-white', 'border-warmCoral');
+                el('ann-edit-btn').style.display = 'inline-block';
+                if (el('announcement-area').style.display === 'none') el('announcement-empty').style.display = 'flex';
+                document.querySelectorAll('.btn-delete-row').forEach(b => b.style.display = 'inline-block');
+                document.querySelectorAll('.cell-action').forEach(c => c.style.display = 'table-cell');
+                document.querySelectorAll('.th-action').forEach(c => c.style.display = 'table-cell');
+                closeModal('password-modal');
+                toast('管理者モードになりました');
+                if (el('view-fee').style.display === 'block') loadFees();
+            } else {
+                el('modal-error').classList.remove('hidden');
+                el('modal-password').value = ''; el('modal-password').focus();
+            }
+        }
+
+        // ── お知らせ ──
+        function loadAnnouncement() {
+            onSnapshot(doc(db, "announcements", "main"), (docSnap) => {
+                const area = el('announcement-area'), empty = el('announcement-empty');
+                if (docSnap.exists() && docSnap.data().message && docSnap.data().message.trim() !== '') {
+                    el('announcement-text').textContent = docSnap.data().message;
+                    area.style.display = 'flex'; empty.style.display = 'none';
+                    if (STATE.unlocked) el('ann-edit-btn').style.display = 'inline-block';
+                } else {
+                    area.style.display = 'none';
+                    if (STATE.unlocked) empty.style.display = 'flex'; else empty.style.display = 'none';
+                }
+            });
+        }
+        function openAnnouncementEditor() { el('ann-edit-textarea').value = el('announcement-text').textContent || ''; openModal('announcement-modal'); setTimeout(() => el('ann-edit-textarea').focus(), 200); }
+        function closeAnnouncementModal() { closeModal('announcement-modal'); }
+        async function saveAnnouncement() {
+            try { await setDoc(doc(db, "announcements", "main"), { message: el('ann-edit-textarea').value.trim(), updatedAt: serverTimestamp() }); closeAnnouncementModal(); toast('お知らせを保存しました'); }
+            catch (e) { console.error(e); toast('保存に失敗しました'); }
+        }
+
+        // ── 確認モーダル ──
+        let _confirmResolve = null;
+        function customConfirm(msg) { return new Promise(r => { _confirmResolve = r; el('confirm-message').textContent = msg; openModal('confirm-modal'); }); }
+        function closeConfirmModal(result) { closeModal('confirm-modal'); if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; } }
+
+        // ── 出欠削除 ──
+        async function deleteAttendanceRow(docId, name, date) {
+            if (!await customConfirm(`${name} の出欠データを削除しますか？`)) return;
+            loading(true, '削除中…');
+            try {
+                await deleteDoc(doc(db, "attendance", docId));
+                fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'delete_attendance', date, name }) }).catch(e => console.error("GAS:", e));
+                toast(`${name} のデータを削除しました`);
+            } catch (e) { console.error(e); showError(`削除失敗：${e.message || ''}`, () => deleteAttendanceRow(docId, name, date)); }
+            finally { loading(false); }
+        }
+
+        // ── 会費 ──
+        let unsubFees = null;
+        function loadFees() {
+            if (unsubFees) unsubFees();
+            loading(true, '会費データを読み込み中…'); hideError(); STATE.pendingChanges = {}; updateFeeControls();
+            const monthH = ["1回", "2回", "3回", "4回", "5回"];
+            const h = el('fee-head'); h.innerHTML = '';
+            const trH = document.createElement('tr'); trH.className = 'text-sm text-warmGray border-b-2 border-warmCoral/20';
+            ['名前', ...monthH, '回数'].forEach(t => { const th = document.createElement('th'); th.className = 'py-3 px-1 text-center text-sm md:text-base whitespace-nowrap border-x border-warmCoral/20'; th.textContent = t; trH.appendChild(th); });
+            h.appendChild(trH);
+
+            unsubFees = onSnapshot(collection(db, "fees"), (snap) => {
+                const b = el('fee-body'); b.innerHTML = '';
+                const feesData = {}; snap.forEach(d => { const dd = d.data(); feesData[dd.name] = dd; });
+                let list = (STATE.feeMembers.length > 0) ? STATE.feeMembers : STATE.members;
+                if (list.length === 0) {
+                    Promise.all([getDocs(collection(db, "members")), getDocs(collection(db, "feeMembers"))]).then(([ms, fm]) => {
+                        STATE.members = ms.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                        STATE.feeMembers = fm.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0)); loadFees();
+                    }).catch(e => { console.error(e); showError('メンバー読み込み失敗', loadFees); loading(false); }); return;
+                }
+
+                list = list.map(m => { let c = 0; monthH.forEach((_, i) => { if (feesData[m.name] && feesData[m.name][`session${i + 1}`] === 1) c++; }); return { ...m, _count: c }; })
+                    .sort((a, b) => b._count - a._count || (a.order || 0) - (b.order || 0));
+
+                list.forEach((m, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = index % 2 === 0 ? 'border-b border-warmCoral/10 hover:bg-softPeach/50' : 'bg-softPeach/30 border-b border-warmCoral/10 hover:bg-softPeach/50';
+                    const tdN = document.createElement('td');
+                    tdN.className = 'py-3 px-1 font-bold text-base text-center break-all text-warmGray border-x border-warmCoral/20';
+                    tdN.textContent = m.displayName; tr.appendChild(tdN);
+                    monthH.forEach((_, i) => {
+                        const sk = `session${i + 1}`, td = document.createElement('td'); td.className = 'fee-cell py-3 text-center text-sm md:text-base text-warmGray font-medium border-x border-warmCoral/20';
+                        const isPaid = feesData[m.name] && feesData[m.name][sk] === 1;
+                        if (isPaid) td.classList.add('paid');
+                        td.dataset.id = `${m.name}|${sk}`; td.dataset.current = isPaid ? "1" : "0";
+                        td.onclick = () => { if (STATE.unlocked) toggleFeeLocal(td); else toast("管理者ログインが必要です"); };
+                        tr.appendChild(td);
+                    });
+                    const tdC = document.createElement('td');
+                    tdC.className = 'py-3 text-center font-bold text-warmCoral border-x border-warmCoral/20';
+                    tdC.textContent = m._count; tr.appendChild(tdC);
+                    b.appendChild(tr);
+                });
+                loading(false); updateFeeControls();
+            }, (e) => { console.error(e); showError('会費データ受信失敗', loadFees); loading(false); });
+        }
+
+        function toggleFeeLocal(td) {
+            const id = td.dataset.id, cur = parseInt(td.dataset.current);
+            let pv = STATE.pendingChanges[id];
+            if (pv === undefined) pv = cur === 1 ? 0 : 1; else { pv = pv === 1 ? 0 : 1; if (pv === cur) pv = undefined; }
+            if (pv !== undefined) STATE.pendingChanges[id] = pv; else delete STATE.pendingChanges[id];
+            td.classList.remove('paid', 'pending-paid', 'pending-remove');
+            if (pv !== undefined) { if (pv === 1) td.classList.add('pending-paid'); else td.classList.add('pending-remove'); }
+            else { if (cur === 1) td.classList.add('paid'); }
+            updateFeeControls();
+        }
+        function updateFeeControls() { el('fee-controls').style.display = Object.keys(STATE.pendingChanges).length > 0 ? 'flex' : 'none'; }
+        function resetFeeChanges() { STATE.pendingChanges = {}; document.querySelectorAll('.fee-cell').forEach(td => { if (!td.dataset.current) return; td.classList.remove('pending-paid', 'pending-remove', 'paid'); if (td.dataset.current === "1") td.classList.add('paid'); }); updateFeeControls(); }
+
+        async function saveFeeChanges() {
+            if (!await customConfirm("変更を保存しますか？")) return; loading(true);
+            const grouped = {}; Object.keys(STATE.pendingChanges).forEach(k => { const [n, sk] = k.split('|'); if (!grouped[n]) grouped[n] = {}; grouped[n][sk] = STATE.pendingChanges[k]; });
+            try {
+                const names = Object.keys(grouped);
+                await Promise.all(names.map(async n => {
+                    const q = query(collection(db, "fees"), where("name", "==", n)); const s = await getDocs(q);
+                    if (!s.empty) return setDoc(doc(db, "fees", s.docs[0].id), grouped[n], { merge: true }); else return addDoc(collection(db, "fees"), { name: n, ...grouped[n] });
+                }));
+                const monthH = ["1回", "2回", "3回", "4回", "5回"], gu = [];
+                names.forEach(n => Object.keys(grouped[n]).forEach(sk => gu.push({ name: n, month: monthH[parseInt(sk.replace('session', '')) - 1], newVal: grouped[n][sk] })));
+                fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'batch_fee', updates: gu }) }).catch(e => console.error("GAS:", e));
+                toast("保存しました"); STATE.pendingChanges = {};
+            } catch (e) { showError(`保存失敗：${e.message || ''}`, saveFeeChanges); console.error(e); } finally { loading(false); }
+        }
+
+        // ── タイムラインカレンダー ──
+        function buildCalendar() {
+            const container = el('calendar-container');
+            const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-09", "2026-09-13", "2026-10-11", "2026-11-08", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            let nodeIndex = 0;
+
+            for (let m = 3; m <= 12; m++) {
+                // 月見出し
+                const divider = document.createElement('div');
+                divider.className = 'month-divider';
+                divider.id = `month-${m}`;
+                divider.innerHTML = `<span>${m}月</span>`;
+                divider.style.scrollMarginTop = '100px'; // Add scroll-margin-top here
+                container.appendChild(divider);
+
+                let d = new Date(2026, m - 1, 1, 12, 0, 0);
+                while (d.getMonth() === m - 1) {
+                    const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
+                        const isPast = d < today;
+                        const side = nodeIndex % 2 === 0 ? 'left' : 'right';
+
+                        const node = document.createElement('div');
+                        node.className = `timeline-node ${side} ${isPast ? 'past-node' : ''}`;
+                        node.style.animationDelay = (nodeIndex * 0.08) + 's';
+
+                        const bubble = document.createElement('div');
+                        bubble.className = `date-bubble ${isPast ? 'past' : 'available'}`;
+                        bubble.innerHTML = `<span class="date-num">${d.getDate()}日</span><span class="date-label">${isPast ? 'PAST' : 'AVAILABLE'}</span>`;
+
+                        if (!isPast) {
+                            bubble.onclick = (e) => {
+                                createRipple(e, bubble);
+                                selectDate(dateStr, bubble);
+                            };
+                        }
+
+                        node.appendChild(bubble);
+                        container.appendChild(node);
+                        nodeIndex++;
+                    }
+                    d.setDate(d.getDate() + 1);
+                }
+            }
+        }
+
+        // ── 日付選択 ──
+        let unsubAtt = null;
+        async function selectDate(date, bubble, preventScroll = false) {
+            // 既存の選択を解除
+            document.querySelectorAll('.date-bubble.selected').forEach(b => {
+                b.classList.remove('selected');
+                b.classList.add('available');
+                b.querySelector('.date-label').textContent = 'AVAILABLE';
+                b.closest('.timeline-node').classList.remove('selected-node');
+            });
+
+            // 新しい選択を適用
+            if (bubble) {
+                bubble.classList.remove('available');
+                bubble.classList.add('selected');
+                bubble.querySelector('.date-label').textContent = 'SELECTED';
+                bubble.closest('.timeline-node').classList.add('selected-node');
+            }
+
+            STATE.selectedDate = date;
+            el('field-date').value = date;
+            const [y, mo, da] = date.split('-');
+            el('form-date-title').textContent = `${parseInt(mo)}月${parseInt(da)}日`;
+            el('result-header').innerHTML = `参加状況一覧<span class="text-base font-normal text-warmGray ml-2">(${parseInt(mo)}月${parseInt(da)}日)</span>`;
+
+            if (unsubAtt) unsubAtt();
+            loading(true, '出欠データを取得中…'); hideError();
+
+            if (STATE.members.length === 0) {
+                try {
+                    const mSnap = await getDocs(collection(db, "members"));
+                    STATE.members = mSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                    const fmSnap = await getDocs(collection(db, "feeMembers"));
+                    STATE.feeMembers = fmSnap.docs.map(d => d.data()).sort((a, b) => (a.order || 0) - (b.order || 0));
+                } catch (e) { console.error(e); showError('メンバー読み込み失敗', () => selectDate(date, bubble)); loading(false); return; }
+            }
+
+            const sel = el('field-name');
+            sel.innerHTML = '<option value="">選択してください</option>' + STATE.members.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+
+            let isFirstLoad = true;
+            unsubAtt = onSnapshot(query(collection(db, "attendance"), where("date", "==", date)), (snapshot) => {
+                const body = el('result-body'); body.innerHTML = '';
+                let counts = { "参加": 0, "不参加": 0 };
+                const mData = {}; STATE.members.forEach(m => mData[m.name] = m.displayName);
+                const attendance = []; snapshot.forEach(d => attendance.push({ ...d.data(), _docId: d.id }));
+                const statusOrder = { "参加": 0, "出席": 0, "不参加": 1, "欠席": 1 };
+                attendance.sort((a, b) => {
+                    const sA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 2;
+                    const sB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 2;
+                    if (sA !== sB) return sA - sB;
+                    const mA = STATE.members.find(m => m.name === a.name) || { order: 999 };
+                    const mB = STATE.members.find(m => m.name === b.name) || { order: 999 };
+                    return (mA.order || 0) - (mB.order || 0);
+                });
+
+                attendance.forEach(row => {
+                    const st = row.status === '出席' ? '参加' : (row.status === '欠席' ? '不参加' : row.status);
+                    if (st === '参加' || st === '不参加') counts[st]++;
+                    const tr = document.createElement('tr'); tr.className = 'border-b border-warmCoral/10';
+                    const tdN = document.createElement('td'); tdN.className = 'py-3 font-bold text-base text-center'; tdN.textContent = mData[row.name] || row.name; tr.appendChild(tdN);
+                    const tdS = document.createElement('td'); tdS.className = 'py-3 text-center text-sm';
+                    if (st === '参加' || st === '不参加') {
+                        const badge = document.createElement('span'); badge.className = `inline-block w-[68px] text-center text-xs font-bold py-1.5 rounded-full ${st === '参加' ? 'badge-attend' : 'badge-absent'}`; badge.textContent = st; tdS.appendChild(badge);
+                    } else tdS.textContent = st;
+                    tr.appendChild(tdS);
+                    const tdC = document.createElement('td'); tdC.className = 'py-3 text-center text-sm text-warmGray/60'; tdC.textContent = row.comment || ''; tr.appendChild(tdC);
+                    const tdA = document.createElement('td'); tdA.className = 'cell-action py-3 text-center'; tdA.style.display = STATE.unlocked ? 'table-cell' : 'none';
+                    const del = document.createElement('button'); del.className = 'btn-delete-row bg-red-500 text-white text-xs px-2 py-1 rounded-lg font-bold';
+                    del.style.display = STATE.unlocked ? 'inline-block' : 'none'; del.textContent = '🗑';
+                    del.onclick = () => deleteAttendanceRow(row._docId, row.name, date); tdA.appendChild(del); tr.appendChild(tdA);
+                    body.appendChild(tr);
+                });
+
+                const sa = el('stats-area'); sa.innerHTML = '';
+                const s1 = document.createElement('span'); s1.className = 'text-warmCoral font-bold'; s1.textContent = `参加: ${counts["参加"]}`;
+                const s2 = document.createElement('span'); s2.className = 'text-warmGray font-bold'; s2.textContent = `不参加: ${counts["不参加"]}`;
+                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70 font-bold'; s3.textContent = `未回答: ${STATE.members.length - attendance.length}`;
+                sa.appendChild(s1); sa.appendChild(s2); sa.appendChild(s3);
+
+                el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
+                loading(false);
+                if (isFirstLoad && bubble && !preventScroll) {
+                    setTimeout(() => {
+                        const yOffset = -120; // ヘッダー被り防止オフセット
+                        const y = el('form-section').getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                    }, 150);
+                    isFirstLoad = false;
+                }
+            }, (err) => { console.error(err); showError('出欠データ受信失敗', () => selectDate(date, bubble, preventScroll)); loading(false); });
+        }
+
+        // ── リップル ──
+        function createRipple(e, elem) {
+            const r = document.createElement('span'); r.className = 'ripple';
+            const rect = elem.getBoundingClientRect(), sz = Math.max(rect.width, rect.height);
+            r.style.width = r.style.height = sz + 'px';
+            r.style.left = (e.clientX - rect.left - sz / 2) + 'px'; r.style.top = (e.clientY - rect.top - sz / 2) + 'px';
+            elem.appendChild(r); r.addEventListener('animationend', () => r.remove());
+        }
+
+        // ── 月カレンダージャンプ ──
+        function scrollToMonth(m) {
+            const tgt = el(`month-${m}`);
+            if (tgt) {
+                // スクロール先のオフセットを調整
+                const headerOffset = 100;
+                const pos = tgt.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: pos, behavior: "smooth" });
+            }
+        }
+
+        // ── 起動 ──
+        window.onload = () => {
+            buildCalendar();
+            loadAnnouncement();
+
+            // スクロール時の現在月ハイライト（任意）と上へ戻るボタンの表示
+            const navContainer = el('month-nav-container');
+            const goTopBtn = el('go-top-btn');
+
+            let isNavScrolled = false;
+            window.addEventListener('scroll', () => {
+                // 上へ戻るボタン
+                if (window.scrollY > 400) {
+                    goTopBtn.classList.add('visible');
+                } else {
+                    goTopBtn.classList.remove('visible');
+                }
+            });
+
+            // 初回描画時に最初の未来日付へ自動スクロール
+            setTimeout(() => {
+                const firstAvailable = document.querySelector('.date-bubble.available');
+                if (firstAvailable) {
+                    const headerOffset = 180;
+                    const pos = firstAvailable.closest('.timeline-node').getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: pos, behavior: "smooth" });
+                }
+            }, 300);
+
+            el('attendanceForm').onsubmit = async (e) => {
+                e.preventDefault(); el('btn-submit').disabled = true; loading(true, '送信中…');
+                const fd = Object.fromEntries(new FormData(e.target));
+                const targetDate = fd.date;
+                try {
+                    const q = query(collection(db, "attendance"), where("date", "==", targetDate), where("name", "==", fd.name)); const snap = await getDocs(q);
+                    if (fd.status === '削除') { await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "attendance", d.id)))); }
+                    else if (!snap.empty) { await setDoc(doc(db, "attendance", snap.docs[0].id), { status: fd.status, comment: fd.comment || '', updatedAt: serverTimestamp() }, { merge: true }); }
+                    else { await addDoc(collection(db, "attendance"), { ...fd, updatedAt: serverTimestamp() }); }
+                    fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(fd) }).catch(e => console.error("GAS:", e));
+                    toast(fd.status === '削除' ? '削除しました' : '完了しました');
+
+                    // UI更新とスクロール
+                    setTimeout(async () => {
+                        // 現在選択中の円を取得して更新をかける (スクロールはさせない)
+                        const currentBubble = document.querySelector('.date-bubble.selected');
+                        if (currentBubble) {
+                            await selectDate(targetDate, currentBubble, true);
+                        }
+
+                        // 参加状況一覧へジャンプ (DOM更新待ちのため少し遅らせる)
+                        setTimeout(() => {
+                            const resSec = el('result-section');
+                            const yOffset = -80; // 月ナビゲーションと重ならないための調整値
+                            const y = resSec.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }, 100);
+                    }, 100);
+
+                } catch (e) { console.error(e); showError(`送信失敗：${e.message || ''}`, () => el('attendanceForm').requestSubmit()); }
+                finally { el('btn-submit').disabled = false; loading(false); }
+            };
+        };
+    </script>
 </body>
 
 </html>
