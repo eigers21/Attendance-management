@@ -538,20 +538,29 @@
 
         <!-- 天気予報ウィジェット（埼玉県三郷市） -->
         <div id="weather-widget"
-            class="bg-white/70 backdrop-blur-sm rounded-2xl px-4 py-3 mb-4 flex items-center gap-3 border border-goldenAmber/20 shadow-sm"
+            class="bg-white/70 backdrop-blur-sm rounded-3xl mb-4 border border-goldenAmber/20 shadow-sm overflow-hidden"
             style="display:none;">
-            <div id="weather-icon-wrap" class="flex-shrink-0">
-                <img id="weather-icon" src="" alt="天気" class="w-10 h-10" style="display:none;">
+            <!-- 現在の天気 -->
+            <div class="flex items-center px-4 py-3 gap-3">
+                <div id="weather-icon-wrap" class="flex-shrink-0">
+                    <img id="weather-icon" src="" alt="天気" class="w-10 h-10" style="display:none;">
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-[10px] font-bold text-warmGray/60 bg-softPeach px-1.5 py-0.5 rounded">三郷市</span>
+                        <span id="weather-desc" class="text-sm font-bold text-warmGray"></span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span id="weather-temp" class="text-lg font-extrabold text-warmCoral leading-none"></span>
+                        <span id="weather-detail" class="text-[11px] text-warmGray/50 font-medium"></span>
+                    </div>
+                </div>
             </div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-xs font-bold text-warmGray/60">📍 三郷市</span>
-                    <span id="weather-desc" class="text-sm font-bold text-warmGray"></span>
-                </div>
-                <div class="flex items-center gap-3 mt-0.5">
-                    <span id="weather-temp" class="text-lg font-extrabold text-warmCoral"></span>
-                    <span id="weather-detail" class="text-xs text-warmGray/60"></span>
-                </div>
+            <!-- 3日間予報 -->
+            <div id="forecast-area"
+                class="flex border-t border-goldenAmber/10 bg-white/30 px-2 py-2.5 justify-around items-center text-center">
+                <!-- JS で予報を動的に挿入 -->
             </div>
         </div>
 
@@ -1135,28 +1144,59 @@
 
         async function loadWeather() {
             try {
-                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${MISATO_LAT}&lon=${MISATO_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=ja`);
-                if (!res.ok) throw new Error('Weather API error');
-                const data = await res.json();
+                // 現在の天気
+                const resNow = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${MISATO_LAT}&lon=${MISATO_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=ja`);
+                if (!resNow.ok) throw new Error('Weather API error');
+                const dataNow = await resNow.json();
 
-                const temp = Math.round(data.main.temp);
-                const desc = data.weather[0].description;
-                const icon = data.weather[0].icon;
-                const humidity = data.main.humidity;
-                const feelsLike = Math.round(data.main.feels_like);
+                // 5日/3時間予報
+                const resFor = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${MISATO_LAT}&lon=${MISATO_LON}&appid=${WEATHER_API_KEY}&units=metric&lang=ja`);
+                if (!resFor.ok) throw new Error('Forecast API error');
+                const dataFor = await resFor.json();
+
+                const temp = Math.round(dataNow.main.temp);
+                const desc = dataNow.weather[0].description;
+                const icon = dataNow.weather[0].icon;
+                const humidity = dataNow.main.humidity;
+                const feelsLike = Math.round(dataNow.main.feels_like);
 
                 el('weather-temp').textContent = `${temp}°C`;
                 el('weather-desc').textContent = desc;
-                el('weather-detail').textContent = `体感 ${feelsLike}°C ・ 湿度 ${humidity}%`;
+                el('weather-detail').textContent = `体感 ${feelsLike}°C / 湿度 ${humidity}%`;
 
                 const iconImg = el('weather-icon');
                 iconImg.src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
                 iconImg.style.display = 'block';
 
-                el('weather-widget').style.display = 'flex';
+                // 3日間予報の表示
+                const forecastArea = el('forecast-area');
+                forecastArea.innerHTML = '';
+
+                const labels = ['今日', '明日', '明後日'];
+                for (let i = 0; i < 3; i++) {
+                    const target = new Date();
+                    target.setDate(target.getDate() + i);
+                    const dateStr = target.toISOString().split('T')[0];
+
+                    // その日の12:00〜15:00付近のデータを代表として使用
+                    let forecast = dataFor.list.find(item => item.dt_txt.includes(dateStr) && item.dt_txt.includes('12:00:00'));
+                    if (!forecast) forecast = dataFor.list.find(item => item.dt_txt.includes(dateStr));
+
+                    if (forecast) {
+                        const dayDiv = document.createElement('div');
+                        dayDiv.className = 'flex flex-col items-center gap-0.5';
+                        dayDiv.innerHTML = `
+                            <span class="text-[9px] font-bold text-warmGray/40">${labels[i]}</span>
+                            <img src="https://openweathermap.org/img/wn/${forecast.weather[0].icon}.png" class="w-7 h-7" alt="予報">
+                            <span class="text-[10px] font-extrabold text-warmGray">${Math.round(forecast.main.temp_max)}°</span>
+                        `;
+                        forecastArea.appendChild(dayDiv);
+                    }
+                }
+
+                el('weather-widget').style.display = 'block';
             } catch (e) {
                 console.error('天気予報取得失敗:', e);
-                // エラー時はウィジェットを非表示のまま
             }
         }
 
