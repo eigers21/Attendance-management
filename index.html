@@ -524,14 +524,15 @@
     <!-- メインコンテンツ -->
     <div class="mx-auto max-w-lg px-5 pt-10 pb-24">
         <!-- ヘッダー -->
-        <header class="flex justify-between items-center mb-6">
+        <header class="flex justify-between items-end mb-6">
             <div>
-                <span class="text-warmCoral font-bold text-lg tracking-wide">2026</span>
-                <h1 class="text-3xl font-extrabold text-deepNavy tracking-tight leading-tight"><span
+                <span
+                    class="text-warmCoral font-bold text-xs tracking-widest uppercase opacity-70 mb-1 block">2026</span>
+                <h1 class="text-3xl font-extrabold text-deepNavy tracking-tight leading-none"><span
                         class="text-red-600">ESN</span> 参加登録・会費管理</h1>
             </div>
             <button onclick="unlockFees()" id="admin-icon-btn"
-                class="w-12 h-12 bg-white border border-warmCoral/20 shadow-lg rounded-full flex items-center justify-center text-warmCoral text-xl transition-all hover:shadow-xl">
+                class="w-11 h-11 bg-white border border-warmCoral/20 shadow-lg rounded-full flex items-center justify-center text-warmCoral text-xl transition-all hover:shadow-xl active:scale-95 mb-[-1px]">
                 👤
             </button>
         </header>
@@ -540,8 +541,9 @@
         <div id="weather-widget"
             class="bg-white/70 backdrop-blur-sm rounded-3xl mb-4 border border-goldenAmber/20 shadow-sm overflow-hidden"
             style="display:none;">
-            <!-- 現在の天気 -->
-            <div class="flex items-center px-4 py-3 gap-3">
+            <!-- 現在の天気 (開閉トグル) -->
+            <div onclick="toggleForecast()"
+                class="flex items-center px-4 py-3 gap-3 cursor-pointer hover:bg-white/40 transition-colors select-none">
                 <div id="weather-icon-wrap" class="flex-shrink-0">
                     <img id="weather-icon" src="" alt="天気" class="w-10 h-10" style="display:none;">
                 </div>
@@ -549,19 +551,44 @@
                     <div class="flex items-center gap-2">
                         <span
                             class="text-[10px] font-bold text-warmGray/60 bg-softPeach px-1.5 py-0.5 rounded">三郷市</span>
-                        <span id="weather-desc" class="text-sm font-bold text-warmGray"></span>
+                        <span id="weather-desc" class="text-sm font-bold text-warmGray font-heading"></span>
                     </div>
                     <div class="flex items-center gap-2 mt-0.5">
                         <span id="weather-temp" class="text-lg font-extrabold text-warmCoral leading-none"></span>
                         <span id="weather-detail" class="text-[11px] text-warmGray/50 font-medium"></span>
                     </div>
                 </div>
+                <!-- 開閉アイコン -->
+                <div id="forecast-chevron" class="text-warmGray/30 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
-            <!-- 3日間予報 -->
+            <!-- 3日間予報 (通常は非表示) -->
             <div id="forecast-area"
-                class="flex border-t border-goldenAmber/10 bg-white/30 px-2 py-2.5 justify-around items-center text-center">
+                class="flex border-t border-goldenAmber/10 bg-white/30 px-2 py-3 justify-around items-center text-center hidden">
                 <!-- JS で予報を動的に挿入 -->
             </div>
+        </div>
+
+        <!-- お知らせ -->
+        <div id="announcement-area"
+            class="bg-warmWhite border border-goldenAmber/30 rounded-2xl p-4 flex items-center gap-3 mb-4 shadow-sm"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1"></p>
+            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-warmCoral text-sm font-bold p-2"
+                style="display:none;">✏️</button>
+        </div>
+        <div id="announcement-empty"
+            class="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-4 shadow-sm"
+            style="display:none;">
+            <span class="text-lg">📢</span>
+            <p class="text-sm text-warmGray/40 italic flex-1">お知らせはまだありません</p>
+            <button id="ann-edit-btn-empty" onclick="openAnnouncementEditor()"
+                class="text-warmCoral text-sm font-bold p-2">✏️</button>
         </div>
 
         <!-- タブ（フラットデザイン版） -->
@@ -570,24 +597,6 @@
                 class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-active">参加登録</button>
             <button onclick="switchView('fee')" id="tab-fee"
                 class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-inactive">会費管理</button>
-        </div>
-
-        <!-- お知らせ -->
-        <div id="announcement-area"
-            class="bg-warmWhite border border-goldenAmber/30 rounded-2xl p-4 flex items-center gap-3 mb-6"
-            style="display:none;">
-            <span class="text-lg">📢</span>
-            <p id="announcement-text" class="text-sm font-medium text-warmGray leading-relaxed flex-1"></p>
-            <button id="ann-edit-btn" onclick="openAnnouncementEditor()" class="text-warmCoral text-sm font-bold"
-                style="display:none;">✏️</button>
-        </div>
-        <div id="announcement-empty"
-            class="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center gap-3 mb-6"
-            style="display:none;">
-            <span class="text-lg">📢</span>
-            <p class="text-sm text-warmGray/40 italic flex-1">お知らせはまだありません</p>
-            <button id="ann-edit-btn-empty" onclick="openAnnouncementEditor()"
-                class="text-warmCoral text-sm font-bold">✏️</button>
         </div>
 
         <!-- 月ジャンプナビ (横スクロール可能・スティッキー固定) -->
@@ -783,6 +792,7 @@
         window.deleteAttendanceRow = deleteAttendanceRow;
         window.scrollToMonth = scrollToMonth;
         window.loadWeather = loadWeather;
+        window.toggleForecast = toggleForecast;
 
         // モーダル汎用
         function openModal(id) {
@@ -1197,6 +1207,18 @@
                 el('weather-widget').style.display = 'block';
             } catch (e) {
                 console.error('天気予報取得失敗:', e);
+            }
+        }
+
+        function toggleForecast() {
+            const area = el('forecast-area');
+            const chevron = el('forecast-chevron');
+            if (area.classList.contains('hidden')) {
+                area.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                area.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
             }
         }
 
