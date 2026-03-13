@@ -1172,7 +1172,7 @@
         // ── 天気連動テーマ適用 ──
         function applyWeatherTheme(weatherId) {
             const root = document.documentElement;
-            if (weatherId >= 800) {
+            if (weatherId === 800) {
                 // 晴れ → 暖色ゴールド系
                 root.style.setProperty('--theme-primary', '#E8734A');
                 root.style.setProperty('--theme-primary-dark', '#D4603B');
@@ -1185,7 +1185,7 @@
                 root.style.setProperty('--theme-text-gray', '#334155');
                 root.style.setProperty('--sparkle-color', '#FFD700');
             } else if (weatherId >= 700) {
-                // 霧・霞 → グレー系
+                // 曇り・かすみ・霧 → グレー系
                 root.style.setProperty('--theme-primary', '#7B8FA1');
                 root.style.setProperty('--theme-primary-dark', '#546A7E');
                 root.style.setProperty('--theme-bg', '#E8ECF0');
