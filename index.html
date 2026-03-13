@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESN 参加登録・会費管理 v5</title>
+    <title>ESN 参加登録・会費管理 v6</title>
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
@@ -50,401 +50,180 @@
         }
 
         @keyframes drift {
+            0%,100% { transform: translate(0, 0) scale(1); }
+            33%      { transform: translate(15px, -25px) scale(1.05); }
+            66%      { transform: translate(-10px, 15px) scale(0.97); }
+        }
 
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
+        /* ─── キラキラ Canvas オーバーレイ ─── */
+        #sparkle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
 
-            33% {
-                transform: translate(15px, -25px) scale(1.05);
-            }
-
-            66% {
-                transform: translate(-10px, 15px) scale(0.97);
-            }
+        /* SVG スター */
+        @keyframes starPop {
+            0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+            25%  { opacity: 1; transform: scale(1.3) rotate(45deg); }
+            75%  { opacity: 0.6; transform: scale(0.8) rotate(90deg); }
+            100% { opacity: 0; transform: scale(0) rotate(135deg); }
+        }
+        .sparkle-svg-star {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            animation: starPop 0.65s ease-out forwards;
         }
 
         /* タイムライン */
         .timeline-line {
             position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
+            left: 50%; top: 0; bottom: 0;
             width: 3px;
             background: linear-gradient(180deg, #F5A623 0%, #E8734A 50%, #F5A623 100%);
             transform: translateX(-50%);
             border-radius: 2px;
         }
-
         .timeline-node {
             position: relative;
-            display: flex;
-            align-items: center;
+            display: flex; align-items: center;
             margin-bottom: 40px;
             opacity: 0;
             animation: fadeSlideIn 0.5s ease forwards;
         }
 
-        .timeline-node.left {
-            justify-content: flex-start;
-            padding-right: 55%;
-        }
+        .timeline-node.left  { justify-content: flex-start; padding-right: 55%; }
+        .timeline-node.right { justify-content: flex-end;   padding-left: 55%; }
 
-        .timeline-node.right {
-            justify-content: flex-end;
-            padding-left: 55%;
-        }
-
-        /* タイムラインの中央コネクタドット */
         .timeline-node::after {
             content: '';
             position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 12px;
-            height: 12px;
+            left: 50%; top: 50%;
+            width: 12px; height: 12px;
             background: #F5A623;
             border-radius: 50%;
             transform: translate(-50%, -50%);
             border: 3px solid #FFF0E6;
             z-index: 2;
         }
-
-        .timeline-node.past-node::after {
-            background: #CBD5E1;
-            border-color: #F1F5F9;
-        }
-
-        .timeline-node.selected-node::after {
-            background: #E8734A;
-            border-color: #FFF0E6;
-            box-shadow: 0 0 12px rgba(232, 115, 74, 0.5);
-        }
+        .timeline-node.past-node::after     { background: #CBD5E1; border-color: #F1F5F9; }
+        .timeline-node.selected-node::after { background: #E8734A; border-color: #FFF0E6; box-shadow: 0 0 12px rgba(232,115,74,0.5); }
 
         /* 日付バブル */
         .date-bubble {
-            width: 100px;
-            height: 100px;
+            width: 100px; height: 100px;
             border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             cursor: pointer;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
             position: relative;
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
         }
-
-        .date-bubble.available {
-            background: white;
-            border: 3px solid #F5A623;
-        }
-
-        .date-bubble.available:hover {
-            transform: scale(1.12);
-            box-shadow: 0 8px 32px rgba(245, 166, 35, 0.3);
-            border-color: #E8734A;
-        }
-
-        .date-bubble.selected {
-            background: linear-gradient(135deg, #E8734A 0%, #D4603B 100%);
-            border: 3px solid transparent;
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 8px 32px rgba(232, 115, 74, 0.4);
-        }
-
-        .date-bubble.past {
-            background: #F1F5F9;
-            border: 3px solid #E2E8F0;
-            opacity: 0.5;
-            cursor: default;
-        }
-
-        .date-bubble .date-num {
-            font-size: 1.75rem;
-            font-weight: 900;
-            line-height: 1;
-        }
-
-        .date-bubble .date-label {
-            font-size: 0.6rem;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .date-bubble.available .date-label {
-            color: #F5A623;
-        }
-
-        .date-bubble.selected .date-label {
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .date-bubble.past .date-label {
-            color: #94A3B8;
-        }
+        .date-bubble.available { background: white; border: 3px solid #F5A623; }
+        .date-bubble.available:hover { transform: scale(1.12); box-shadow: 0 8px 32px rgba(245,166,35,0.3); border-color: #E8734A; }
+        .date-bubble.selected  { background: linear-gradient(135deg,#E8734A 0%,#D4603B 100%); border: 3px solid transparent; color: white; transform: scale(1.1); box-shadow: 0 8px 32px rgba(232,115,74,0.4); }
+        .date-bubble.past      { background: #F1F5F9; border: 3px solid #E2E8F0; opacity: 0.5; cursor: default; }
+        .date-bubble .date-num   { font-size: 1.75rem; font-weight: 900; line-height: 1; }
+        .date-bubble .date-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
+        .date-bubble.available .date-label { color: #F5A623; }
+        .date-bubble.selected  .date-label { color: rgba(255,255,255,0.85); }
+        .date-bubble.past      .date-label { color: #94A3B8; }
 
         /* 月セクション見出し */
-        .month-divider {
-            text-align: center;
-            position: relative;
-            margin: 32px 0 24px;
-            z-index: 3;
-        }
-
-        .month-divider span {
-            display: inline-block;
-            background: linear-gradient(135deg, #E8734A, #F5A623);
-            color: white;
-            font-weight: 900;
-            font-size: 1rem;
-            padding: 8px 28px;
-            border-radius: 24px;
-            box-shadow: 0 4px 16px rgba(232, 115, 74, 0.25);
-            letter-spacing: 0.1em;
-        }
+        .month-divider { text-align: center; position: relative; margin: 32px 0 24px; z-index: 3; }
+        .month-divider span { display: inline-block; background: linear-gradient(135deg,#E8734A,#F5A623); color: white; font-weight: 900; font-size: 1rem; padding: 8px 28px; border-radius: 24px; box-shadow: 0 4px 16px rgba(232,115,74,0.25); letter-spacing: 0.1em; }
 
         @keyframes fadeSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         /* トースト */
         .toast-msg {
             display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(30, 41, 59, 0.92);
-            color: white;
-            padding: 16px 36px;
-            border-radius: 20px;
-            z-index: 20000;
-            font-weight: bold;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            font-size: 1rem;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(30,41,59,0.92); color: white;
+            padding: 16px 36px; border-radius: 20px;
+            z-index: 20000; font-weight: bold;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            text-align: center; font-size: 1rem;
             backdrop-filter: blur(4px);
         }
 
         /* ローディング */
         #loading {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 240, 230, 0.9);
-            z-index: 15000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 16px;
+            display: none; position: fixed; inset: 0;
+            background: rgba(255,240,230,0.9); z-index: 15000;
+            justify-content: center; align-items: center;
+            flex-direction: column; gap: 16px;
         }
-
-        .ld-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #FFD4B8;
-            border-top-color: #E8734A;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        .ld-spinner { width: 40px; height: 40px; border: 4px solid #FFD4B8; border-top-color: #E8734A; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* 会費テーブル */
-        .fee-cell {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .fee-cell.paid {
-            background: #E8734A !important;
-            color: white;
-            font-weight: bold;
-        }
-
-        .fee-cell.paid::after {
-            content: '済';
-        }
-
-        .fee-cell.pending-paid {
-            background: #F5A623 !important;
-            color: white !important;
-        }
-
-        .fee-cell.pending-remove {
-            background: #ef4444 !important;
-            opacity: 0.7;
-            color: white !important;
-        }
-
+        .fee-cell { cursor: pointer; transition: all 0.2s; }
+        .fee-cell.paid            { background: #E8734A !important; color: white; font-weight: bold; }
+        .fee-cell.paid::after     { content: '済'; }
+        .fee-cell.pending-paid    { background: #F5A623 !important; color: white !important; }
+        .fee-cell.pending-remove  { background: #ef4444 !important; opacity: 0.7; color: white !important; }
         .fee-cell.pending-paid::after,
-        .fee-cell.pending-remove::after {
-            content: '...';
-        }
+        .fee-cell.pending-remove::after { content: '...'; }
 
         /* モーダル */
-        .modal-overlay {
-            transition: opacity 0.3s;
-        }
-
-        .modal-box-anim {
-            transition: transform 0.3s, opacity 0.3s;
-        }
+        .modal-overlay   { transition: opacity 0.3s; }
+        .modal-box-anim  { transition: transform 0.3s, opacity 0.3s; }
 
         /* ラジオカード */
-        .radio-card input:checked+div {
-            background: linear-gradient(135deg, #E8734A, #D4603B);
-            color: white;
-            box-shadow: 0 4px 16px rgba(232, 115, 74, 0.3);
-        }
+        .radio-card input:checked+div { background: linear-gradient(135deg,#E8734A,#D4603B); color: white; box-shadow: 0 4px 16px rgba(232,115,74,0.3); }
 
         /* リップル */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(232, 115, 74, 0.3);
-            transform: scale(0);
-            animation: rippleAnim 0.5s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(3);
-                opacity: 0;
-            }
-        }
+        .ripple { position: absolute; border-radius: 50%; background: rgba(232,115,74,0.3); transform: scale(0); animation: rippleAnim 0.5s ease-out forwards; pointer-events: none; }
+        @keyframes rippleAnim { to { transform: scale(3); opacity: 0; } }
 
         /* CTA ボタン */
-        .cta-btn {
-            background: linear-gradient(135deg, #E8734A 0%, #D4603B 100%);
-            box-shadow: 0 6px 24px rgba(232, 115, 74, 0.35);
-            transition: all 0.3s;
-        }
-
-        .cta-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(232, 115, 74, 0.45);
-        }
-
-        .cta-btn:active {
-            transform: translateY(0) scale(0.97);
-        }
+        .cta-btn { background: linear-gradient(135deg,#E8734A 0%,#D4603B 100%); box-shadow: 0 6px 24px rgba(232,115,74,0.35); transition: all 0.3s; }
+        .cta-btn:hover   { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(232,115,74,0.45); }
+        .cta-btn:active  { transform: translateY(0) scale(0.97); }
 
         /* タブボタン */
-        .tab-active {
-            background: #E8734A;
-            color: white;
-        }
-
-        .tab-inactive {
-            background: transparent;
-            color: #94A3B8;
-        }
+        .tab-active   { background: #E8734A; color: white; }
+        .tab-inactive { background: transparent; color: #94A3B8; }
 
         /* 月ナビボタン */
-        .month-nav-btn.current-month {
-            background: #FFF0E6;
-            box-shadow: inset 0 0 0 2px #F5A623;
-        }
-
-        .month-nav-btn.selected-month {
-            background: linear-gradient(135deg, #E8734A, #D4603B);
-            color: white;
-            box-shadow: 0 2px 8px rgba(232, 115, 74, 0.3);
-        }
-
-        .month-nav-btn.past-month {
-            color: #CBD5E1;
-        }
+        .month-nav-btn.current-month { background: #FFF0E6; box-shadow: inset 0 0 0 2px #F5A623; }
+        .month-nav-btn.selected-month { background: linear-gradient(135deg,#E8734A,#D4603B); color: white; box-shadow: 0 2px 8px rgba(232,115,74,0.3); }
+        .month-nav-btn.past-month { color: #CBD5E1; }
 
         /* 参加状況バッジ */
-        .badge-attend {
-            background: linear-gradient(135deg, #E8734A, #D4603B);
-            color: white;
-        }
+        .badge-attend { background: linear-gradient(135deg,#E8734A,#D4603B); color: white; }
+        .badge-absent { background: #F1F5F9; color: #64748B; }
 
-        .badge-absent {
-            background: #F1F5F9;
-            color: #64748B;
-        }
-
-        /* スクロールバー設定 (モバイルは非表示、PCは控えめに表示) */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(245, 166, 35, 0.4);
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(245, 166, 35, 0.7);
-        }
+        /* スクロールバー */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.4); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(245,166,35,0.7); }
 
         /* 上へ戻るボタン */
         #go-top-btn {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
+            position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            width: 56px;
-            height: 56px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(245, 166, 35, 0.3);
+            width: 56px; height: 56px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(245,166,35,0.3);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #F5A623;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: #F5A623;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             backdrop-filter: blur(8px);
-            z-index: 1000;
-            cursor: pointer;
+            z-index: 1000; cursor: pointer;
             transition: all 0.3s ease;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #go-top-btn.visible {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateX(-50%) translateY(0);
-        }
-
         #go-top-btn:active {
             transform: scale(0.95);
             background: #f9f9f9;
@@ -453,10 +232,12 @@
 </head>
 
 <body>
+    <!-- キラキラ Canvas -->
+    <canvas id="sparkle-canvas"></canvas>
+
     <!-- 背景装飾 -->
     <div class="organic-shape w-72 h-72 bg-orange-200 -top-20 -left-20 rounded-full"></div>
-    <div class="organic-shape w-96 h-96 bg-amber-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;">
-    </div>
+    <div class="organic-shape w-96 h-96 bg-amber-200 -bottom-32 -right-32 rounded-full" style="animation-delay:-5s;"></div>
     <div class="organic-shape w-56 h-56 bg-rose-100 top-1/2 left-1/4 rounded-full" style="animation-delay:-3s;"></div>
 
     <!-- ローディング -->
@@ -740,7 +521,232 @@
         </svg>
     </button>
 
-    <!-- JavaScript -->
+    <!-- ═══════════════════════════════════════════
+         キラキラ エフェクト (PC マウス + スマホ タッチ 両対応)
+    ═══════════════════════════════════════════ -->
+    <script>
+    (function() {
+        'use strict';
+
+        /* ── カラーパレット（暖色系テーマに合わせた金・珊瑚・琥珀・ピンク・白） ── */
+        const COLORS = [
+            '#FFD700', '#FFC947', '#F5A623', '#E8734A', '#FF8C69',
+            '#FFB6C1', '#FFFACD', '#FFF8DC', '#FF6B6B', '#FFE4B5',
+            '#FFDEAD', '#FF7F50', '#FFA07A', '#FFFFFF', '#FFD4B8'
+        ];
+
+        /* ── Canvas セットアップ ── */
+        const canvas = document.getElementById('sparkle-canvas');
+        const ctx    = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        /* ── パーティクル クラス ── */
+        class Particle {
+            constructor(x, y, isBurst) {
+                this.x  = x;
+                this.y  = y;
+                const angle  = Math.random() * Math.PI * 2;
+                const speed  = isBurst
+                    ? 1.5 + Math.random() * 4.5
+                    : 0.5 + Math.random() * 2.5;
+                this.vx   = Math.cos(angle) * speed;
+                this.vy   = Math.sin(angle) * speed - (isBurst ? 1 : 0);
+                this.size = isBurst
+                    ? 2 + Math.random() * 5
+                    : 1.5 + Math.random() * 3.5;
+                this.color   = COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.alpha   = 1;
+                this.decay   = isBurst
+                    ? 0.018 + Math.random() * 0.025
+                    : 0.012 + Math.random() * 0.018;
+                this.gravity = 0.08 + Math.random() * 0.06;
+                /* 形: 0=円, 1=星4, 2=星6, 3=ダイヤ, 4=小さな十字 */
+                this.shape   = Math.floor(Math.random() * 5);
+                this.rot     = Math.random() * Math.PI * 2;
+                this.rotV    = (Math.random() - 0.5) * 0.15;
+                this.twinkle = Math.random() > 0.5;
+                this.twinkleT = 0;
+            }
+
+            update() {
+                this.x  += this.vx;
+                this.y  += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.alpha -= this.decay;
+                this.rot   += this.rotV;
+                if (this.twinkle) {
+                    this.twinkleT += 0.25;
+                    this.alpha = Math.max(0, this.alpha) * (0.6 + 0.4 * Math.abs(Math.sin(this.twinkleT)));
+                }
+            }
+
+            draw() {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle   = this.color;
+                ctx.strokeStyle = this.color;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rot);
+
+                switch (this.shape) {
+                    case 0: /* 円 */
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 1: /* 4芒星 */
+                        drawStar(ctx, 0, 0, 4, this.size, this.size * 0.4);
+                        ctx.fill();
+                        break;
+                    case 2: /* 6芒星 */
+                        drawStar(ctx, 0, 0, 6, this.size, this.size * 0.5);
+                        ctx.fill();
+                        break;
+                    case 3: /* ダイヤ */
+                        ctx.beginPath();
+                        ctx.moveTo(0, -this.size);
+                        ctx.lineTo(this.size * 0.6, 0);
+                        ctx.lineTo(0, this.size);
+                        ctx.lineTo(-this.size * 0.6, 0);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                    case 4: /* 十字（キラキラ線） */
+                        ctx.lineWidth = this.size * 0.35;
+                        ctx.lineCap   = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(-this.size, 0); ctx.lineTo(this.size, 0);
+                        ctx.moveTo(0, -this.size); ctx.lineTo(0, this.size);
+                        /* 45° 斜め線（細め） */
+                        const d = this.size * 0.6;
+                        ctx.moveTo(-d, -d); ctx.lineTo(d, d);
+                        ctx.moveTo(d, -d);  ctx.lineTo(-d, d);
+                        ctx.stroke();
+                        break;
+                }
+                ctx.restore();
+            }
+
+            get dead() { return this.alpha <= 0 || this.y > canvas.height + 30; }
+        }
+
+        /* ── 星を描く補助関数 ── */
+        function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+            let rot = (Math.PI / 2) * 3;
+            const step = Math.PI / spikes;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerR);
+            for (let i = 0; i < spikes; i++) {
+                ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+                rot += step;
+                ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerR);
+            ctx.closePath();
+        }
+
+        /* ── パーティクル プール ── */
+        let particles = [];
+        const MAX_PARTICLES = 300;
+
+        function spawnTrail(x, y) {
+            if (particles.length >= MAX_PARTICLES) return;
+            const n = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < n; i++) {
+                particles.push(new Particle(x, y, false));
+            }
+        }
+
+        function spawnBurst(x, y) {
+            const n = 12 + Math.floor(Math.random() * 10);
+            for (let i = 0; i < n && particles.length < MAX_PARTICLES; i++) {
+                particles.push(new Particle(x, y, true));
+            }
+        }
+
+        /* ── 環境キラキラ（ランダム浮遊） ── */
+        function spawnAmbient() {
+            if (particles.length < MAX_PARTICLES - 5) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const p = new Particle(x, y, false);
+                p.vy   = -(0.3 + Math.random() * 0.8);
+                p.vx   = (Math.random() - 0.5) * 0.5;
+                p.size = 1 + Math.random() * 2.5;
+                p.decay = 0.006 + Math.random() * 0.01;
+                p.gravity = -0.005;
+                particles.push(p);
+            }
+        }
+        setInterval(spawnAmbient, 180);
+
+        /* ── アニメーション ループ ── */
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (const p of particles) { p.update(); p.draw(); }
+            particles = particles.filter(p => !p.dead);
+            requestAnimationFrame(loop);
+        }
+        loop();
+
+        /* ── マウス追従（PC） ── */
+        let lastX = -999, lastY = -999, moveThrottle = 0;
+        document.addEventListener('mousemove', (e) => {
+            const now = Date.now();
+            if (now - moveThrottle < 30) return;
+            moveThrottle = now;
+            const dx = e.clientX - lastX, dy = e.clientY - lastY;
+            if (Math.abs(dx) + Math.abs(dy) > 4) {
+                spawnTrail(e.clientX, e.clientY);
+                lastX = e.clientX; lastY = e.clientY;
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            spawnBurst(e.clientX, e.clientY);
+        });
+
+        /* ── タッチ追従（スマホ） ── */
+        let touchThrottle = 0;
+        document.addEventListener('touchmove', (e) => {
+            const now = Date.now();
+            if (now - touchThrottle < 40) return;
+            touchThrottle = now;
+            for (let i = 0; i < e.touches.length; i++) {
+                spawnTrail(e.touches[i].clientX, e.touches[i].clientY);
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchstart', (e) => {
+            for (let i = 0; i < e.touches.length; i++) {
+                spawnBurst(e.touches[i].clientX, e.touches[i].clientY);
+            }
+        }, { passive: true });
+
+        /* ── 送信成功時の盛大なバースト ── */
+        window._sparkleSuccess = function() {
+            const cx = window.innerWidth  / 2;
+            const cy = window.innerHeight / 2;
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    spawnBurst(cx + (Math.random() - 0.5) * 200, cy + (Math.random() - 0.5) * 200);
+                }, i * 120);
+            }
+        };
+
+    })();
+    </script>
+
+    <!-- JavaScript (Firebase & アプリロジック) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -869,6 +875,8 @@
 
                 closeModal('password-modal');
                 toast('管理者モードになりました');
+                /* 管理者ログイン成功のキラキラ */
+                if (window._sparkleSuccess) window._sparkleSuccess();
                 if (el('view-fee').style.display === 'block') loadFees();
             } else {
                 el('modal-error').classList.remove('hidden');
@@ -1301,6 +1309,8 @@
                     else { await addDoc(collection(db, "attendance"), { ...fd, updatedAt: serverTimestamp() }); }
                     fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(fd) }).catch(e => console.error("GAS:", e));
                     toast(fd.status === '削除' ? '削除しました' : '完了しました');
+                    /* 送信成功キラキラ！ */
+                    if (window._sparkleSuccess) window._sparkleSuccess();
 
                     // UI更新とスクロール
                     setTimeout(async () => {
