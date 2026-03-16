@@ -1074,62 +1074,10 @@
             const today = new Date(); today.setHours(0, 0, 0, 0);
 
             const monthNamesEn = ["", "", "", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-            const monthPatterns = {
-                3: { // 水玉
-                    bg: 'radial-gradient(var(--theme-primary) 20%, transparent 20%), radial-gradient(var(--theme-primary) 20%, transparent 20%)',
-                    size: '20px 20px',
-                    pos: '0 0, 10px 10px'
-                },
-                4: { // ストライプ
-                    bg: 'linear-gradient(45deg, var(--theme-primary) 25%, transparent 25%, transparent 50%, var(--theme-primary) 50%, var(--theme-primary) 75%, transparent 75%, transparent)',
-                    size: '20px 20px',
-                    pos: '0 0'
-                },
-                5: { // 格子柄
-                    bg: 'linear-gradient(to right, var(--theme-primary) 2px, transparent 2px), linear-gradient(to bottom, var(--theme-primary) 2px, transparent 2px)',
-                    size: '24px 24px',
-                    pos: '0 0'
-                },
-                6: { // 水辺 (波紋風)
-                    bg: 'radial-gradient(circle at 50% 50%, transparent 40%, var(--theme-primary) 41%, var(--theme-primary) 43%, transparent 44%)',
-                    size: '30px 30px',
-                    pos: '0 0'
-                },
-                7: { // 夏 (太陽の光風放射)
-                    bg: 'repeating-linear-gradient(45deg, var(--theme-primary) 0, var(--theme-primary) 2px, transparent 2px, transparent 12px)',
-                    size: '40px 40px',
-                    pos: '0 0'
-                },
-                8: { // 重なる円 (ウロコ柄)
-                    bg: 'radial-gradient(circle at 100% 150%, var(--theme-primary) 24%, transparent 25%), radial-gradient(circle at 0% 150%, var(--theme-primary) 24%, transparent 25%), radial-gradient(circle at 50% 100%, var(--theme-primary) 10%, transparent 11%)',
-                    size: '30px 15px',
-                    pos: '0 0, 0 0, 0 0'
-                },
-                9: { // 斜め格子
-                    bg: 'linear-gradient(45deg, var(--theme-primary) 1px, transparent 1px), linear-gradient(-45deg, var(--theme-primary) 1px, transparent 1px)',
-                    size: '16px 16px',
-                    pos: '0 0'
-                },
-                10: { // ハロウィン風ギザギザ
-                    bg: 'linear-gradient(135deg, var(--theme-primary) 25%, transparent 25%) -10px 0, linear-gradient(225deg, var(--theme-primary) 25%, transparent 25%) -10px 0, linear-gradient(315deg, var(--theme-primary) 25%, transparent 25%), linear-gradient(45deg, var(--theme-primary) 25%, transparent 25%)',
-                    size: '20px 20px',
-                    pos: '0 0'
-                },
-                11: { // 縦ストライプ
-                    bg: 'linear-gradient(90deg, var(--theme-primary) 4px, transparent 4px)',
-                    size: '16px 16px',
-                    pos: '0 0'
-                },
-                12: { // 雪の結晶風 (ドット)
-                    bg: 'radial-gradient(var(--theme-primary) 15%, transparent 16%), radial-gradient(var(--theme-primary) 15%, transparent 16%)',
-                    size: '24px 24px',
-                    pos: '0 0, 12px 12px'
-                }
-            };
-            const defaultPattern = {
-                bg: 'radial-gradient(var(--theme-primary) 20%, transparent 20%)',
-                size: '20px 20px',
-                pos: '0 0'
+            const snowPattern = {
+                bg: 'radial-gradient(var(--theme-primary) 15%, transparent 16%), radial-gradient(var(--theme-primary) 15%, transparent 16%)',
+                size: '24px 24px',
+                pos: '0 0, 12px 12px'
             };
 
             let cardIndex = 0;
@@ -1154,7 +1102,7 @@
                     card.style.scrollMarginTop = '100px';
 
                     // 背景パターン
-                    const pat = monthPatterns[m] || defaultPattern;
+                    const pat = snowPattern;
                     const bgPattern = document.createElement('div');
                     bgPattern.className = 'month-bg-pattern';
                     bgPattern.style.backgroundImage = pat.bg;
