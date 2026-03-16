@@ -93,64 +93,122 @@
             animation: starPop 0.65s ease-out forwards;
         }
 
-        /* タイムライン */
-        .timeline-line {
-            position: absolute;
-            left: 50%; top: 0; bottom: 0;
-            width: 3px;
-            background: linear-gradient(180deg, var(--theme-accent) 0%, var(--theme-primary) 50%, var(--theme-accent) 100%);
-            transform: translateX(-50%);
-            border-radius: 2px;
-        }
-        .timeline-node {
+        /* 月毎のカードレイアウト */
+        .month-card {
+            background: white;
+            border-radius: 32px;
+            padding: 24px 20px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
             position: relative;
-            display: flex; align-items: center;
-            margin-bottom: 40px;
-            opacity: 0;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.3s;
             animation: fadeSlideIn 0.5s ease forwards;
-        }
-
-        .timeline-node.left  { justify-content: flex-start; padding-right: 55%; }
-        .timeline-node.right { justify-content: flex-end;   padding-left: 55%; }
-
-        .timeline-node::after {
-            content: '';
-            position: absolute;
-            left: 50%; top: 50%;
-            width: 12px; height: 12px;
-            background: var(--theme-accent);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            border: 3px solid var(--theme-bg);
+            opacity: 0;
             z-index: 2;
         }
-        .timeline-node.past-node::after     { background: #CBD5E1; border-color: #F1F5F9; }
-        .timeline-node.selected-node::after { background: var(--theme-primary); border-color: var(--theme-bg); box-shadow: 0 0 12px rgba(232,115,74,0.5); }
+        .month-card:hover { border-color: var(--theme-border); }
 
-        /* 日付バブル */
-        .date-bubble {
-            width: 100px; height: 100px;
-            border-radius: 50%;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+        .month-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
             position: relative;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+            z-index: 2;
         }
-        .date-bubble.available { background: white; border: 3px solid var(--theme-accent); }
-        .date-bubble.available:hover { transform: scale(1.12); box-shadow: 0 8px 32px rgba(245,166,35,0.3); border-color: var(--theme-primary); }
-        .date-bubble.selected  { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%); border: 3px solid transparent; color: white; transform: scale(1.1); box-shadow: 0 8px 32px rgba(232,115,74,0.4); }
-        .date-bubble.past      { background: #F1F5F9; border: 3px solid #E2E8F0; opacity: 0.5; cursor: default; }
-        .date-bubble .date-num   { font-size: 1.75rem; font-weight: 900; line-height: 1; }
-        .date-bubble .date-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
-        .date-bubble.available .date-label { color: var(--theme-accent); }
-        .date-bubble.selected  .date-label { color: rgba(255,255,255,0.85); }
-        .date-bubble.past      .date-label { color: #94A3B8; }
 
-        /* 月セクション見出し */
-        .month-divider { text-align: center; position: relative; margin: 32px 0 24px; z-index: 3; }
-        .month-divider span { display: inline-block; background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent)); color: white; font-weight: 900; font-size: 1rem; padding: 8px 28px; border-radius: 24px; box-shadow: 0 4px 16px rgba(232,115,74,0.25); letter-spacing: 0.1em; }
+        .month-header-line {
+            width: 6px;
+            height: 22px;
+            background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(232,115,74,0.2);
+        }
+
+        .month-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--theme-primary);
+            letter-spacing: 0.05em;
+        }
+        .month-title-en {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--theme-primary);
+            opacity: 0.7;
+            margin-left: 4px;
+        }
+
+        .month-bg-icon {
+            position: absolute;
+            top: 20px;
+            left: 140px;
+            width: 80px;
+            height: 80px;
+            opacity: 0.05;
+            color: var(--theme-primary);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .month-bg-icon-2 {
+            position: absolute;
+            bottom: -20px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.03;
+            color: var(--theme-primary);
+            pointer-events: none;
+            z-index: 1;
+            transform: rotate(-15deg);
+        }
+
+        .date-bubbles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            padding-left: 4px;
+        }
+
+        /* 日付バブル (カード内用) */
+        .date-bubble {
+            width: 54px; height: 54px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .date-bubble.available {
+            background: var(--theme-soft);
+            color: var(--theme-text-gray);
+            border: 2px solid transparent;
+        }
+        .date-bubble.available:hover {
+            transform: translateY(-2px);
+            background: white;
+            border-color: var(--theme-primary);
+            color: var(--theme-primary);
+            box-shadow: 0 4px 12px rgba(232, 115, 74, 0.15);
+        }
+        .date-bubble.selected {
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(232, 115, 74, 0.3);
+            border: 2px solid transparent;
+        }
+        .date-bubble.past {
+            background: #F8FAFC;
+            color: #CBD5E1;
+            cursor: default;
+        }
 
         @keyframes fadeSlideIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -445,9 +503,7 @@
 
         <!-- 参加登録ビュー -->
         <div id="view-reg">
-            <div id="calendar-container" class="relative">
-                <!-- タイムラインの中央線 -->
-                <div class="timeline-line"></div>
+            <div id="calendar-container" class="relative z-10">
                 <!-- JS で動的に構築 -->
             </div>
 
@@ -1026,49 +1082,84 @@
             } catch (e) { showError(`保存失敗：${e.message || ''}`, saveFeeChanges); console.error(e); } finally { loading(false); }
         }
 
-        // ── タイムラインカレンダー ──
+        // ── 月毎カードレイアウト構築 ──
         function buildCalendar() {
             const container = el('calendar-container');
+            container.innerHTML = '';
             const excludes = ["2026-03-01", "2026-03-08", "2026-03-15", "2026-03-22", "2026-04-12", "2026-05-03", "2026-05-10", "2026-06-14", "2026-07-12", "2026-08-02", "2026-08-09", "2026-08-16", "2026-08-23", "2026-08-30", "2026-09-20", "2026-10-11", "2026-11-08", "2026-11-22", "2026-11-29", "2026-12-06", "2026-12-13", "2026-12-20", "2026-12-27"];
             const today = new Date(); today.setHours(0, 0, 0, 0);
-            let nodeIndex = 0;
+
+            const monthNamesEn = ["", "", "", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+            const monthIcons = {
+                3: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5 16 5 16s1-4 6-6c-2 2-3 4-3 4s3-1 8-4M21 3c0 0-4 1-8 4-5 4-6 9-6 9s1-2 5-6c3-4 9-7 9-7z"/></svg>', // 葉
+                4: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-.5 0-1 .4-1 1v2c0 .6.4 1 1 1s1-.4 1-1V3c0-.6-.4-1-1-1zm6.4 3.6c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l1.4 1.4c.4.4 1 .4 1.4 0 .4-.4.4-1 0-1.4l-1.4-1.4zM22 11h-2c-.6 0-1 .4-1 1s.4 1 1 1h2c.6 0 1-.4 1-1s-.4-1-1-1zm-3.6 6.4c-.4-.4-1-.4-1.4 0-.4.4-.4 1 0 1.4l1.4 1.4c.4.4 1 .4 1.4 0 .4-.4.4-1 0-1.4l1.4-1.4zM12 18c-.6 0-1 .4-1 1v2c0 .6.4 1 1 1s1-.4 1-1v-2c0-.6-.4-1-1-1zm-6.4-1.6c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4l-1.4 1.4c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.4-1.4zM2 13h2c.6 0 1-.4 1-1s-.4-1-1-1H2c-.6 0-1 .4-1 1s.4 1 1 1zm3.6-6.4c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4L5.6 9.4c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.4-1.4zM12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5z"/></svg>', // 花
+                5: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7 2 3 6 3 11c0 2.2.8 4.2 2 5.7V22h14v-5.3c1.2-1.5 2-3.5 2-5.7 0-5-4-9-9-9z"/></svg>', // 木
+            };
+
+            let cardIndex = 0;
 
             for (let m = 3; m <= 12; m++) {
-                // 月見出し
-                const divider = document.createElement('div');
-                divider.className = 'month-divider';
-                divider.id = `month-${m}`;
-                divider.innerHTML = `<span>${m}月</span>`;
-                divider.style.scrollMarginTop = '100px'; // Add scroll-margin-top here
-                container.appendChild(divider);
-
+                const dList = [];
                 let d = new Date(2026, m - 1, 1, 12, 0, 0);
                 while (d.getMonth() === m - 1) {
                     const dateStr = `2026-${String(m).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     if ((d.getDay() === 0 || (m === 12 && d.getDate() === 5)) && !excludes.includes(dateStr)) {
-                        const isPast = d < today;
-                        const side = nodeIndex % 2 === 0 ? 'left' : 'right';
+                        dList.push({ date: d.getDate(), dateStr: dateStr, isPast: d < today });
+                    }
+                    d.setDate(d.getDate() + 1);
+                }
 
-                        const node = document.createElement('div');
-                        node.className = `timeline-node ${side} ${isPast ? 'past-node' : ''}`;
-                        node.style.animationDelay = (nodeIndex * 0.08) + 's';
+                if (dList.length > 0) {
+                    // 月カード
+                    const card = document.createElement('div');
+                    card.className = 'month-card';
+                    card.id = `month-${m}`;
+                    card.style.animationDelay = (cardIndex * 0.1) + 's';
+                    card.style.scrollMarginTop = '100px';
 
+                    // 背景アイコン
+                    const svgIcon = monthIcons[m] || monthIcons[3];
+                    const bgIcon1 = document.createElement('div');
+                    bgIcon1.className = 'month-bg-icon';
+                    bgIcon1.innerHTML = svgIcon;
+                    card.appendChild(bgIcon1);
+
+                    const bgIcon2 = document.createElement('div');
+                    bgIcon2.className = 'month-bg-icon-2';
+                    bgIcon2.innerHTML = svgIcon;
+                    card.appendChild(bgIcon2);
+
+                    // ヘッダー
+                    const header = document.createElement('div');
+                    header.className = 'month-header';
+                    header.innerHTML = `
+                        <div class="month-header-line"></div>
+                        <div class="month-title">${m}月 <span class="month-title-en">${monthNamesEn[m]}</span></div>
+                    `;
+                    card.appendChild(header);
+
+                    // 日付コンテナ
+                    const datesContainer = document.createElement('div');
+                    datesContainer.className = 'date-bubbles-container';
+
+                    dList.forEach(item => {
                         const bubble = document.createElement('div');
-                        bubble.className = `date-bubble ${isPast ? 'past' : 'available'}`;
-                        bubble.innerHTML = `<span class="date-num">${d.getDate()}日</span><span class="date-label">${isPast ? 'PAST' : 'AVAILABLE'}</span>`;
+                        bubble.className = `date-bubble ${item.isPast ? 'past' : 'available'}`;
+                        bubble.innerHTML = `${item.date}日`;
 
-                        if (!isPast) {
+                        if (!item.isPast) {
                             bubble.onclick = (e) => {
                                 createRipple(e, bubble);
-                                selectDate(dateStr, bubble);
+                                selectDate(item.dateStr, bubble);
                             };
                         }
 
-                        node.appendChild(bubble);
-                        container.appendChild(node);
-                        nodeIndex++;
-                    }
-                    d.setDate(d.getDate() + 1);
+                        datesContainer.appendChild(bubble);
+                    });
+
+                    card.appendChild(datesContainer);
+                    container.appendChild(card);
+                    cardIndex++;
                 }
             }
         }
@@ -1080,16 +1171,20 @@
             document.querySelectorAll('.date-bubble.selected').forEach(b => {
                 b.classList.remove('selected');
                 b.classList.add('available');
-                b.querySelector('.date-label').textContent = 'AVAILABLE';
-                b.closest('.timeline-node').classList.remove('selected-node');
+                const label = b.querySelector('.date-label');
+                if (label) label.textContent = 'AVAILABLE';
+                const node = b.closest('.timeline-node');
+                if (node) node.classList.remove('selected-node');
             });
 
             // 新しい選択を適用
             if (bubble) {
                 bubble.classList.remove('available');
                 bubble.classList.add('selected');
-                bubble.querySelector('.date-label').textContent = 'SELECTED';
-                bubble.closest('.timeline-node').classList.add('selected-node');
+                const label = bubble.querySelector('.date-label');
+                if (label) label.textContent = 'SELECTED';
+                const node = bubble.closest('.timeline-node');
+                if (node) node.classList.add('selected-node');
             }
 
             STATE.selectedDate = date;
@@ -1199,7 +1294,7 @@
                 root.style.setProperty('--theme-border', 'rgba(123, 143, 161, 0.1)');
                 root.style.setProperty('--theme-text', '#334155');
                 root.style.setProperty('--theme-text-gray', '#475569');
-                if (window._setSparklePalette) window._setSparklePalette(['#FFD700', '#FFFF00', '#FFFFFF']);
+                if (window._setSparklePalette) window._setSparklePalette(['#FFD700', '#FFFF00', '#FFFFFF', '#FFE082', '#FFCA28']);
             } else if (weatherId >= 600) {
                 // 雪 → アイスブルー系
                 root.style.setProperty('--theme-primary', '#00BCD4');
@@ -1211,7 +1306,7 @@
                 root.style.setProperty('--theme-border', 'rgba(0, 188, 212, 0.1)');
                 root.style.setProperty('--theme-text', '#0E7490');
                 root.style.setProperty('--theme-text-gray', '#374151');
-                if (window._setSparklePalette) window._setSparklePalette(['#FFFFFF', '#E0F7FA', '#B2EBF2', '#FFD700']);
+                if (window._setSparklePalette) window._setSparklePalette(['#FFFFFF', '#FFD700', '#B3E5FC', '#80DEEA', '#E1F5FE']);
             } else if (weatherId >= 300) {
                 // 雨・霧雨 → ブルー系
                 root.style.setProperty('--theme-primary', '#2196F3');
@@ -1223,7 +1318,7 @@
                 root.style.setProperty('--theme-border', 'rgba(33, 150, 243, 0.1)');
                 root.style.setProperty('--theme-text', '#1E3A8A');
                 root.style.setProperty('--theme-text-gray', '#475569');
-                if (window._setSparklePalette) window._setSparklePalette(['#FFFFFF', '#FFD700', '#FFFF00']);
+                if (window._setSparklePalette) window._setSparklePalette(['#FFFFFF', '#FFD700', '#FFFF00', '#81D4FA', '#E1F5FE']);
             } else if (weatherId >= 200) {
                 // 嵐・雷雨 → ダークグレー＋稲妻イエロー
                 root.style.setProperty('--theme-primary', '#546E7A');
