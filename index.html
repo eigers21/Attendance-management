@@ -31,14 +31,14 @@
     </script>
     <style>
         :root {
-            /* ── デフォルトテーマ (晴れ/ゴールド系) ── */
-            --theme-primary: #E8734A;
-            --theme-primary-dark: #D4603B;
-            --theme-bg: #FFF0E6;
-            --theme-bg-gradient: linear-gradient(180deg, #FFF0E6 0%, #FFE4D0 30%, #FFF0E6 70%, #FDDEC0 100%);
-            --theme-accent: #F5A623;
-            --theme-soft: #FFF8F2;
-            --theme-border: rgba(232, 115, 74, 0.1);
+            /* ── デフォルトテーマ (晴れ/イエローゴールド系) ── */
+            --theme-primary: #CA8A04;
+            --theme-primary-dark: #A16207;
+            --theme-bg: #FFFBEB;
+            --theme-bg-gradient: linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 30%, #FFFBEB 70%, #FDE68A 100%);
+            --theme-accent: #FBBF24;
+            --theme-soft: #FEF9C3;
+            --theme-border: rgba(202, 138, 4, 0.1);
             --theme-text: #1E293B;
             --theme-text-gray: #334155;
             --sparkle-color: #FFD700;
@@ -1253,28 +1253,28 @@
         function applyWeatherTheme(weatherId) {
             const root = document.documentElement;
             if (weatherId === 800) {
-                // 晴れ → 暖色ゴールド系
-                root.style.setProperty('--theme-primary', '#E8734A');
-                root.style.setProperty('--theme-primary-dark', '#D4603B');
-                root.style.setProperty('--theme-bg', '#FFF0E6');
-                root.style.setProperty('--theme-bg-gradient', 'linear-gradient(180deg, #FFF0E6 0%, #FFE4D0 30%, #FFF0E6 70%, #FDDEC0 100%)');
-                root.style.setProperty('--theme-accent', '#F5A623');
-                root.style.setProperty('--theme-soft', '#FFF8F2');
-                root.style.setProperty('--theme-border', 'rgba(232, 115, 74, 0.1)');
+                // 晴れ → イエローゴールド系
+                root.style.setProperty('--theme-primary', '#CA8A04');
+                root.style.setProperty('--theme-primary-dark', '#A16207');
+                root.style.setProperty('--theme-bg', '#FFFBEB');
+                root.style.setProperty('--theme-bg-gradient', 'linear-gradient(180deg, #FFFBEB 0%, #FEF3C7 30%, #FFFBEB 70%, #FDE68A 100%)');
+                root.style.setProperty('--theme-accent', '#FBBF24');
+                root.style.setProperty('--theme-soft', '#FEF9C3');
+                root.style.setProperty('--theme-border', 'rgba(202, 138, 4, 0.1)');
                 root.style.setProperty('--theme-text', '#1E293B');
                 root.style.setProperty('--theme-text-gray', '#334155');
-                if (window._setSparklePalette) window._setSparklePalette(['#FFD700', '#FF8C00', '#FF3D00', '#FFFFFF']);
+                if (window._setSparklePalette) window._setSparklePalette(['#FFD700', '#FBBF24', '#FEF08A', '#FFFFFF']);
             } else if (weatherId >= 700) {
-                // 曇り・かすみ・霧 → グレー系
-                root.style.setProperty('--theme-primary', '#7B8FA1');
-                root.style.setProperty('--theme-primary-dark', '#546A7E');
-                root.style.setProperty('--theme-bg', '#E8ECF0');
-                root.style.setProperty('--theme-bg-gradient', 'linear-gradient(180deg, #E8ECF0 0%, #D1D9E0 100%)');
-                root.style.setProperty('--theme-accent', '#94A3B8');
-                root.style.setProperty('--theme-soft', '#F8FAFC');
-                root.style.setProperty('--theme-border', 'rgba(123, 143, 161, 0.1)');
-                root.style.setProperty('--theme-text', '#334155');
-                root.style.setProperty('--theme-text-gray', '#475569');
+                // 曇り・かすみ・霧 → スチールブルー系
+                root.style.setProperty('--theme-primary', '#5B7FA6');
+                root.style.setProperty('--theme-primary-dark', '#3B5B80');
+                root.style.setProperty('--theme-bg', '#EDF2F7');
+                root.style.setProperty('--theme-bg-gradient', 'linear-gradient(180deg, #EDF2F7 0%, #E2E8F0 100%)');
+                root.style.setProperty('--theme-accent', '#7EA8C9');
+                root.style.setProperty('--theme-soft', '#F7FAFC');
+                root.style.setProperty('--theme-border', 'rgba(91, 127, 166, 0.1)');
+                root.style.setProperty('--theme-text', '#2D3748');
+                root.style.setProperty('--theme-text-gray', '#4A5568');
                 if (window._setSparklePalette) window._setSparklePalette(['#FFD700', '#FFFF00', '#FFFFFF', '#FFE082', '#FFCA28']);
             } else if (weatherId >= 600) {
                 // 雪 → アイスブルー系
