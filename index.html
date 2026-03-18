@@ -267,6 +267,7 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--theme-accent); opacity: 0.4; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--theme-accent); opacity: 0.7; }
+        #month-nav-container > div::-webkit-scrollbar { display: none; }
 
         /* 上へ戻るボタン (v7.2 Refined) */
         #go-top-btn {
@@ -447,29 +448,29 @@
         <!-- 月ジャンプナビ (横スクロール可能・スティッキー固定) -->
         <div id="month-nav-container" class="mb-6 sticky top-2 z-50 transition-all font-bold"
             style="display: block;">
-            <div class="w-full">
+            <div class="overflow-x-auto w-full" style="-webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;">
                 <div id="month-nav-inner"
-                    class="flex justify-between relative z-10 bg-white/90 backdrop-blur-sm py-2 px-3 rounded-2xl shadow-sm border border-warmCoral/10">
+                    class="inline-flex gap-1 relative z-10 bg-white/90 backdrop-blur-sm py-2 px-3 rounded-2xl shadow-sm border border-warmCoral/10 min-w-max">
                     <button onclick="scrollToMonth(3)" data-month="3"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">3月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">3月</button>
                     <button onclick="scrollToMonth(4)" data-month="4"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">4月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">4月</button>
                     <button onclick="scrollToMonth(5)" data-month="5"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">5月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">5月</button>
                     <button onclick="scrollToMonth(6)" data-month="6"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">6月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">6月</button>
                     <button onclick="scrollToMonth(7)" data-month="7"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">7月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">7月</button>
                     <button onclick="scrollToMonth(8)" data-month="8"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">8月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">8月</button>
                     <button onclick="scrollToMonth(9)" data-month="9"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">9月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">9月</button>
                     <button onclick="scrollToMonth(10)" data-month="10"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">10月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">10月</button>
                     <button onclick="scrollToMonth(11)" data-month="11"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">11月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">11月</button>
                     <button onclick="scrollToMonth(12)" data-month="12"
-                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">12月</button>
+                        class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative whitespace-nowrap">12月</button>
                 </div>
             </div>
         </div>
