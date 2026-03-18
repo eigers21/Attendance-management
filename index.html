@@ -170,27 +170,27 @@
             font-weight: 800;
         }
         .date-bubble.available {
-            background: var(--theme-soft);
-            color: var(--theme-text-gray);
-            border: 2px solid transparent;
-        }
-        .date-bubble.available:hover {
-            transform: translateY(-2px);
-            background: white;
-            border-color: var(--theme-primary);
-            color: var(--theme-primary);
-            box-shadow: 0 4px 12px rgba(232, 115, 74, 0.15);
-        }
-        .date-bubble.selected {
             background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%);
             color: white;
-            transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(232, 115, 74, 0.3);
             border: 2px solid transparent;
+            box-shadow: 0 4px 10px var(--theme-border);
+        }
+        .date-bubble.available:hover {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.1);
+            box-shadow: 0 6px 14px var(--theme-border);
+        }
+        .date-bubble.selected {
+            background: white;
+            color: var(--theme-primary);
+            border: 3px solid var(--theme-primary);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px var(--theme-border);
         }
         .date-bubble.past {
-            background: #F8FAFC;
-            color: #CBD5E1;
+            background: #E2E8F0; /* slat-200 */
+            color: #94A3B8;      /* slat-400 */
+            border: 2px solid transparent;
             cursor: default;
         }
 
