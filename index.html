@@ -372,9 +372,9 @@
         <header class="flex justify-between items-end mb-6">
             <div>
                 <span
-                    class="text-warmCoral font-bold text-xs tracking-widest uppercase opacity-70 mb-1 block">2026</span>
+                    class="text-warmCoral font-bold text-xs tracking-widest uppercase mb-1 block">2026</span>
                 <h1 class="text-3xl font-extrabold text-deepNavy tracking-tight leading-none"><span
-                        style="color: var(--theme-primary);">ESN</span> 参加登録・会費管理</h1>
+                        style="color: var(--theme-text);">ESN</span> 参加登録・会費管理</h1>
             </div>
             <button onclick="unlockFees()" id="admin-icon-btn"
                 class="w-11 h-11 bg-white border border-warmCoral/20 shadow-lg rounded-full flex items-center justify-center text-warmCoral text-xl transition-all hover:shadow-xl active:scale-95 mb-[-1px]">
@@ -537,7 +537,7 @@
             <div id="result-section" class="bg-warmWhite rounded-3xl p-6 shadow-lg border border-warmCoral/10 mt-6"
                 style="display:none;">
                 <h3 id="result-header" class="font-extrabold text-lg text-warmCoral mb-4">参加状況一覧</h3>
-                <div id="stats-area" class="flex justify-around bg-softPeach p-3 rounded-2xl mb-4 text-sm font-bold">
+                <div id="stats-area" class="flex justify-around bg-softPeach p-3 rounded-2xl mb-4 text-base font-bold">
                 </div>
                 <table class="w-full text-sm table-fixed">
                     <thead>
@@ -1231,9 +1231,9 @@
                 });
 
                 const sa = el('stats-area'); sa.innerHTML = '';
-                const s1 = document.createElement('span'); s1.className = 'text-warmCoral font-bold'; s1.textContent = `参加: ${counts["参加"]}`;
-                const s2 = document.createElement('span'); s2.className = 'text-warmGray font-bold'; s2.textContent = `不参加: ${counts["不参加"]}`;
-                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70 font-bold'; s3.textContent = `未回答: ${STATE.members.length - attendance.length}`;
+                const s1 = document.createElement('span'); s1.className = 'text-warmCoral text-base font-bold'; s1.textContent = ` 参加: ${counts["参加"]} `;
+                const s2 = document.createElement('span'); s2.className = 'text-warmGray text-base font-bold'; s2.textContent = ` 不参加: ${counts["不参加"]} `;
+                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70 text-base font-bold'; s3.textContent = ` 未回答: ${STATE.members.length - attendance.length} `;
                 sa.appendChild(s1); sa.appendChild(s2); sa.appendChild(s3);
 
                 el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
@@ -1423,7 +1423,7 @@
                 btn.classList.remove('current-month', 'selected-month', 'past-month');
                 if (selectedMonth && m === selectedMonth) {
                     btn.classList.add('selected-month');
-                } else if (m === currentMonth) {
+                } else if (!selectedMonth && m === currentMonth) {
                     btn.classList.add('current-month');
                 } else if (currentMonth > 0 && m < currentMonth) {
                     btn.classList.add('past-month');
