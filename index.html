@@ -236,15 +236,15 @@
         .modal-box-anim  { transition: transform 0.3s, opacity 0.3s; }
 
         /* ラジオカード */
-        .radio-card input:checked+div { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)); color: white; box-shadow: 0 4px 16px rgba(232,115,74,0.3); }
+        .radio-card input:checked+div { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)); color: white; box-shadow: 0 4px 16px var(--theme-border); }
 
         /* リップル */
         .ripple { position: absolute; border-radius: 50%; background: var(--theme-primary); opacity: 0.3; transform: scale(0); animation: rippleAnim 0.5s ease-out forwards; pointer-events: none; }
         @keyframes rippleAnim { to { transform: scale(3); opacity: 0; } }
 
         /* CTA ボタン */
-        .cta-btn { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%); box-shadow: 0 6px 24px rgba(232,115,74,0.35); transition: all 0.3s; }
-        .cta-btn:hover   { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(232,115,74,0.45); }
+        .cta-btn { background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-dark) 100%); box-shadow: 0 6px 24px var(--theme-border); transition: all 0.3s; }
+        .cta-btn:hover   { transform: translateY(-2px); box-shadow: 0 8px 32px var(--theme-border); }
         .cta-btn:active  { transform: translateY(0) scale(0.97); }
 
         /* タブボタン */
@@ -253,7 +253,7 @@
 
         /* 月ナビボタン */
         .month-nav-btn.current-month { background: var(--theme-soft); box-shadow: inset 0 0 0 2px var(--theme-accent); }
-        .month-nav-btn.selected-month { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)); color: white; box-shadow: 0 2px 8px rgba(232,115,74,0.3); }
+        .month-nav-btn.selected-month { background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-dark)); color: white; box-shadow: 0 2px 8px var(--theme-border); }
         .month-nav-btn.past-month { color: #CBD5E1; }
 
         /* 参加状況バッジ */
@@ -439,19 +439,17 @@
         <!-- タブ（フラットデザイン版） -->
         <div class="flex gap-2 mb-6 p-1 bg-white/60 rounded-full border border-warmCoral/10 backdrop-blur-sm">
             <button onclick="switchView('reg')" id="tab-reg"
-                class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-active">参加登録</button>
+                class="flex-1 py-3 text-center rounded-full font-bold text-base transition-all tab-active">参加登録</button>
             <button onclick="switchView('fee')" id="tab-fee"
-                class="flex-1 py-3 text-center rounded-full font-bold text-sm transition-all tab-inactive">会費管理</button>
+                class="flex-1 py-3 text-center rounded-full font-bold text-base transition-all tab-inactive">会費管理</button>
         </div>
 
         <!-- 月ジャンプナビ (横スクロール可能・スティッキー固定) -->
-        <div id="month-nav-container" class="mb-6 pb-2 sticky top-2 z-50 transition-all font-bold"
+        <div id="month-nav-container" class="mb-6 sticky top-2 z-50 transition-all font-bold"
             style="display: block;">
-            <div class="overflow-x-auto whitespace-nowrap scroll-smooth custom-scrollbar w-full max-w-full px-4 pb-2"
-                style="-webkit-overflow-scrolling: touch;">
+            <div class="w-full">
                 <div id="month-nav-inner"
-                    class="inline-flex gap-1 relative z-10 bg-white/90 backdrop-blur-sm py-2 px-2 rounded-2xl shadow-sm border border-warmCoral/10"
-                    style="min-width: max-content;">
+                    class="flex justify-between relative z-10 bg-white/90 backdrop-blur-sm py-2 px-3 rounded-2xl shadow-sm border border-warmCoral/10">
                     <button onclick="scrollToMonth(3)" data-month="3"
                         class="month-nav-btn px-3 py-2 text-warmCoral font-bold text-sm rounded-full transition-all hover:bg-softPeach active:scale-95 relative">3月</button>
                     <button onclick="scrollToMonth(4)" data-month="4"
@@ -537,7 +535,7 @@
             <div id="result-section" class="bg-warmWhite rounded-3xl p-6 shadow-lg border border-warmCoral/10 mt-6"
                 style="display:none;">
                 <h3 id="result-header" class="font-extrabold text-lg text-warmCoral mb-4">参加状況一覧</h3>
-                <div id="stats-area" class="flex justify-around bg-softPeach p-3 rounded-2xl mb-4 text-lg font-bold">
+                <div id="stats-area" class="flex justify-around bg-softPeach p-3 rounded-2xl mb-4 text-base font-bold">
                 </div>
                 <table class="w-full text-sm table-fixed">
                     <thead>
@@ -1074,11 +1072,7 @@
             const today = new Date(); today.setHours(0, 0, 0, 0);
 
             const monthNamesEn = ["", "", "", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-            const snowPattern = {
-                bg: 'radial-gradient(var(--theme-primary) 15%, transparent 16%), radial-gradient(var(--theme-primary) 15%, transparent 16%)',
-                size: '24px 24px',
-                pos: '0 0, 12px 12px'
-            };
+
 
             let cardIndex = 0;
 
@@ -1101,14 +1095,7 @@
                     card.style.animationDelay = (cardIndex * 0.1) + 's';
                     card.style.scrollMarginTop = '100px';
 
-                    // 背景パターン
-                    const pat = snowPattern;
-                    const bgPattern = document.createElement('div');
-                    bgPattern.className = 'month-bg-pattern';
-                    bgPattern.style.backgroundImage = pat.bg;
-                    bgPattern.style.backgroundSize = pat.size;
-                    bgPattern.style.backgroundPosition = pat.pos;
-                    card.appendChild(bgPattern);
+
 
                     // ヘッダー
                     const header = document.createElement('div');
@@ -1231,9 +1218,9 @@
                 });
 
                 const sa = el('stats-area'); sa.innerHTML = '';
-                const s1 = document.createElement('span'); s1.className = 'text-warmCoral text-lg font-bold'; s1.textContent = ` 参加: ${counts["参加"]} `;
-                const s2 = document.createElement('span'); s2.className = 'text-warmGray text-lg font-bold'; s2.textContent = ` 不参加: ${counts["不参加"]} `;
-                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70 text-lg font-bold'; s3.textContent = ` 未回答: ${STATE.members.length - attendance.length} `;
+                const s1 = document.createElement('span'); s1.className = 'text-warmCoral text-base font-bold'; s1.textContent = ` 参加: ${counts["参加"]} `;
+                const s2 = document.createElement('span'); s2.className = 'text-warmGray text-base font-bold'; s2.textContent = ` 不参加: ${counts["不参加"]} `;
+                const s3 = document.createElement('span'); s3.className = 'text-warmGray/70 text-base font-bold'; s3.textContent = ` 未回答: ${STATE.members.length - attendance.length} `;
                 sa.appendChild(s1); sa.appendChild(s2); sa.appendChild(s3);
 
                 el('form-section').style.display = 'block'; el('result-section').style.display = 'block';
